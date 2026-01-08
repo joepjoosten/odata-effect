@@ -3,8 +3,8 @@
  *
  * @since 1.0.0
  */
-import * as Schema from "effect/Schema"
 import * as Data from "effect/Data"
+import * as Schema from "effect/Schema"
 
 /**
  * SAP error detail schema.

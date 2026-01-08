@@ -2,19 +2,19 @@ import { describe, expect, it } from "@effect/vitest"
 import * as Effect from "effect/Effect"
 import * as fs from "node:fs"
 import * as path from "node:path"
-import { parseODataMetadata } from "../../src/parser/XmlParser.js"
 import { digestMetadata } from "../../src/digester/Digester.js"
+import { generateIndex } from "../../src/generator/IndexGenerator.js"
 import { generateModels } from "../../src/generator/ModelsGenerator.js"
 import { generateQueryModels } from "../../src/generator/QueryModelsGenerator.js"
 import { generateServiceFns } from "../../src/generator/ServiceFnGenerator.js"
 import { generatePromiseServiceFns } from "../../src/generator/ServiceFnPromiseGenerator.js"
-import { generateIndex } from "../../src/generator/IndexGenerator.js"
+import { parseODataMetadata } from "../../src/parser/XmlParser.js"
 
 const resourceDir = path.resolve(__dirname, "../resource")
 
 describe("V2 Integration", () => {
   it("generates complete code from V2 metadata", () =>
-    Effect.gen(function* () {
+    Effect.gen(function*() {
       const xmlContent = fs.readFileSync(
         path.join(resourceDir, "odata-v2.xml"),
         "utf-8"
@@ -65,7 +65,7 @@ describe("V2 Integration", () => {
       expect(productService.content).toContain("export const create")
       expect(productService.content).toContain("export const update")
       expect(productService.content).toContain("export const del")
-      expect(productService.content).toContain('export { del as delete }')
+      expect(productService.content).toContain("export { del as delete }")
 
       // Generate Promise-based service functions
       const promiseServiceResult = generatePromiseServiceFns(dataModel)
@@ -99,7 +99,7 @@ describe("V2 Integration", () => {
     }))
 
   it("handles nullable properties correctly", () =>
-    Effect.gen(function* () {
+    Effect.gen(function*() {
       const xmlContent = fs.readFileSync(
         path.join(resourceDir, "odata-v2.xml"),
         "utf-8"
@@ -132,7 +132,7 @@ describe("V2 Integration", () => {
     }))
 
   it("handles V2 associations correctly", () =>
-    Effect.gen(function* () {
+    Effect.gen(function*() {
       const xmlContent = fs.readFileSync(
         path.join(resourceDir, "odata-v2.xml"),
         "utf-8"

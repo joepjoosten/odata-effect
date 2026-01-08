@@ -2,15 +2,15 @@ import { describe, expect, it } from "@effect/vitest"
 import * as Effect from "effect/Effect"
 import * as fs from "node:fs"
 import * as path from "node:path"
-import { parseODataMetadata } from "../../src/parser/XmlParser.js"
 import { digestMetadata } from "../../src/digester/Digester.js"
+import { parseODataMetadata } from "../../src/parser/XmlParser.js"
 
 const resourceDir = path.resolve(__dirname, "../resource")
 
 describe("Digester", () => {
   describe("V2 metadata", () => {
     it("digests OData V2 metadata correctly", () =>
-      Effect.gen(function* () {
+      Effect.gen(function*() {
         const xmlContent = fs.readFileSync(
           path.join(resourceDir, "odata-v2.xml"),
           "utf-8"
@@ -72,7 +72,7 @@ describe("Digester", () => {
 
   describe("V4 metadata", () => {
     it("digests OData V4 metadata correctly", () =>
-      Effect.gen(function* () {
+      Effect.gen(function*() {
         const xmlContent = fs.readFileSync(
           path.join(resourceDir, "trippin.xml"),
           "utf-8"

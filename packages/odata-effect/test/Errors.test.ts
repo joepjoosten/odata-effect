@@ -2,15 +2,15 @@ import { describe, expect, it } from "@effect/vitest"
 import * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"
 import {
-  ODataError,
-  SapError,
   EntityNotFoundError,
+  ODataError,
   ParseError,
-  SapErrorDetail,
-  SapErrorResolution,
   SapApplication,
-  SapErrorMessage,
+  SapError,
   SapErrorBody,
+  SapErrorDetail,
+  SapErrorMessage,
+  SapErrorResolution,
   SapErrorResponse
 } from "../src/Errors.js"
 
@@ -89,7 +89,7 @@ describe("Errors", () => {
   describe("Schema Classes", () => {
     describe("SapErrorDetail", () => {
       it("decodes a valid error detail", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           const data = {
             code: "ERR001",
             message: "Field is required",
@@ -108,7 +108,7 @@ describe("Errors", () => {
 
     describe("SapErrorResolution", () => {
       it("decodes a valid error resolution", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           const data = {
             SAP_Transaction: "SM13",
             SAP_Note: "123456"
@@ -121,7 +121,7 @@ describe("Errors", () => {
 
     describe("SapApplication", () => {
       it("decodes a valid application info", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           const data = {
             component_id: "BC-SRV-ODA",
             service_namespace: "/SAP/",
@@ -138,7 +138,7 @@ describe("Errors", () => {
 
     describe("SapErrorMessage", () => {
       it("decodes a valid error message", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           const data = {
             lang: "en",
             value: "An error occurred"
@@ -151,7 +151,7 @@ describe("Errors", () => {
 
     describe("SapErrorBody", () => {
       it("decodes a valid error body without innererror", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           const data = {
             code: "ERR001",
             message: {
@@ -167,7 +167,7 @@ describe("Errors", () => {
         }).pipe(Effect.runPromise))
 
       it("decodes a valid error body with innererror", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           const data = {
             code: "ERR001",
             message: {
@@ -207,7 +207,7 @@ describe("Errors", () => {
 
     describe("SapErrorResponse", () => {
       it("decodes a complete SAP error response", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           const data = {
             error: {
               code: "ERR001",

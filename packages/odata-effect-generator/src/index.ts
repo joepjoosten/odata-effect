@@ -5,76 +5,85 @@
  */
 
 // Parser
-export { parseODataMetadata, XmlParseError } from "./parser/XmlParser.js"
 export {
-  type ODataEdmxModel,
-  type Schema,
-  type EntityType,
   type ComplexType,
-  type EnumType,
-  type Property,
-  type NavigationProperty,
+  detectODataVersion,
   type EntityContainer,
+  type EntityType,
+  type EnumType,
+  type NavigationProperty,
+  type ODataEdmxModel,
   type ODataVersion,
-  detectODataVersion
+  type Property,
+  type Schema
 } from "./parser/EdmxSchema.js"
+export { parseODataMetadata, XmlParseError } from "./parser/XmlParser.js"
 
 // Model
 export {
-  type DataModel,
-  type EntityTypeModel,
   type ComplexTypeModel,
-  type EnumTypeModel,
-  type PropertyModel,
-  type NavigationPropertyModel,
+  createDataModel,
+  type DataModel,
   type EntitySetModel,
-  type SingletonModel,
+  type EntityTypeModel,
+  type EnumTypeModel,
+  type NavigationPropertyModel,
   type OperationModel,
-  type TypeMapping,
-  createDataModel
+  type PropertyModel,
+  type SingletonModel,
+  type TypeMapping
 } from "./model/DataModel.js"
 
 // Digester
-export { digestMetadata, DigestError } from "./digester/Digester.js"
+export { DigestError, digestMetadata } from "./digester/Digester.js"
 export {
-  parseODataType,
-  isPrimitiveType,
-  getPrimitiveTypeMapping,
   getComplexTypeMapping,
   getEnumTypeMapping,
-  getSimpleTypeName
+  getPrimitiveTypeMapping,
+  getSimpleTypeName,
+  isPrimitiveType,
+  parseODataType
 } from "./digester/TypeMapper.js"
 
 // Generator
-export { generate, GeneratorError, type GeneratorConfig } from "./generator/Generator.js"
-export { generateModels } from "./generator/ModelsGenerator.js"
-export { generateQueryModels } from "./generator/QueryModelsGenerator.js"
-export { generateServiceFns, type GeneratedServiceFnFile, type ServiceFnGenerationResult } from "./generator/ServiceFnGenerator.js"
-export { generatePromiseServiceFns, getPromiseServiceName, type GeneratedPromiseServiceFile, type PromiseServiceGenerationResult } from "./generator/ServiceFnPromiseGenerator.js"
+export { generate, type GeneratorConfig, GeneratorError } from "./generator/Generator.js"
 export { generateIndex } from "./generator/IndexGenerator.js"
+export { generateModels } from "./generator/ModelsGenerator.js"
 export {
   generatePackageJson,
   generateTsconfig,
+  generateTsconfigBuild,
   generateTsconfigSrc,
   generateTsconfigTest,
-  generateTsconfigBuild,
   generateVitestConfig,
   type PackageConfig
 } from "./generator/PackageGenerator.js"
+export { generateQueryModels } from "./generator/QueryModelsGenerator.js"
+export {
+  type GeneratedServiceFnFile,
+  generateServiceFns,
+  type ServiceFnGenerationResult
+} from "./generator/ServiceFnGenerator.js"
+export {
+  type GeneratedPromiseServiceFile,
+  generatePromiseServiceFns,
+  getPromiseServiceName,
+  type PromiseServiceGenerationResult
+} from "./generator/ServiceFnPromiseGenerator.js"
 
 // Naming
 export {
-  toPascalCase,
-  toCamelCase,
-  toValidIdentifier,
-  getPropertyName,
   getClassName,
-  getServiceClassName,
-  getQueryInterfaceName,
-  getQueryInstanceName,
-  getQueryFactoryName,
   getEditableTypeName,
-  getIdTypeName
+  getIdTypeName,
+  getPropertyName,
+  getQueryFactoryName,
+  getQueryInstanceName,
+  getQueryInterfaceName,
+  getServiceClassName,
+  toCamelCase,
+  toPascalCase,
+  toValidIdentifier
 } from "./generator/NamingHelper.js"
 
 // CLI

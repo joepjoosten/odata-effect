@@ -76,24 +76,24 @@
  */
 
 // Runtime exports
-export {
-  createODataRuntime,
-  createODataV4Runtime,
-  type ODataRuntime,
-  type ODataV4Runtime,
-  type ODataRuntimeConfig,
-  type ODataQueryOptions,
-  type ODataRequestOptions,
-  type PagedResult,
-  type ODataV4QueryOptions,
-  type ODataV4RequestOptions,
-  type PagedResultV4
-} from "./Runtime.js"
-
 // V2 namespace export
 import * as v2Exports from "./v2.js"
-export { v2Exports as OData }
 
 // V4 namespace export
 import * as v4Exports from "./v4.js"
+
+export {
+  createODataRuntime,
+  createODataV4Runtime,
+  type ODataQueryOptions,
+  type ODataRequestOptions,
+  type ODataRuntime,
+  type ODataRuntimeConfig,
+  type ODataV4QueryOptions,
+  type ODataV4RequestOptions,
+  type ODataV4Runtime,
+  type PagedResult,
+  type PagedResultV4
+} from "./Runtime.js"
+export { v2Exports as OData }
 export { v4Exports as ODataV4 }

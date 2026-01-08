@@ -181,8 +181,6 @@ export const buildEntityPathV4 = (
       ? `${entitySet}('${value}')`
       : `${entitySet}(${value})`
   }
-  const keyParts = entries.map(([key, value]) =>
-    typeof value === "string" ? `${key}='${value}'` : `${key}=${value}`
-  )
+  const keyParts = entries.map(([key, value]) => typeof value === "string" ? `${key}='${value}'` : `${key}=${value}`)
   return `${entitySet}(${keyParts.join(",")})`
 }

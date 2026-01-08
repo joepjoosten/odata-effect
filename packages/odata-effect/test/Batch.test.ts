@@ -2,22 +2,22 @@ import { describe, expect, it } from "@effect/vitest"
 import * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"
 import {
-  createBatchBuilder,
   BatchBuilder,
-  generateBoundary,
-  serializeBatchV2,
-  serializeBatchV4Json,
-  parseBatchResponseV2,
-  parseBatchResponseV4Json,
-  findResponseById,
-  isBatchSuccessful,
-  getFailedResponses,
+  type BatchChangeset,
+  type BatchChangesetResponse,
+  type BatchRequest,
+  type BatchResponse,
+  createBatchBuilder,
   extractResponseBody,
   extractResponseBodyV2,
-  type BatchRequest,
-  type BatchChangeset,
-  type BatchResponse,
-  type BatchChangesetResponse
+  findResponseById,
+  generateBoundary,
+  getFailedResponses,
+  isBatchSuccessful,
+  parseBatchResponseV2,
+  parseBatchResponseV4Json,
+  serializeBatchV2,
+  serializeBatchV4Json
 } from "../src/Batch.js"
 
 describe("Batch", () => {
@@ -124,8 +124,8 @@ describe("Batch", () => {
         const builder = createBatchBuilder()
         builder
           .beginChangeset()
-            .post("Products", { name: "A" })
-            .post("Products", { name: "B" })
+          .post("Products", { name: "A" })
+          .post("Products", { name: "B" })
           .endChangeset()
         const ops = builder.build()
 
@@ -138,7 +138,7 @@ describe("Batch", () => {
         const builder = createBatchBuilder()
         const returned = builder
           .beginChangeset()
-            .post("Products", { name: "A" })
+          .post("Products", { name: "A" })
           .endChangeset()
 
         expect(returned).toBe(builder)
@@ -183,18 +183,22 @@ describe("Batch", () => {
       const builder = createBatchBuilder()
       builder
         .beginChangeset()
-          .post("A", {})
-          .patch("B", {})
-          .merge("C", {})
-          .put("D", {})
-          .delete("E")
+        .post("A", {})
+        .patch("B", {})
+        .merge("C", {})
+        .put("D", {})
+        .delete("E")
         .endChangeset()
       const ops = builder.build()
 
       const changeset = ops[0] as BatchChangeset
       expect(changeset.requests).toHaveLength(5)
-      expect(changeset.requests.map(r => r.method)).toEqual([
-        "POST", "PATCH", "MERGE", "PUT", "DELETE"
+      expect(changeset.requests.map((r) => r.method)).toEqual([
+        "POST",
+        "PATCH",
+        "MERGE",
+        "PUT",
+        "DELETE"
       ])
     })
   })
@@ -238,7 +242,7 @@ describe("Batch", () => {
         .build()
       const { body } = serializeBatchV2(ops, "/odata/")
 
-      expect(body).toContain('{"name":"Test","value":123}')
+      expect(body).toContain("{\"name\":\"Test\",\"value\":123}")
     })
   })
 
@@ -258,8 +262,8 @@ describe("Batch", () => {
     it("assigns atomicityGroup for changeset requests", () => {
       const ops = createBatchBuilder()
         .beginChangeset()
-          .post("A", {})
-          .post("B", {})
+        .post("A", {})
+        .post("B", {})
         .endChangeset()
         .build()
       const result = serializeBatchV4Json(ops)
@@ -279,15 +283,14 @@ describe("Batch", () => {
   describe("parseBatchResponseV2", () => {
     it("parses individual response", () => {
       // Use CRLF line endings as required by multipart/mixed format
-      const responseText =
-        "--batch_123\r\n" +
+      const responseText = "--batch_123\r\n" +
         "Content-Type: application/http\r\n" +
         "Content-Transfer-Encoding: binary\r\n" +
         "\r\n" +
         "HTTP/1.1 200 OK\r\n" +
         "Content-Type: application/json\r\n" +
         "\r\n" +
-        '{"d":{"id":"1","name":"Test"}}\r\n' +
+        "{\"d\":{\"id\":\"1\",\"name\":\"Test\"}}\r\n" +
         "--batch_123--"
 
       const responses = parseBatchResponseV2(responseText, "batch_123")
@@ -364,7 +367,7 @@ HTTP/1.1 204 No Content
       // Should have 2 results: one changeset and one individual
       expect(results).toHaveLength(2)
 
-      const changeset = results.find(r => "type" in r && r.type === "changeset") as BatchChangesetResponse
+      const changeset = results.find((r) => "type" in r && r.type === "changeset") as BatchChangesetResponse
       expect(changeset).toBeDefined()
       expect(changeset.responses).toHaveLength(2)
       expect(changeset.success).toBe(true)
@@ -374,7 +377,7 @@ HTTP/1.1 204 No Content
   describe("Helper Functions", () => {
     describe("findResponseById", () => {
       it("finds response in flat list", () => {
-        const responses: BatchResponse[] = [
+        const responses: Array<BatchResponse> = [
           { id: "r1", status: 200, statusText: "OK", headers: {}, body: null },
           { id: "r2", status: 201, statusText: "Created", headers: {}, body: null }
         ]
@@ -386,7 +389,7 @@ HTTP/1.1 204 No Content
       })
 
       it("finds response inside changeset", () => {
-        const responses: (BatchResponse | BatchChangesetResponse)[] = [
+        const responses: Array<BatchResponse | BatchChangesetResponse> = [
           {
             type: "changeset",
             id: "cs1",
@@ -404,7 +407,7 @@ HTTP/1.1 204 No Content
       })
 
       it("returns undefined for non-existent id", () => {
-        const responses: BatchResponse[] = [
+        const responses: Array<BatchResponse> = [
           { id: "r1", status: 200, statusText: "OK", headers: {}, body: null }
         ]
 
@@ -416,7 +419,7 @@ HTTP/1.1 204 No Content
 
     describe("isBatchSuccessful", () => {
       it("returns true when all responses are successful", () => {
-        const responses: BatchResponse[] = [
+        const responses: Array<BatchResponse> = [
           { id: "r1", status: 200, statusText: "OK", headers: {}, body: null },
           { id: "r2", status: 201, statusText: "Created", headers: {}, body: null },
           { id: "r3", status: 204, statusText: "No Content", headers: {}, body: null }
@@ -426,7 +429,7 @@ HTTP/1.1 204 No Content
       })
 
       it("returns false when any response failed", () => {
-        const responses: BatchResponse[] = [
+        const responses: Array<BatchResponse> = [
           { id: "r1", status: 200, statusText: "OK", headers: {}, body: null },
           { id: "r2", status: 400, statusText: "Bad Request", headers: {}, body: null }
         ]
@@ -435,7 +438,7 @@ HTTP/1.1 204 No Content
       })
 
       it("returns false when changeset failed", () => {
-        const responses: (BatchResponse | BatchChangesetResponse)[] = [
+        const responses: Array<BatchResponse | BatchChangesetResponse> = [
           {
             type: "changeset",
             id: "cs1",
@@ -452,7 +455,7 @@ HTTP/1.1 204 No Content
 
     describe("getFailedResponses", () => {
       it("returns empty array when all successful", () => {
-        const responses: BatchResponse[] = [
+        const responses: Array<BatchResponse> = [
           { id: "r1", status: 200, statusText: "OK", headers: {}, body: null }
         ]
 
@@ -460,7 +463,7 @@ HTTP/1.1 204 No Content
       })
 
       it("returns failed responses", () => {
-        const responses: BatchResponse[] = [
+        const responses: Array<BatchResponse> = [
           { id: "r1", status: 200, statusText: "OK", headers: {}, body: null },
           { id: "r2", status: 404, statusText: "Not Found", headers: {}, body: null },
           { id: "r3", status: 500, statusText: "Error", headers: {}, body: null }
@@ -469,11 +472,11 @@ HTTP/1.1 204 No Content
         const failed = getFailedResponses(responses)
 
         expect(failed).toHaveLength(2)
-        expect(failed.map(r => r.id)).toEqual(["r2", "r3"])
+        expect(failed.map((r) => r.id)).toEqual(["r2", "r3"])
       })
 
       it("extracts failed responses from changesets", () => {
-        const responses: (BatchResponse | BatchChangesetResponse)[] = [
+        const responses: Array<BatchResponse | BatchChangesetResponse> = [
           {
             type: "changeset",
             id: "cs1",
@@ -494,7 +497,7 @@ HTTP/1.1 204 No Content
 
     describe("extractResponseBody", () => {
       it.effect("extracts and validates response body", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           const TestSchema = Schema.Struct({
             id: Schema.String,
             value: Schema.Number
@@ -512,11 +515,10 @@ HTTP/1.1 204 No Content
 
           expect(result.id).toBe("123")
           expect(result.value).toBe(42)
-        })
-      )
+        }))
 
       it.effect("fails on invalid body", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           const TestSchema = Schema.Struct({
             id: Schema.String,
             value: Schema.Number
@@ -533,13 +535,12 @@ HTTP/1.1 204 No Content
           const result = yield* extractResponseBody(response, TestSchema).pipe(Effect.flip)
 
           expect(result._tag).toBe("ParseError")
-        })
-      )
+        }))
     })
 
     describe("extractResponseBodyV2", () => {
       it.effect("extracts and unwraps V2 response body", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           const TestSchema = Schema.Struct({
             id: Schema.String,
             name: Schema.String
@@ -557,8 +558,7 @@ HTTP/1.1 204 No Content
 
           expect(result.id).toBe("123")
           expect(result.name).toBe("Test")
-        })
-      )
+        }))
     })
   })
 })

@@ -26,9 +26,9 @@
  *
  * @since 1.0.0
  */
-import type * as Schema from "effect/Schema"
 import { ODataClientFn as ODataFn } from "@odata-effect/odata-effect"
-import type { ODataRuntime, ODataQueryOptions, ODataRequestOptions, PagedResult } from "./Runtime.js"
+import type * as Schema from "effect/Schema"
+import type { ODataQueryOptions, ODataRequestOptions, ODataRuntime, PagedResult } from "./Runtime.js"
 
 /**
  * Fetch a single entity by path.
@@ -46,8 +46,7 @@ export const get = <A, I>(
   path: string,
   schema: Schema.Schema<A, I, never>,
   options?: ODataQueryOptions
-): Promise<A> =>
-  runtime.runPromise(ODataFn.get(path, schema, options))
+): Promise<A> => runtime.runPromise(ODataFn.get(path, schema, options))
 
 /**
  * Fetch a collection of entities.
@@ -68,8 +67,7 @@ export const getCollection = <A, I>(
   path: string,
   schema: Schema.Schema<A, I, never>,
   options?: ODataQueryOptions
-): Promise<ReadonlyArray<A>> =>
-  runtime.runPromise(ODataFn.getCollection(path, schema, options))
+): Promise<ReadonlyArray<A>> => runtime.runPromise(ODataFn.getCollection(path, schema, options))
 
 /**
  * Fetch a collection with pagination metadata.
@@ -91,8 +89,7 @@ export const getCollectionPaged = <A, I>(
   path: string,
   schema: Schema.Schema<A, I, never>,
   options?: ODataQueryOptions
-): Promise<PagedResult<A>> =>
-  runtime.runPromise(ODataFn.getCollectionPaged(path, schema, options))
+): Promise<PagedResult<A>> => runtime.runPromise(ODataFn.getCollectionPaged(path, schema, options))
 
 /**
  * Fetch a single property value.
@@ -110,8 +107,7 @@ export const getValue = <A, I>(
   path: string,
   propertyName: string,
   schema: Schema.Schema<A, I, never>
-): Promise<A> =>
-  runtime.runPromise(ODataFn.getValue(path, propertyName, schema))
+): Promise<A> => runtime.runPromise(ODataFn.getValue(path, propertyName, schema))
 
 /**
  * Fetch a complex property.
@@ -128,8 +124,7 @@ export const getComplex = <A, I>(
   runtime: ODataRuntime,
   path: string,
   schema: Schema.Schema<A, I, never>
-): Promise<A> =>
-  runtime.runPromise(ODataFn.getComplex(path, schema))
+): Promise<A> => runtime.runPromise(ODataFn.getComplex(path, schema))
 
 /**
  * Expand a deferred navigation property.
@@ -150,8 +145,7 @@ export const expandDeferred = <A, I>(
   runtime: ODataRuntime,
   deferred: { readonly __deferred: { readonly uri: string } },
   schema: Schema.Schema<A, I, never>
-): Promise<A> =>
-  runtime.runPromise(ODataFn.expandDeferred(deferred, schema))
+): Promise<A> => runtime.runPromise(ODataFn.expandDeferred(deferred, schema))
 
 /**
  * Expand a deferred navigation property that returns a collection.
@@ -171,8 +165,7 @@ export const expandDeferredCollection = <A, I>(
   runtime: ODataRuntime,
   deferred: { readonly __deferred: { readonly uri: string } },
   schema: Schema.Schema<A, I, never>
-): Promise<ReadonlyArray<A>> =>
-  runtime.runPromise(ODataFn.expandDeferredCollection(deferred, schema))
+): Promise<ReadonlyArray<A>> => runtime.runPromise(ODataFn.expandDeferredCollection(deferred, schema))
 
 /**
  * Create a new entity.
@@ -197,8 +190,7 @@ export const post = <A, I, B, BI>(
   body: B,
   bodySchema: Schema.Schema<B, BI, never>,
   responseSchema: Schema.Schema<A, I, never>
-): Promise<A> =>
-  runtime.runPromise(ODataFn.post(path, body, bodySchema, responseSchema))
+): Promise<A> => runtime.runPromise(ODataFn.post(path, body, bodySchema, responseSchema))
 
 /**
  * Update an entity using PATCH (MERGE in V2).
@@ -223,8 +215,7 @@ export const patch = <B, BI>(
   body: B,
   bodySchema: Schema.Schema<B, BI, never>,
   requestOptions?: ODataRequestOptions
-): Promise<void> =>
-  runtime.runPromise(ODataFn.patch(path, body, bodySchema, requestOptions))
+): Promise<void> => runtime.runPromise(ODataFn.patch(path, body, bodySchema, requestOptions))
 
 /**
  * Delete an entity.
@@ -241,8 +232,7 @@ export const del = (
   runtime: ODataRuntime,
   path: string,
   requestOptions?: ODataRequestOptions
-): Promise<void> =>
-  runtime.runPromise(ODataFn.del(path, requestOptions))
+): Promise<void> => runtime.runPromise(ODataFn.del(path, requestOptions))
 
 // Alias for nice naming
 export { del as delete }

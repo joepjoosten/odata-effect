@@ -19,22 +19,23 @@
  *
  * @since 1.0.0
  */
-import * as Effect from "effect/Effect"
-import * as Schema from "effect/Schema"
 import {
+  type HttpBody,
   HttpClient,
-  HttpClientRequest,
-  HttpClientResponse,
   type HttpClientError,
-  type HttpBody
+  HttpClientRequest,
+  HttpClientResponse
 } from "@effect/platform"
-import { ODataError, ParseError } from "./Errors.js"
+import * as Effect from "effect/Effect"
+import type * as Schema from "effect/Schema"
+import type { ParseError } from "./Errors.js"
+import { ODataError } from "./Errors.js"
 import {
   ODataV4ClientConfig,
   ODataV4CollectionResponse,
-  ODataV4ValueResponse,
   type ODataV4QueryOptions,
   type ODataV4RequestOptions,
+  ODataV4ValueResponse,
   type PagedResultV4
 } from "./ODataV4Client.js"
 
@@ -96,8 +97,7 @@ const handleError = <A, E, R>(
         message: "OData V4 request failed",
         cause: error
       })
-    )
-  )
+    ))
 
 // ============================================================================
 // Standalone Tree-Shakable Functions
@@ -121,7 +121,7 @@ export const get = <A, I, R>(
 > => {
   const url = `${path}${buildQueryString(options)}`
 
-  return Effect.gen(function* () {
+  return Effect.gen(function*() {
     const config = yield* ODataV4ClientConfig
     const httpClient = yield* HttpClient.HttpClient
 
@@ -164,7 +164,7 @@ export const getCollection = <A, I, R>(
   const url = `${path}${buildQueryString(options)}`
   const responseSchema = ODataV4CollectionResponse(schema)
 
-  return Effect.gen(function* () {
+  return Effect.gen(function*() {
     const config = yield* ODataV4ClientConfig
     const httpClient = yield* HttpClient.HttpClient
 
@@ -207,7 +207,7 @@ export const getCollectionPaged = <A, I, R>(
   const url = `${path}${buildQueryString(options)}`
   const responseSchema = ODataV4CollectionResponse(schema)
 
-  return Effect.gen(function* () {
+  return Effect.gen(function*() {
     const config = yield* ODataV4ClientConfig
     const httpClient = yield* HttpClient.HttpClient
 
@@ -253,7 +253,7 @@ export const getValue = <A, I, R>(
 > => {
   const responseSchema = ODataV4ValueResponse(schema)
 
-  return Effect.gen(function* () {
+  return Effect.gen(function*() {
     const config = yield* ODataV4ClientConfig
     const httpClient = yield* HttpClient.HttpClient
 
@@ -295,7 +295,7 @@ export const post = <A, I, R, B, BI>(
   HttpClientError.HttpClientError | HttpBody.HttpBodyError | ParseError | ODataError,
   R | ODataV4ClientConfig | HttpClient.HttpClient
 > =>
-  Effect.gen(function* () {
+  Effect.gen(function*() {
     const config = yield* ODataV4ClientConfig
     const httpClient = yield* HttpClient.HttpClient
 
@@ -340,7 +340,7 @@ export const patch = <B, BI>(
   HttpClientError.HttpClientError | HttpBody.HttpBodyError | ODataError,
   ODataV4ClientConfig | HttpClient.HttpClient
 > =>
-  Effect.gen(function* () {
+  Effect.gen(function*() {
     const config = yield* ODataV4ClientConfig
     const httpClient = yield* HttpClient.HttpClient
 
@@ -383,7 +383,7 @@ export const put = <B, BI>(
   HttpClientError.HttpClientError | HttpBody.HttpBodyError | ODataError,
   ODataV4ClientConfig | HttpClient.HttpClient
 > =>
-  Effect.gen(function* () {
+  Effect.gen(function*() {
     const config = yield* ODataV4ClientConfig
     const httpClient = yield* HttpClient.HttpClient
 
@@ -423,7 +423,7 @@ export const del = (
   HttpClientError.HttpClientError | ODataError,
   ODataV4ClientConfig | HttpClient.HttpClient
 > =>
-  Effect.gen(function* () {
+  Effect.gen(function*() {
     const config = yield* ODataV4ClientConfig
     const httpClient = yield* HttpClient.HttpClient
 

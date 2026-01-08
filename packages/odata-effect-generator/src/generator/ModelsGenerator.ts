@@ -4,14 +4,14 @@
  * @since 1.0.0
  */
 import type {
+  ComplexTypeModel,
   DataModel,
   EntityTypeModel,
-  ComplexTypeModel,
   EnumTypeModel,
-  PropertyModel,
-  NavigationPropertyModel
+  NavigationPropertyModel,
+  PropertyModel
 } from "../model/DataModel.js"
-import { getEditableTypeName, getIdTypeName, getClassName } from "./NamingHelper.js"
+import { getClassName, getEditableTypeName, getIdTypeName } from "./NamingHelper.js"
 
 /**
  * Get dependencies for a type (complex types it references via properties or baseType).
@@ -46,11 +46,11 @@ const getTypeDependencies = (
  * Topologically sort types based on their dependencies.
  */
 const sortTypesByDependency = <T extends ComplexTypeModel | EntityTypeModel>(
-  types: T[],
+  types: Array<T>,
   allComplexTypes: Set<string>,
   allEntityTypes: Set<string>
-): T[] => {
-  const sorted: T[] = []
+): Array<T> => {
+  const sorted: Array<T> = []
   const visited = new Set<string>()
   const visiting = new Set<string>()
 
@@ -92,7 +92,7 @@ const sortTypesByDependency = <T extends ComplexTypeModel | EntityTypeModel>(
  * @category generation
  */
 export const generateModels = (dataModel: DataModel): string => {
-  const lines: string[] = []
+  const lines: Array<string> = []
 
   // Collect all type names for dependency resolution
   const allComplexTypes = new Set(Array.from(dataModel.complexTypes.values()).map((t) => t.name))
@@ -110,7 +110,7 @@ export const generateModels = (dataModel: DataModel): string => {
 
   // Generate enum types (no dependencies, always first)
   for (const enumType of dataModel.enumTypes.values()) {
-    lines.push(...generateEnumType(enumType))
+    for (const line of generateEnumType(enumType)) lines.push(line)
     lines.push(``)
   }
 
@@ -121,7 +121,7 @@ export const generateModels = (dataModel: DataModel): string => {
     allEntityTypes
   )
   for (const complexType of sortedComplexTypes) {
-    lines.push(...generateComplexType(complexType, dataModel))
+    for (const line of generateComplexType(complexType, dataModel)) lines.push(line)
     lines.push(``)
   }
 
@@ -132,7 +132,7 @@ export const generateModels = (dataModel: DataModel): string => {
     allEntityTypes
   )
   for (const entityType of sortedEntityTypes) {
-    lines.push(...generateEntityType(entityType, dataModel))
+    for (const line of generateEntityType(entityType, dataModel)) lines.push(line)
     lines.push(``)
   }
 
@@ -142,8 +142,8 @@ export const generateModels = (dataModel: DataModel): string => {
 /**
  * Generate an enum type.
  */
-const generateEnumType = (enumType: EnumTypeModel): string[] => {
-  const lines: string[] = []
+const generateEnumType = (enumType: EnumTypeModel): Array<string> => {
+  const lines: Array<string> = []
   const members = enumType.members.map((m) => `"${m.name}"`).join(", ")
 
   lines.push(`/**`)
@@ -164,8 +164,8 @@ const generateEnumType = (enumType: EnumTypeModel): string[] => {
 const generateComplexType = (
   complexType: ComplexTypeModel,
   dataModel: DataModel
-): string[] => {
-  const lines: string[] = []
+): Array<string> => {
+  const lines: Array<string> = []
 
   lines.push(`/**`)
   lines.push(` * ${complexType.odataName} complex type.`)
@@ -177,7 +177,7 @@ const generateComplexType = (
   const fields = generateSchemaFields(complexType.properties, complexType.navigationProperties, dataModel)
 
   lines.push(`export class ${complexType.name} extends Schema.Class<${complexType.name}>("${complexType.name}")({`)
-  lines.push(...fields.map((f) => `  ${f}`))
+  for (const f of fields) lines.push(`  ${f}`)
   lines.push(`}) {}`)
 
   // Generate editable type
@@ -193,7 +193,7 @@ const generateComplexType = (
   const editableName = getEditableTypeName(complexType.name)
 
   lines.push(`export const ${editableName} = Schema.Struct({`)
-  lines.push(...editableFields.map((f) => `  ${f}`))
+  for (const f of editableFields) lines.push(`  ${f}`)
   lines.push(`})`)
   lines.push(`export type ${editableName} = Schema.Schema.Type<typeof ${editableName}>`)
 
@@ -206,8 +206,8 @@ const generateComplexType = (
 const generateEntityType = (
   entityType: EntityTypeModel,
   dataModel: DataModel
-): string[] => {
-  const lines: string[] = []
+): Array<string> => {
+  const lines: Array<string> = []
 
   // Main entity class
   lines.push(`/**`)
@@ -220,7 +220,7 @@ const generateEntityType = (
   const fields = generateSchemaFields(entityType.properties, entityType.navigationProperties, dataModel)
 
   lines.push(`export class ${entityType.name} extends Schema.Class<${entityType.name}>("${entityType.name}")({`)
-  lines.push(...fields.map((f) => `  ${f}`))
+  for (const f of fields) lines.push(`  ${f}`)
   lines.push(`}) {}`)
 
   // ID type
@@ -271,7 +271,7 @@ const generateEntityType = (
   const editableName = getEditableTypeName(entityType.name)
 
   lines.push(`export const ${editableName} = Schema.Struct({`)
-  lines.push(...editableFields.map((f) => `  ${f}`))
+  for (const f of editableFields) lines.push(`  ${f}`)
   lines.push(`})`)
   lines.push(`export type ${editableName} = Schema.Schema.Type<typeof ${editableName}>`)
 
@@ -287,8 +287,8 @@ const generateSchemaFields = (
   properties: ReadonlyArray<PropertyModel>,
   _navigationProperties: ReadonlyArray<NavigationPropertyModel>,
   _dataModel: DataModel
-): string[] => {
-  const fields: string[] = []
+): Array<string> => {
+  const fields: Array<string> = []
 
   for (let i = 0; i < properties.length; i++) {
     const prop = properties[i]
@@ -308,8 +308,8 @@ const generateSchemaFields = (
  */
 const generateEditableSchemaFields = (
   properties: ReadonlyArray<PropertyModel>
-): string[] => {
-  const fields: string[] = []
+): Array<string> => {
+  const fields: Array<string> = []
 
   for (let i = 0; i < properties.length; i++) {
     const prop = properties[i]
@@ -342,4 +342,3 @@ const getPropertySchemaType = (
 
   return baseType
 }
-

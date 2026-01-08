@@ -1,12 +1,9 @@
+import { HttpClient, HttpClientResponse } from "@effect/platform"
+import type { HttpClientRequest, HttpClientRequest } from "@effect/platform"
 import { describe, expect, it } from "@effect/vitest"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import * as Schema from "effect/Schema"
-import {
-  HttpClient,
-  HttpClientRequest,
-  HttpClientResponse
-} from "@effect/platform"
 import { ODataV4ClientConfig } from "../src/ODataV4Client.js"
 import * as ODataV4 from "../src/ODataV4ClientFn.js"
 
@@ -42,7 +39,7 @@ const createTestLayer = (
 describe("ODataV4ClientFn", () => {
   describe("get", () => {
     it.effect("fetches a single entity (V4 format)", () =>
-      Effect.gen(function* () {
+      Effect.gen(function*() {
         const result = yield* ODataV4.get("Products(1)", TestEntity)
 
         expect(result.id).toBe(1)
@@ -62,11 +59,10 @@ describe("ODataV4ClientFn", () => {
             )
           )
         )
-      )
-    )
+      ))
 
     it.effect("includes query options in URL", () =>
-      Effect.gen(function* () {
+      Effect.gen(function*() {
         yield* ODataV4.get("Products(1)", TestEntity, {
           $select: "id,name",
           $expand: "category"
@@ -87,11 +83,10 @@ describe("ODataV4ClientFn", () => {
             )
           })
         )
-      )
-    )
+      ))
 
     it.effect("sets OData-Version header", () =>
-      Effect.gen(function* () {
+      Effect.gen(function*() {
         yield* ODataV4.get("Products(1)", TestEntity)
       }).pipe(
         Effect.provide(
@@ -108,13 +103,12 @@ describe("ODataV4ClientFn", () => {
             )
           })
         )
-      )
-    )
+      ))
   })
 
   describe("getCollection", () => {
     it.effect("fetches a collection (V4 format)", () =>
-      Effect.gen(function* () {
+      Effect.gen(function*() {
         const results = yield* ODataV4.getCollection("Products", TestEntity)
 
         expect(results).toHaveLength(3)
@@ -141,11 +135,10 @@ describe("ODataV4ClientFn", () => {
             )
           )
         )
-      )
-    )
+      ))
 
     it.effect("handles empty collection", () =>
-      Effect.gen(function* () {
+      Effect.gen(function*() {
         const results = yield* ODataV4.getCollection("Products", TestEntity)
         expect(results).toHaveLength(0)
       }).pipe(
@@ -162,11 +155,10 @@ describe("ODataV4ClientFn", () => {
             )
           )
         )
-      )
-    )
+      ))
 
     it.effect("supports V4-specific query options", () =>
-      Effect.gen(function* () {
+      Effect.gen(function*() {
         yield* ODataV4.getCollection("Products", TestEntity, {
           $count: true,
           $search: "widget",
@@ -189,13 +181,12 @@ describe("ODataV4ClientFn", () => {
             )
           })
         )
-      )
-    )
+      ))
   })
 
   describe("getCollectionPaged", () => {
     it.effect("returns pagination metadata", () =>
-      Effect.gen(function* () {
+      Effect.gen(function*() {
         const result = yield* ODataV4.getCollectionPaged("Products", TestEntity, {
           $count: true,
           $top: 2
@@ -227,11 +218,10 @@ describe("ODataV4ClientFn", () => {
             )
           )
         )
-      )
-    )
+      ))
 
     it.effect("handles missing optional metadata", () =>
-      Effect.gen(function* () {
+      Effect.gen(function*() {
         const result = yield* ODataV4.getCollectionPaged("Products", TestEntity)
 
         expect(result.count).toBeUndefined()
@@ -250,13 +240,12 @@ describe("ODataV4ClientFn", () => {
             )
           )
         )
-      )
-    )
+      ))
   })
 
   describe("getValue", () => {
     it.effect("fetches a single value (V4 format)", () =>
-      Effect.gen(function* () {
+      Effect.gen(function*() {
         const result = yield* ODataV4.getValue("Products(1)/name", Schema.String)
         expect(result).toBe("Widget")
       }).pipe(
@@ -273,13 +262,12 @@ describe("ODataV4ClientFn", () => {
             )
           )
         )
-      )
-    )
+      ))
   })
 
   describe("post", () => {
     it.effect("creates an entity (V4 format)", () =>
-      Effect.gen(function* () {
+      Effect.gen(function*() {
         const result = yield* ODataV4.post(
           "Products",
           { name: "New Product", value: 50 },
@@ -304,11 +292,10 @@ describe("ODataV4ClientFn", () => {
             )
           })
         )
-      )
-    )
+      ))
 
     it.effect("applies request options", () =>
-      Effect.gen(function* () {
+      Effect.gen(function*() {
         yield* ODataV4.post(
           "Products",
           { name: "Test", value: 1 },
@@ -331,13 +318,12 @@ describe("ODataV4ClientFn", () => {
             )
           })
         )
-      )
-    )
+      ))
   })
 
   describe("patch", () => {
     it.effect("uses native PATCH method (V4)", () =>
-      Effect.gen(function* () {
+      Effect.gen(function*() {
         yield* ODataV4.patch(
           "Products(1)",
           { name: "Updated" },
@@ -355,21 +341,20 @@ describe("ODataV4ClientFn", () => {
             )
           })
         )
-      )
-    )
+      ))
 
     it.effect("includes If-Match header with ETag", () =>
-      Effect.gen(function* () {
+      Effect.gen(function*() {
         yield* ODataV4.patch(
           "Products(1)",
           { name: "Updated" },
           Schema.partial(EditableTestEntity),
-          { etag: 'W/"abc123"' }
+          { etag: "W/\"abc123\"" }
         )
       }).pipe(
         Effect.provide(
           createTestLayer((request) => {
-            expect(request.headers["if-match"]).toBe('W/"abc123"')
+            expect(request.headers["if-match"]).toBe("W/\"abc123\"")
             return Effect.succeed(
               HttpClientResponse.fromWeb(
                 request,
@@ -378,11 +363,10 @@ describe("ODataV4ClientFn", () => {
             )
           })
         )
-      )
-    )
+      ))
 
     it.effect("uses If-Match: * with forceUpdate", () =>
-      Effect.gen(function* () {
+      Effect.gen(function*() {
         yield* ODataV4.patch(
           "Products(1)",
           { name: "Updated" },
@@ -401,13 +385,12 @@ describe("ODataV4ClientFn", () => {
             )
           })
         )
-      )
-    )
+      ))
   })
 
   describe("put", () => {
     it.effect("uses PUT method for full replacement", () =>
-      Effect.gen(function* () {
+      Effect.gen(function*() {
         yield* ODataV4.put(
           "Products(1)",
           { name: "Replaced", value: 999 },
@@ -425,13 +408,12 @@ describe("ODataV4ClientFn", () => {
             )
           })
         )
-      )
-    )
+      ))
   })
 
   describe("del", () => {
     it.effect("deletes an entity", () =>
-      Effect.gen(function* () {
+      Effect.gen(function*() {
         const result = yield* ODataV4.del("Products(1)")
         expect(result).toBeUndefined()
       }).pipe(
@@ -446,16 +428,15 @@ describe("ODataV4ClientFn", () => {
             )
           })
         )
-      )
-    )
+      ))
 
     it.effect("includes If-Match header", () =>
-      Effect.gen(function* () {
-        yield* ODataV4.del("Products(1)", { etag: 'W/"xyz"' })
+      Effect.gen(function*() {
+        yield* ODataV4.del("Products(1)", { etag: "W/\"xyz\"" })
       }).pipe(
         Effect.provide(
           createTestLayer((request) => {
-            expect(request.headers["if-match"]).toBe('W/"xyz"')
+            expect(request.headers["if-match"]).toBe("W/\"xyz\"")
             return Effect.succeed(
               HttpClientResponse.fromWeb(
                 request,
@@ -464,13 +445,12 @@ describe("ODataV4ClientFn", () => {
             )
           })
         )
-      )
-    )
+      ))
   })
 
   describe("error handling", () => {
     it.effect("wraps HTTP errors in ODataError", () =>
-      Effect.gen(function* () {
+      Effect.gen(function*() {
         const result = yield* ODataV4.get("Products(999)", TestEntity).pipe(Effect.flip)
         expect(result._tag).toBe("ODataError")
       }).pipe(
@@ -487,13 +467,12 @@ describe("ODataV4ClientFn", () => {
             )
           )
         )
-      )
-    )
+      ))
   })
 
   describe("URL construction", () => {
     it.effect("prepends base URL and service path", () =>
-      Effect.gen(function* () {
+      Effect.gen(function*() {
         yield* ODataV4.get("Products(1)", TestEntity)
       }).pipe(
         Effect.provide(
@@ -512,8 +491,7 @@ describe("ODataV4ClientFn", () => {
             )
           })
         )
-      )
-    )
+      ))
   })
 
   describe("delete alias", () => {

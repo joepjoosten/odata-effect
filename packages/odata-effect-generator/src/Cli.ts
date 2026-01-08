@@ -4,13 +4,13 @@
  * @since 1.0.0
  */
 import { Args, Command, Options } from "@effect/cli"
-import * as Effect from "effect/Effect"
 import * as FileSystem from "@effect/platform/FileSystem"
 import * as Console from "effect/Console"
+import * as Effect from "effect/Effect"
 
-import { parseODataMetadata } from "./parser/XmlParser.js"
 import { digestMetadata } from "./digester/Digester.js"
 import { generate } from "./generator/Generator.js"
+import { parseODataMetadata } from "./parser/XmlParser.js"
 
 // ============================================================================
 // Arguments and Options
@@ -48,8 +48,10 @@ const generateCommand = Command.make(
   { metadataPath, outputDir, serviceName, packageName, force }
 ).pipe(
   Command.withDescription("Generate Effect OData client from metadata"),
-  Command.withHandler(({ metadataPath: metaPath, outputDir: outDir, serviceName: svcName, packageName: pkgName, force: forceOverwrite }) =>
-    Effect.gen(function* () {
+  Command.withHandler((
+    { force: forceOverwrite, metadataPath: metaPath, outputDir: outDir, packageName: pkgName, serviceName: svcName }
+  ) =>
+    Effect.gen(function*() {
       const fs = yield* FileSystem.FileSystem
 
       yield* Console.log(`Reading metadata from: ${metaPath}`)

@@ -4,18 +4,13 @@
  * @since 1.0.0
  */
 import type {
+  ComplexTypeModel,
   DataModel,
   EntityTypeModel,
-  ComplexTypeModel,
-  PropertyModel,
-  NavigationPropertyModel
+  NavigationPropertyModel,
+  PropertyModel
 } from "../model/DataModel.js"
-import {
-  getQueryInterfaceName,
-  getQueryInstanceName,
-  getQueryFactoryName,
-  getClassName
-} from "./NamingHelper.js"
+import { getClassName, getQueryFactoryName, getQueryInstanceName, getQueryInterfaceName } from "./NamingHelper.js"
 
 /**
  * Generate the QueryModels.ts file content.
@@ -24,7 +19,7 @@ import {
  * @category generation
  */
 export const generateQueryModels = (dataModel: DataModel): string => {
-  const lines: string[] = []
+  const lines: Array<string> = []
 
   // Collect all query path types needed
   const queryPathTypes = collectQueryPathTypes(dataModel)
@@ -43,7 +38,7 @@ export const generateQueryModels = (dataModel: DataModel): string => {
   lines.push(`} from "@odata-effect/odata-effect"`)
 
   // Import entity types that have entity sets (for QueryBuilder generics)
-  const usedEntityNames: string[] = []
+  const usedEntityNames: Array<string> = []
   for (const entitySet of dataModel.entitySets.values()) {
     const entityType = dataModel.entityTypes.get(entitySet.entityTypeFqName)
     if (entityType) {
@@ -59,17 +54,17 @@ export const generateQueryModels = (dataModel: DataModel): string => {
 
   // Generate complex type query paths
   for (const complexType of dataModel.complexTypes.values()) {
-    lines.push(...generateQueryInterface(complexType))
+    for (const line of generateQueryInterface(complexType)) lines.push(line)
     lines.push(``)
-    lines.push(...generateQueryInstance(complexType))
+    for (const line of generateQueryInstance(complexType)) lines.push(line)
     lines.push(``)
   }
 
   // Generate entity type query paths
   for (const entityType of dataModel.entityTypes.values()) {
-    lines.push(...generateQueryInterface(entityType))
+    for (const line of generateQueryInterface(entityType)) lines.push(line)
     lines.push(``)
-    lines.push(...generateQueryInstance(entityType))
+    for (const line of generateQueryInstance(entityType)) lines.push(line)
     lines.push(``)
   }
 
@@ -77,7 +72,7 @@ export const generateQueryModels = (dataModel: DataModel): string => {
   for (const entitySet of dataModel.entitySets.values()) {
     const entityType = dataModel.entityTypes.get(entitySet.entityTypeFqName)
     if (entityType) {
-      lines.push(...generateQueryFactory(entityType))
+      for (const line of generateQueryFactory(entityType)) lines.push(line)
       lines.push(``)
     }
   }
@@ -121,8 +116,8 @@ const collectQueryPathTypes = (dataModel: DataModel): Set<string> => {
  */
 const generateQueryInterface = (
   type: EntityTypeModel | ComplexTypeModel
-): string[] => {
-  const lines: string[] = []
+): Array<string> => {
+  const lines: Array<string> = []
   const interfaceName = getQueryInterfaceName(type.name)
 
   lines.push(`/**`)
@@ -160,8 +155,8 @@ const generateQueryInterface = (
  */
 const generateQueryInstance = (
   type: EntityTypeModel | ComplexTypeModel
-): string[] => {
-  const lines: string[] = []
+): Array<string> => {
+  const lines: Array<string> = []
   const interfaceName = getQueryInterfaceName(type.name)
   const instanceName = getQueryInstanceName(type.name)
 
@@ -188,7 +183,9 @@ const generateQueryInstance = (
       // Extract the target type from the queryPath generic (e.g., "EntityPath<QAddress>" -> "QAddress")
       const targetMatch = prop.typeMapping.queryPath.match(/<Q(\w+)>/)
       const targetInstanceName = targetMatch ? `q${targetMatch[1]}` : "undefined"
-      lines.push(`  ${prop.name}: new ${pathClass}("${prop.odataName}", () => ${targetInstanceName})${isLast ? "" : ","}`)
+      lines.push(
+        `  ${prop.name}: new ${pathClass}("${prop.odataName}", () => ${targetInstanceName})${isLast ? "" : ","}`
+      )
     } else {
       lines.push(`  ${prop.name}: new ${pathClass}("${prop.odataName}")${isLast ? "" : ","}`)
     }
@@ -199,7 +196,9 @@ const generateQueryInstance = (
     const targetInstanceName = getQueryInstanceName(getClassName(navProp.targetType))
     const pathClass = navProp.isCollection ? "CollectionPath" : "EntityPath"
     const isLast = i === type.navigationProperties.length - 1
-    lines.push(`  ${navProp.name}: new ${pathClass}("${navProp.odataName}", () => ${targetInstanceName})${isLast ? "" : ","}`)
+    lines.push(
+      `  ${navProp.name}: new ${pathClass}("${navProp.odataName}", () => ${targetInstanceName})${isLast ? "" : ","}`
+    )
   }
 
   lines.push(`}`)
@@ -210,8 +209,8 @@ const generateQueryInstance = (
 /**
  * Generate a query builder factory for an entity type.
  */
-const generateQueryFactory = (entityType: EntityTypeModel): string[] => {
-  const lines: string[] = []
+const generateQueryFactory = (entityType: EntityTypeModel): Array<string> => {
+  const lines: Array<string> = []
   const interfaceName = getQueryInterfaceName(entityType.name)
   const instanceName = getQueryInstanceName(entityType.name)
   const factoryName = getQueryFactoryName(entityType.name)

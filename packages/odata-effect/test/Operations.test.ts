@@ -1,26 +1,22 @@
+import { HttpClient, HttpClientResponse } from "@effect/platform"
 import { describe, expect, it } from "@effect/vitest"
 import * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"
 import {
-  HttpClient,
-  HttpClientRequest,
-  HttpClientResponse
-} from "@effect/platform"
-import {
   buildFunctionImportUrl,
-  buildV4FunctionUrl,
   buildV4BoundOperationUrl,
-  executeFunctionImportVoid,
-  executeFunctionImportEntity,
+  buildV4FunctionUrl,
   executeFunctionImportCollection,
+  executeFunctionImportEntity,
   executeFunctionImportPrimitive,
-  executeV4FunctionVoid,
-  executeV4FunctionEntity,
-  executeV4FunctionCollection,
-  executeV4FunctionPrimitive,
-  executeV4ActionVoid,
+  executeFunctionImportVoid,
+  executeV4ActionCollection,
   executeV4ActionEntity,
-  executeV4ActionCollection
+  executeV4ActionVoid,
+  executeV4FunctionCollection,
+  executeV4FunctionEntity,
+  executeV4FunctionPrimitive,
+  executeV4FunctionVoid
 } from "../src/Operations.js"
 
 // Test schemas
@@ -43,8 +39,7 @@ const v4Config = {
 // Helper to create mock HTTP client
 const createMockClient = (
   handler: (request: HttpClientRequest.HttpClientRequest) => Effect.Effect<HttpClientResponse.HttpClientResponse>
-) =>
-  HttpClient.make(handler)
+) => HttpClient.make(handler)
 
 describe("Operations", () => {
   describe("buildFunctionImportUrl", () => {
@@ -145,7 +140,7 @@ describe("Operations", () => {
   describe("V2 Function Imports", () => {
     describe("executeFunctionImportVoid", () => {
       it.effect("executes a void function import", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           let capturedRequest: HttpClientRequest.HttpClientRequest | null = null
 
           const mockClient = createMockClient((request) => {
@@ -169,13 +164,12 @@ describe("Operations", () => {
           expect(capturedRequest).not.toBeNull()
           expect(capturedRequest!.method).toBe("POST")
           expect(capturedRequest!.url).toContain("DoAction")
-        })
-      )
+        }))
     })
 
     describe("executeFunctionImportEntity", () => {
       it.effect("executes a function import returning an entity", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           const mockClient = createMockClient((request) =>
             Effect.succeed(
               HttpClientResponse.fromWeb(
@@ -200,13 +194,12 @@ describe("Operations", () => {
 
           expect(result.id).toBe("123")
           expect(result.name).toBe("Test")
-        })
-      )
+        }))
     })
 
     describe("executeFunctionImportCollection", () => {
       it.effect("executes a function import returning a collection", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           const mockClient = createMockClient((request) =>
             Effect.succeed(
               HttpClientResponse.fromWeb(
@@ -236,13 +229,12 @@ describe("Operations", () => {
           expect(result).toHaveLength(2)
           expect(result[0].id).toBe("1")
           expect(result[1].id).toBe("2")
-        })
-      )
+        }))
     })
 
     describe("executeFunctionImportPrimitive", () => {
       it.effect("executes a function import returning a primitive", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           const mockClient = createMockClient((request) =>
             Effect.succeed(
               HttpClientResponse.fromWeb(
@@ -266,15 +258,14 @@ describe("Operations", () => {
           )
 
           expect(result).toBe(42)
-        })
-      )
+        }))
     })
   })
 
   describe("V4 Functions", () => {
     describe("executeV4FunctionVoid", () => {
       it.effect("executes a void V4 function", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           let capturedRequest: HttpClientRequest.HttpClientRequest | null = null
 
           const mockClient = createMockClient((request) => {
@@ -291,13 +282,12 @@ describe("Operations", () => {
 
           expect(capturedRequest).not.toBeNull()
           expect(capturedRequest!.method).toBe("GET")
-        })
-      )
+        }))
     })
 
     describe("executeV4FunctionEntity", () => {
       it.effect("executes a V4 function returning an entity", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           const mockClient = createMockClient((request) =>
             Effect.succeed(
               HttpClientResponse.fromWeb(
@@ -319,13 +309,12 @@ describe("Operations", () => {
 
           expect(result.id).toBe("123")
           expect(result.name).toBe("Test")
-        })
-      )
+        }))
     })
 
     describe("executeV4FunctionCollection", () => {
       it.effect("executes a V4 function returning a collection", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           const mockClient = createMockClient((request) =>
             Effect.succeed(
               HttpClientResponse.fromWeb(
@@ -352,13 +341,12 @@ describe("Operations", () => {
 
           expect(result).toHaveLength(2)
           expect(result[0].id).toBe("1")
-        })
-      )
+        }))
     })
 
     describe("executeV4FunctionPrimitive", () => {
       it.effect("executes a V4 function returning a primitive", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           const mockClient = createMockClient((request) =>
             Effect.succeed(
               HttpClientResponse.fromWeb(
@@ -379,15 +367,14 @@ describe("Operations", () => {
           )
 
           expect(result).toBe(42)
-        })
-      )
+        }))
     })
   })
 
   describe("V4 Actions", () => {
     describe("executeV4ActionVoid", () => {
       it.effect("executes a void V4 action", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           let capturedRequest: HttpClientRequest.HttpClientRequest | null = null
 
           const mockClient = createMockClient((request) => {
@@ -404,11 +391,10 @@ describe("Operations", () => {
 
           expect(capturedRequest).not.toBeNull()
           expect(capturedRequest!.method).toBe("POST")
-        })
-      )
+        }))
 
       it.effect("executes a V4 action with body", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           const mockClient = createMockClient((request) =>
             Effect.succeed(
               HttpClientResponse.fromWeb(
@@ -427,13 +413,12 @@ describe("Operations", () => {
             { param: "value" },
             bodySchema
           )
-        })
-      )
+        }))
     })
 
     describe("executeV4ActionEntity", () => {
       it.effect("executes a V4 action returning an entity", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           const mockClient = createMockClient((request) =>
             Effect.succeed(
               HttpClientResponse.fromWeb(
@@ -455,13 +440,12 @@ describe("Operations", () => {
 
           expect(result.id).toBe("new-id")
           expect(result.name).toBe("Created")
-        })
-      )
+        }))
     })
 
     describe("executeV4ActionCollection", () => {
       it.effect("executes a V4 action returning a collection", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           const mockClient = createMockClient((request) =>
             Effect.succeed(
               HttpClientResponse.fromWeb(
@@ -487,8 +471,7 @@ describe("Operations", () => {
           )
 
           expect(result).toHaveLength(2)
-        })
-      )
+        }))
     })
   })
 })

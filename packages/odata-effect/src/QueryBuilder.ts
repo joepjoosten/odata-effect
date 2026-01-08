@@ -8,7 +8,6 @@
  * @since 1.0.0
  */
 
-
 // ============================================================================
 // Filter Expressions
 // ============================================================================
@@ -354,21 +353,14 @@ export class CollectionPath<Q> extends BasePath {
  * @since 1.0.0
  * @category types
  */
-export type FieldToPath<T> = T extends string
-  ? StringPath
-  : T extends number
-    ? NumberPath
-    : T extends boolean
-      ? BooleanPath
-      : T extends Date
-        ? DateTimePath
-        : T extends ReadonlyArray<infer U>
-          ? U extends object
-            ? CollectionPath<QueryPaths<U>>
-            : StringPath // Arrays of primitives use StringPath for filter operations
-          : T extends object
-            ? EntityPath<QueryPaths<T>>
-            : StringPath // Unknown types use StringPath
+export type FieldToPath<T> = T extends string ? StringPath
+  : T extends number ? NumberPath
+  : T extends boolean ? BooleanPath
+  : T extends Date ? DateTimePath
+  : T extends ReadonlyArray<infer U> ? U extends object ? CollectionPath<QueryPaths<U>>
+    : StringPath // Arrays of primitives use StringPath for filter operations
+  : T extends object ? EntityPath<QueryPaths<T>>
+  : StringPath // Unknown types use StringPath
 
 /**
  * Creates query paths type from a schema type.
@@ -377,7 +369,7 @@ export type FieldToPath<T> = T extends string
  * @category types
  */
 export type QueryPaths<T> = {
-  readonly [K in keyof T as T[K] extends Function ? never : K]: FieldToPath<T[K]>
+  readonly [K in keyof T as T[K] extends (...args: Array<unknown>) => unknown ? never : K]: FieldToPath<T[K]>
 }
 
 /**
@@ -387,13 +379,10 @@ export type QueryPaths<T> = {
  * @category types
  */
 export type SelectableKeys<T> = {
-  [K in keyof T]: T[K] extends ReadonlyArray<any>
-    ? never
-    : T[K] extends object
-      ? T[K] extends Date
-        ? K
-        : never
-      : K
+  [K in keyof T]: T[K] extends ReadonlyArray<any> ? never
+    : T[K] extends object ? T[K] extends Date ? K
+      : never
+    : K
 }[keyof T]
 
 /**
@@ -403,13 +392,10 @@ export type SelectableKeys<T> = {
  * @category types
  */
 export type ExpandableKeys<T> = {
-  [K in keyof T]: NonNullable<T[K]> extends ReadonlyArray<any>
-    ? K
-    : NonNullable<T[K]> extends object
-      ? NonNullable<T[K]> extends Date
-        ? never
-        : K
-      : never
+  [K in keyof T]: NonNullable<T[K]> extends ReadonlyArray<any> ? K
+    : NonNullable<T[K]> extends object ? NonNullable<T[K]> extends Date ? never
+      : K
+    : never
 }[keyof T]
 
 // ============================================================================
@@ -455,7 +441,7 @@ export class QueryBuilder<T, Q extends QueryPaths<T>> {
   ): QueryBuilder<T, Q> {
     const result = fn(this.paths)
     if (Array.isArray(result)) {
-      this._filters.push(...(result as Array<FilterExpression>))
+      for (const item of result) this._filters.push(item)
     } else {
       this._filters.push(result as FilterExpression)
     }
@@ -466,7 +452,7 @@ export class QueryBuilder<T, Q extends QueryPaths<T>> {
    * Select specific properties.
    */
   select(...props: Array<SelectableKeys<T> & string>): QueryBuilder<T, Q> {
-    this._selects.push(...props)
+    for (const prop of props) this._selects.push(prop)
     return this
   }
 
@@ -474,7 +460,7 @@ export class QueryBuilder<T, Q extends QueryPaths<T>> {
    * Expand navigation properties.
    */
   expand(...props: Array<ExpandableKeys<T> & string>): QueryBuilder<T, Q> {
-    this._expands.push(...props)
+    for (const prop of props) this._expands.push(prop)
     return this
   }
 
@@ -486,7 +472,7 @@ export class QueryBuilder<T, Q extends QueryPaths<T>> {
   ): QueryBuilder<T, Q> {
     const result = fn(this.paths)
     if (Array.isArray(result)) {
-      this._orderBy.push(...(result as Array<string>))
+      for (const item of result) this._orderBy.push(item)
     } else {
       this._orderBy.push(result as string)
     }
@@ -516,29 +502,29 @@ export class QueryBuilder<T, Q extends QueryPaths<T>> {
     const query: BuiltQuery = {}
 
     if (this._filters.length > 0) {
-      (query as any).$filter = this._filters
+      ;(query as any).$filter = this._filters
         .map((f) => f.expression)
         .join(" and ")
     }
 
     if (this._selects.length > 0) {
-      (query as any).$select = this._selects.join(",")
+      ;(query as any).$select = this._selects.join(",")
     }
 
     if (this._expands.length > 0) {
-      (query as any).$expand = this._expands.join(",")
+      ;(query as any).$expand = this._expands.join(",")
     }
 
     if (this._orderBy.length > 0) {
-      (query as any).$orderby = this._orderBy.join(",")
+      ;(query as any).$orderby = this._orderBy.join(",")
     }
 
     if (this._top !== undefined) {
-      (query as any).$top = this._top
+      ;(query as any).$top = this._top
     }
 
     if (this._skip !== undefined) {
-      (query as any).$skip = this._skip
+      ;(query as any).$skip = this._skip
     }
 
     return query
@@ -575,7 +561,7 @@ export const createQueryPaths = <T>(
       case "date":
         paths[key] = new DateTimePath(key)
         break
-      // entity and collection need special handling with getEntity callback
+        // entity and collection need special handling with getEntity callback
     }
   }
 

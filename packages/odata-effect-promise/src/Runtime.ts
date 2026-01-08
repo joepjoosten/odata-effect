@@ -20,16 +20,13 @@
  *
  * @since 1.0.0
  */
-import * as ManagedRuntime from "effect/ManagedRuntime"
-import * as Layer from "effect/Layer"
-import * as Effect from "effect/Effect"
-import * as Exit from "effect/Exit"
-import { HttpClient } from "@effect/platform"
+import type { HttpClient } from "@effect/platform"
 import { NodeHttpClient } from "@effect/platform-node"
-import {
-  ODataClient,
-  ODataV4Client
-} from "@odata-effect/odata-effect"
+import type { ODataClient, ODataV4Client } from "@odata-effect/odata-effect"
+import type * as Effect from "effect/Effect"
+import type * as Exit from "effect/Exit"
+import * as Layer from "effect/Layer"
+import * as ManagedRuntime from "effect/ManagedRuntime"
 
 /**
  * Configuration options for creating an OData runtime.

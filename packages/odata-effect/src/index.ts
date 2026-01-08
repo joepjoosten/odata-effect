@@ -13,6 +13,12 @@
  *
  * @since 1.0.0
  */
+// Re-export namespace as OData for convenience
+import * as _ODataClientFn from "./ODataClientFn.js"
+
+// Re-export namespace as ODataV4 for convenience
+import * as _ODataV4ClientFn from "./ODataV4ClientFn.js"
+
 export * as Batch from "./Batch.js"
 
 /**
@@ -77,97 +83,83 @@ export * as QueryBuilderModule from "./QueryBuilder.js"
 
 // Errors
 export {
-  SapErrorDetail,
-  SapErrorResolution,
-  SapApplication,
-  SapInnerError,
-  SapErrorMessage,
-  SapErrorBody,
-  SapErrorResponse,
-  ODataError,
-  SapError,
   EntityNotFoundError,
-  ParseError
+  ODataError,
+  ParseError,
+  SapApplication,
+  SapError,
+  SapErrorBody,
+  SapErrorDetail,
+  SapErrorMessage,
+  SapErrorResolution,
+  SapErrorResponse,
+  SapInnerError
 } from "./Errors.js"
 
 // OData V2 Client
 export {
-  ODataSingleResponse,
-  ODataCollectionResponse,
-  ODataCollectionResponseWithMeta,
-  EntityMetadata,
-  MediaMetadata,
-  DeferredContent,
-  ODataValueResponse,
-  ODataClientConfig,
   buildEntityPath,
   DEFAULT_HEADERS,
+  DeferredContent,
+  EntityMetadata,
+  MediaMetadata,
   MERGE_HEADERS,
+  ODataClientConfig,
+  type ODataClientConfigService,
+  ODataCollectionResponse,
+  ODataCollectionResponseWithMeta,
   type ODataQueryOptions,
   type ODataRequestOptions,
-  type ODataClientConfigService,
+  ODataSingleResponse,
+  ODataValueResponse,
   type PagedResult
 } from "./ODataClient.js"
 
 // OData V2 Client Functions
-export {
-  get,
-  getCollection,
-  getCollectionPaged,
-  getValue,
-  post,
-  patch,
-  del
-} from "./ODataClientFn.js"
-
-// Re-export namespace as OData for convenience
-import * as _ODataClientFn from "./ODataClientFn.js"
+export { del, get, getCollection, getCollectionPaged, getValue, patch, post } from "./ODataClientFn.js"
 export { _ODataClientFn as OData }
 
 // OData V4 Client
 export {
-  ODataV4CollectionResponse,
-  ODataV4ValueResponse,
+  buildEntityPathV4,
   ODataV4Annotations,
   ODataV4ClientConfig,
-  buildEntityPathV4,
+  type ODataV4ClientConfigService,
+  ODataV4CollectionResponse,
   type ODataV4QueryOptions,
   type ODataV4RequestOptions,
-  type ODataV4ClientConfigService,
+  ODataV4ValueResponse,
   type PagedResultV4
 } from "./ODataV4Client.js"
 
 // OData V4 Client Functions
 export {
+  del as delV4,
   get as getV4,
   getCollection as getCollectionV4,
   getCollectionPaged as getCollectionPagedV4,
   getValue as getValueV4,
-  post as postV4,
   patch as patchV4,
-  put as putV4,
-  del as delV4
+  post as postV4,
+  put as putV4
 } from "./ODataV4ClientFn.js"
-
-// Re-export namespace as ODataV4 for convenience
-import * as _ODataV4ClientFn from "./ODataV4ClientFn.js"
 export { _ODataV4ClientFn as ODataV4 }
 
 // Query Builder
 export {
-  FilterExpression,
-  StringPath,
-  NumberPath,
   BooleanPath,
+  type BuiltQuery,
+  CollectionPath,
+  createQueryBuilder,
+  createQueryPaths,
   DateTimePath,
   EntityPath,
-  CollectionPath,
-  QueryBuilder,
-  createQueryPaths,
-  createQueryBuilder,
+  type ExpandableKeys,
   type FieldToPath,
+  FilterExpression,
+  NumberPath,
+  QueryBuilder,
   type QueryPaths,
   type SelectableKeys,
-  type ExpandableKeys,
-  type BuiltQuery
+  StringPath
 } from "./QueryBuilder.js"

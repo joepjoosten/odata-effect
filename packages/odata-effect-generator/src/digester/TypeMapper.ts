@@ -3,8 +3,8 @@
  *
  * @since 1.0.0
  */
-import type { ODataVersion } from "../parser/EdmxSchema.js"
 import type { TypeMapping } from "../model/DataModel.js"
+import type { ODataVersion } from "../parser/EdmxSchema.js"
 
 // ============================================================================
 // Type Mappings

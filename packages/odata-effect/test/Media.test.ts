@@ -1,27 +1,24 @@
+import { HttpClient, HttpClientResponse } from "@effect/platform"
+import type { HttpClientRequest, HttpClientRequest } from "@effect/platform"
 import { describe, expect, it } from "@effect/vitest"
 import * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"
 import {
-  HttpClient,
-  HttpClientRequest,
-  HttpClientResponse
-} from "@effect/platform"
-import {
-  getMediaV2,
-  getMediaStreamV2,
-  uploadMediaV2,
-  updateMediaV2,
   deleteMediaV2,
-  getMediaV4,
-  getMediaStreamV4,
-  uploadMediaV4,
-  updateMediaV4,
   deleteMediaV4,
-  buildMediaValuePath,
-  buildMediaPropertyPath,
-  isBinaryContentType,
+  getContentTypeFromExtension,
   getExtensionFromContentType,
-  getContentTypeFromExtension
+  getMediaStreamV2,
+  getMediaStreamV4,
+  getMediaV2,
+  getMediaV4,
+  HttpClient,
+  HttpClient,
+  isBinaryContentType,
+  updateMediaV2,
+  updateMediaV4,
+  uploadMediaV2,
+  uploadMediaV4
 } from "../src/Media.js"
 
 // Test configurations
@@ -38,8 +35,7 @@ const v4Config = {
 // Helper to create mock HTTP client
 const createMockClient = (
   handler: (request: HttpClientRequest.HttpClientRequest) => Effect.Effect<HttpClientResponse.HttpClientResponse>
-) =>
-  HttpClient.make(handler)
+) => HttpClient.make(handler)
 
 describe("Media", () => {
   describe("Helper Functions", () => {
@@ -157,7 +153,7 @@ describe("Media", () => {
   describe("V2 Media Operations", () => {
     describe("getMediaV2", () => {
       it.effect("downloads binary content", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           const testData = new Uint8Array([1, 2, 3, 4, 5])
 
           const mockClient = createMockClient((request) =>
@@ -169,7 +165,7 @@ describe("Media", () => {
                   headers: {
                     "Content-Type": "application/pdf",
                     "Content-Length": "5",
-                    "ETag": 'W/"abc123"'
+                    "ETag": "W/\"abc123\""
                   }
                 })
               )
@@ -185,12 +181,11 @@ describe("Media", () => {
           expect(result.data).toEqual(testData)
           expect(result.contentType).toBe("application/pdf")
           expect(result.contentLength).toBe(5)
-          expect(result.etag).toBe('W/"abc123"')
-        })
-      )
+          expect(result.etag).toBe("W/\"abc123\"")
+        }))
 
       it.effect("uses Accept header from options", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           let capturedRequest: HttpClientRequest.HttpClientRequest | null = null
 
           const mockClient = createMockClient((request) => {
@@ -209,13 +204,12 @@ describe("Media", () => {
           })
 
           expect(capturedRequest!.headers["accept"]).toBe("image/jpeg")
-        })
-      )
+        }))
     })
 
     describe("getMediaStreamV2", () => {
       it.effect("returns stream result", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           const mockClient = createMockClient((request) =>
             Effect.succeed(
               HttpClientResponse.fromWeb(
@@ -236,13 +230,12 @@ describe("Media", () => {
 
           expect(result.contentType).toBe("application/pdf")
           expect(result.stream).toBeDefined()
-        })
-      )
+        }))
     })
 
     describe("uploadMediaV2", () => {
       it.effect("uploads binary content", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           let capturedRequest: HttpClientRequest.HttpClientRequest | null = null
 
           const mockClient = createMockClient((request) => {
@@ -277,11 +270,10 @@ describe("Media", () => {
           expect(capturedRequest!.headers["content-type"]).toBe("application/pdf")
           expect(capturedRequest!.headers["slug"]).toBe("document.pdf")
           expect(result!.id).toBe("new-id")
-        })
-      )
+        }))
 
       it.effect("returns void when no response schema", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           const mockClient = createMockClient((request) =>
             Effect.succeed(
               HttpClientResponse.fromWeb(
@@ -305,13 +297,12 @@ describe("Media", () => {
           )
 
           expect(result).toBeUndefined()
-        })
-      )
+        }))
     })
 
     describe("updateMediaV2", () => {
       it.effect("updates binary content with PUT", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           let capturedRequest: HttpClientRequest.HttpClientRequest | null = null
 
           const mockClient = createMockClient((request) => {
@@ -331,7 +322,7 @@ describe("Media", () => {
             new Uint8Array([1, 2, 3]),
             {
               contentType: "application/pdf",
-              etag: 'W/"old"',
+              etag: "W/\"old\"",
               headers: undefined,
               slug: undefined,
               contentId: undefined
@@ -339,14 +330,13 @@ describe("Media", () => {
           )
 
           expect(capturedRequest!.method).toBe("PUT")
-          expect(capturedRequest!.headers["if-match"]).toBe('W/"old"')
-        })
-      )
+          expect(capturedRequest!.headers["if-match"]).toBe("W/\"old\"")
+        }))
     })
 
     describe("deleteMediaV2", () => {
       it.effect("deletes media content", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           let capturedRequest: HttpClientRequest.HttpClientRequest | null = null
 
           const mockClient = createMockClient((request) => {
@@ -363,20 +353,19 @@ describe("Media", () => {
             mockClient,
             v2Config,
             "Attachments('123')/$value",
-            'W/"etag"'
+            "W/\"etag\""
           )
 
           expect(capturedRequest!.method).toBe("DELETE")
-          expect(capturedRequest!.headers["if-match"]).toBe('W/"etag"')
-        })
-      )
+          expect(capturedRequest!.headers["if-match"]).toBe("W/\"etag\"")
+        }))
     })
   })
 
   describe("V4 Media Operations", () => {
     describe("getMediaV4", () => {
       it.effect("downloads binary content with V4 headers", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           let capturedRequest: HttpClientRequest.HttpClientRequest | null = null
           const testData = new Uint8Array([1, 2, 3])
 
@@ -401,13 +390,12 @@ describe("Media", () => {
 
           expect(capturedRequest!.headers["odata-version"]).toBe("4.0")
           expect(result.contentType).toBe("image/png")
-        })
-      )
+        }))
     })
 
     describe("getMediaStreamV4", () => {
       it.effect("returns stream result with V4 headers", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           const mockClient = createMockClient((request) =>
             Effect.succeed(
               HttpClientResponse.fromWeb(
@@ -427,13 +415,12 @@ describe("Media", () => {
           )
 
           expect(result.stream).toBeDefined()
-        })
-      )
+        }))
     })
 
     describe("uploadMediaV4", () => {
       it.effect("uploads with Content-Disposition header", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           let capturedRequest: HttpClientRequest.HttpClientRequest | null = null
 
           const mockClient = createMockClient((request) => {
@@ -463,15 +450,14 @@ describe("Media", () => {
             Schema.Struct({ id: Schema.Number })
           )
 
-          expect(capturedRequest!.headers["content-disposition"]).toBe('attachment; filename="photo.jpg"')
+          expect(capturedRequest!.headers["content-disposition"]).toBe("attachment; filename=\"photo.jpg\"")
           expect(capturedRequest!.headers["odata-version"]).toBe("4.0")
-        })
-      )
+        }))
     })
 
     describe("updateMediaV4", () => {
       it.effect("updates with V4 headers", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           let capturedRequest: HttpClientRequest.HttpClientRequest | null = null
 
           const mockClient = createMockClient((request) => {
@@ -498,13 +484,12 @@ describe("Media", () => {
           )
 
           expect(capturedRequest!.headers["odata-version"]).toBe("4.0")
-        })
-      )
+        }))
     })
 
     describe("deleteMediaV4", () => {
       it.effect("deletes with V4 headers", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           let capturedRequest: HttpClientRequest.HttpClientRequest | null = null
 
           const mockClient = createMockClient((request) => {
@@ -520,8 +505,7 @@ describe("Media", () => {
           yield* deleteMediaV4(mockClient, v4Config, "Photos(1)/$value")
 
           expect(capturedRequest!.headers["odata-version"]).toBe("4.0")
-        })
-      )
+        }))
     })
   })
 })

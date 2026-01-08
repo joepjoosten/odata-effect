@@ -19,25 +19,26 @@
  *
  * @since 1.0.0
  */
-import * as Effect from "effect/Effect"
-import * as Schema from "effect/Schema"
 import {
+  type HttpBody,
   HttpClient,
-  HttpClientRequest,
-  HttpClientResponse,
   type HttpClientError,
-  type HttpBody
+  HttpClientRequest,
+  HttpClientResponse
 } from "@effect/platform"
-import { ODataError, SapError, ParseError } from "./Errors.js"
+import * as Effect from "effect/Effect"
+import type * as Schema from "effect/Schema"
+import type { ParseError, SapError } from "./Errors.js"
+import { ODataError } from "./Errors.js"
 import {
+  extractRelativePath,
   ODataClientConfig,
-  ODataSingleResponse,
   ODataCollectionResponse,
   ODataCollectionResponseWithMeta,
-  ODataValueResponse,
-  extractRelativePath,
   type ODataQueryOptions,
   type ODataRequestOptions,
+  ODataSingleResponse,
+  ODataValueResponse,
   type PagedResult
 } from "./ODataClient.js"
 
@@ -67,8 +68,7 @@ const handleError = <A, E, R>(
         message: "OData request failed",
         cause: error
       })
-    )
-  )
+    ))
 
 // ============================================================================
 // Standalone Tree-Shakable Functions
@@ -98,7 +98,7 @@ export const get = <A, I, R>(
   const url = `${path}${buildQueryString(options)}`
   const responseSchema = ODataSingleResponse(schema)
 
-  return Effect.gen(function* () {
+  return Effect.gen(function*() {
     const config = yield* ODataClientConfig
     const httpClient = yield* HttpClient.HttpClient
 
@@ -137,7 +137,7 @@ export const getCollection = <A, I, R>(
   const url = `${path}${buildQueryString(options)}`
   const responseSchema = ODataCollectionResponse(schema)
 
-  return Effect.gen(function* () {
+  return Effect.gen(function*() {
     const config = yield* ODataClientConfig
     const httpClient = yield* HttpClient.HttpClient
 
@@ -176,7 +176,7 @@ export const getCollectionPaged = <A, I, R>(
   const url = `${path}${buildQueryString(options)}`
   const responseSchema = ODataCollectionResponseWithMeta(schema)
 
-  return Effect.gen(function* () {
+  return Effect.gen(function*() {
     const config = yield* ODataClientConfig
     const httpClient = yield* HttpClient.HttpClient
 
@@ -218,7 +218,7 @@ export const getValue = <A, I, R>(
 > => {
   const responseSchema = ODataValueResponse(propertyName, schema)
 
-  return Effect.gen(function* () {
+  return Effect.gen(function*() {
     const config = yield* ODataClientConfig
     const httpClient = yield* HttpClient.HttpClient
 
@@ -255,7 +255,7 @@ export const getComplex = <A, I, R>(
 > => {
   const responseSchema = ODataSingleResponse(schema)
 
-  return Effect.gen(function* () {
+  return Effect.gen(function*() {
     const config = yield* ODataClientConfig
     const httpClient = yield* HttpClient.HttpClient
 
@@ -292,7 +292,7 @@ export const expandDeferred = <A, I, R>(
 > => {
   const responseSchema = ODataSingleResponse(schema)
 
-  return Effect.gen(function* () {
+  return Effect.gen(function*() {
     const config = yield* ODataClientConfig
     const httpClient = yield* HttpClient.HttpClient
 
@@ -331,7 +331,7 @@ export const expandDeferredCollection = <A, I, R>(
 > => {
   const responseSchema = ODataCollectionResponse(schema)
 
-  return Effect.gen(function* () {
+  return Effect.gen(function*() {
     const config = yield* ODataClientConfig
     const httpClient = yield* HttpClient.HttpClient
 
@@ -372,7 +372,7 @@ export const post = <A, I, R, B, BI>(
 > => {
   const wrappedResponseSchema = ODataSingleResponse(responseSchema)
 
-  return Effect.gen(function* () {
+  return Effect.gen(function*() {
     const config = yield* ODataClientConfig
     const httpClient = yield* HttpClient.HttpClient
 
@@ -413,7 +413,7 @@ export const patch = <B, BI>(
   HttpClientError.HttpClientError | HttpBody.HttpBodyError | SapError | ODataError,
   ODataClientConfig | HttpClient.HttpClient
 > =>
-  Effect.gen(function* () {
+  Effect.gen(function*() {
     const config = yield* ODataClientConfig
     const httpClient = yield* HttpClient.HttpClient
 
@@ -459,7 +459,7 @@ export const del = (
   HttpClientError.HttpClientError | SapError | ODataError,
   ODataClientConfig | HttpClient.HttpClient
 > =>
-  Effect.gen(function* () {
+  Effect.gen(function*() {
     const config = yield* ODataClientConfig
     const httpClient = yield* HttpClient.HttpClient
 

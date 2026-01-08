@@ -34,7 +34,8 @@ export const generatePackageJson = (
       codegen: "build-utils prepare-v2",
       build: "pnpm build-esm && pnpm build-annotate && pnpm build-cjs && build-utils pack-v2",
       "build-esm": "tsc -b tsconfig.build.json",
-      "build-cjs": "babel build/esm --plugins @babel/transform-export-namespace-from --plugins @babel/transform-modules-commonjs --out-dir build/cjs --source-maps",
+      "build-cjs":
+        "babel build/esm --plugins @babel/transform-export-namespace-from --plugins @babel/transform-modules-commonjs --out-dir build/cjs --source-maps",
       "build-annotate": "babel build/esm --plugins annotate-pure-calls --out-dir build/esm --source-maps",
       check: "tsc -b tsconfig.json",
       test: "vitest",

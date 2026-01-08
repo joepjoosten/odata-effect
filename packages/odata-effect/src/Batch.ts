@@ -7,14 +7,9 @@
  *
  * @since 1.0.0
  */
+import { HttpClient, type HttpClientError, HttpClientRequest, HttpClientResponse } from "@effect/platform"
 import * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"
-import {
-  HttpClient,
-  HttpClientRequest,
-  HttpClientResponse,
-  type HttpClientError
-} from "@effect/platform"
 import { ODataError, ParseError } from "./Errors.js"
 import type { ODataClientConfigService } from "./ODataClient.js"
 import type { ODataV4ClientConfigService } from "./ODataV4Client.js"
@@ -403,13 +398,13 @@ export const serializeBatchV2 = (
   servicePath: string
 ): { body: string; boundary: string } => {
   const batchBoundary = generateBoundary("batch")
-  const parts: string[] = []
+  const parts: Array<string> = []
 
   for (const op of operations) {
     if ("type" in op && op.type === "changeset") {
       // Serialize changeset
       const changesetBoundary = generateBoundary("changeset")
-      const changesetParts: string[] = []
+      const changesetParts: Array<string> = []
 
       for (const request of op.requests) {
         changesetParts.push(serializeRequestV2(request, servicePath))
@@ -436,7 +431,7 @@ export const serializeBatchV2 = (
 }
 
 const serializeRequestV2 = (request: BatchRequest, servicePath: string): string => {
-  const lines: string[] = []
+  const lines: Array<string> = []
 
   lines.push("Content-Type: application/http")
   lines.push("Content-Transfer-Encoding: binary")
@@ -511,7 +506,7 @@ export interface BatchRequestItemV4 {
 export const serializeBatchV4Json = (
   operations: ReadonlyArray<BatchOperation>
 ): BatchRequestV4Json => {
-  const requests: BatchRequestItemV4[] = []
+  const requests: Array<BatchRequestItemV4> = []
 
   for (const op of operations) {
     if ("type" in op && op.type === "changeset") {
@@ -558,7 +553,7 @@ export const parseBatchResponseV2 = (
   responseText: string,
   boundary: string
 ): ReadonlyArray<BatchOperationResponse> => {
-  const results: BatchOperationResponse[] = []
+  const results: Array<BatchOperationResponse> = []
   const parts = responseText.split(`--${boundary}`)
 
   for (const part of parts) {
@@ -594,7 +589,7 @@ const parseChangesetResponse = (
   changesetText: string,
   boundary: string
 ): ReadonlyArray<BatchResponse> => {
-  const results: BatchResponse[] = []
+  const results: Array<BatchResponse> = []
   const parts = changesetText.split(`--${boundary}`)
 
   for (const part of parts) {
@@ -624,8 +619,7 @@ const parseIndividualResponse = (responseText: string): BatchResponse | null => 
     responseText.indexOf(httpMatch[0]) + httpMatch[0].length
   )
   const headerEndIndex = headerSection.indexOf("\r\n\r\n")
-  const headerLines =
-    headerEndIndex > -1 ? headerSection.substring(0, headerEndIndex).split("\r\n") : []
+  const headerLines = headerEndIndex > -1 ? headerSection.substring(0, headerEndIndex).split("\r\n") : []
 
   for (const line of headerLines) {
     const colonIndex = line.indexOf(":")
@@ -716,8 +710,8 @@ type BatchResponseV4JsonSchemaType = typeof BatchResponseV4JsonSchema.Type
 const parseBatchResponseV4JsonFromSchema = (
   response: BatchResponseV4JsonSchemaType
 ): ReadonlyArray<BatchOperationResponse> => {
-  const results: BatchOperationResponse[] = []
-  const atomicityGroups = new Map<string, BatchResponse[]>()
+  const results: Array<BatchOperationResponse> = []
+  const atomicityGroups = new Map<string, Array<BatchResponse>>()
 
   for (const item of response.responses) {
     const batchResponse: BatchResponse = {
@@ -759,8 +753,8 @@ const parseBatchResponseV4JsonFromSchema = (
 export const parseBatchResponseV4Json = (
   response: BatchResponseV4Json
 ): ReadonlyArray<BatchOperationResponse> => {
-  const results: BatchOperationResponse[] = []
-  const atomicityGroups = new Map<string, BatchResponse[]>()
+  const results: Array<BatchOperationResponse> = []
+  const atomicityGroups = new Map<string, Array<BatchResponse>>()
 
   for (const item of response.responses) {
     const batchResponse: BatchResponse = {
@@ -841,7 +835,7 @@ export const executeBatchV2 = (
   const { body, boundary } = serializeBatchV2(operations, config.servicePath)
   const url = `${config.baseUrl}${config.servicePath}$batch`
 
-  return Effect.gen(function* () {
+  return Effect.gen(function*() {
     const request = HttpClientRequest.post(url).pipe(
       HttpClientRequest.setHeader("Content-Type", `multipart/mixed; boundary=${boundary}`),
       HttpClientRequest.setHeader("Accept", "multipart/mixed"),
@@ -863,9 +857,7 @@ export const executeBatchV2 = (
     return parseBatchResponseV2(responseText, responseBoundary)
   }).pipe(
     Effect.scoped,
-    Effect.catchAll((error) =>
-      Effect.fail(new ODataError({ message: "Batch request failed", cause: error }))
-    )
+    Effect.catchAll((error) => Effect.fail(new ODataError({ message: "Batch request failed", cause: error })))
   )
 }
 
@@ -888,7 +880,7 @@ export const executeBatchV4Json = (
   const batchRequest = serializeBatchV4Json(operations)
   const url = `${config.baseUrl}${config.servicePath}$batch`
 
-  return Effect.gen(function* () {
+  return Effect.gen(function*() {
     let request = HttpClientRequest.post(url).pipe(
       HttpClientRequest.setHeader("Content-Type", "application/json"),
       HttpClientRequest.setHeader("Accept", "application/json"),
@@ -911,9 +903,7 @@ export const executeBatchV4Json = (
     return parseBatchResponseV4JsonFromSchema(data)
   }).pipe(
     Effect.scoped,
-    Effect.catchAll((error) =>
-      Effect.fail(new ODataError({ message: "V4 batch request failed", cause: error }))
-    )
+    Effect.catchAll((error) => Effect.fail(new ODataError({ message: "V4 batch request failed", cause: error })))
   )
 }
 
@@ -936,7 +926,7 @@ export const executeBatchV4Multipart = (
   const { body, boundary } = serializeBatchV2(operations, config.servicePath)
   const url = `${config.baseUrl}${config.servicePath}$batch`
 
-  return Effect.gen(function* () {
+  return Effect.gen(function*() {
     let request = HttpClientRequest.post(url).pipe(
       HttpClientRequest.setHeader("Content-Type", `multipart/mixed; boundary=${boundary}`),
       HttpClientRequest.setHeader("Accept", "multipart/mixed"),
@@ -963,9 +953,7 @@ export const executeBatchV4Multipart = (
     return parseBatchResponseV2(responseText, responseBoundary)
   }).pipe(
     Effect.scoped,
-    Effect.catchAll((error) =>
-      Effect.fail(new ODataError({ message: "V4 batch request failed", cause: error }))
-    )
+    Effect.catchAll((error) => Effect.fail(new ODataError({ message: "V4 batch request failed", cause: error })))
   )
 }
 
@@ -1021,11 +1009,13 @@ export const isBatchSuccessful = (responses: ReadonlyArray<BatchOperationRespons
 export const getFailedResponses = (
   responses: ReadonlyArray<BatchOperationResponse>
 ): ReadonlyArray<BatchResponse> => {
-  const failed: BatchResponse[] = []
+  const failed: Array<BatchResponse> = []
 
   for (const response of responses) {
     if ("type" in response && response.type === "changeset") {
-      failed.push(...response.responses.filter((r) => r.status < 200 || r.status >= 300))
+      for (const r of response.responses) {
+        if (r.status < 200 || r.status >= 300) failed.push(r)
+      }
     } else {
       const r = response as BatchResponse
       if (r.status < 200 || r.status >= 300) {

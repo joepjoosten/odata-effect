@@ -1,13 +1,13 @@
 import { describe, expect, it } from "@effect/vitest"
 import {
-  FilterExpression,
-  StringPath,
-  NumberPath,
   BooleanPath,
+  CollectionPath,
+  createQueryBuilder,
   DateTimePath,
   EntityPath,
-  CollectionPath,
-  createQueryBuilder
+  FilterExpression,
+  NumberPath,
+  StringPath
 } from "../src/QueryBuilder.js"
 
 describe("QueryBuilder", () => {
@@ -260,9 +260,7 @@ describe("QueryBuilder", () => {
 
     it("builds complex filter with AND/OR", () => {
       const query = createQueryBuilder<TestEntity, QTestEntity>(qTestEntity)
-        .filter((q) =>
-          q.age.gt(18).and(q.age.lt(65)).or(q.active.isFalse())
-        )
+        .filter((q) => q.age.gt(18).and(q.age.lt(65)).or(q.active.isFalse()))
         .build()
 
       expect(query.$filter).toBe(

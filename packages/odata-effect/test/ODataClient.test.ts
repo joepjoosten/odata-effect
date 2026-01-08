@@ -1,19 +1,16 @@
+import { HttpClient, HttpClientResponse } from "@effect/platform"
+import type { HttpClientRequest, HttpClientRequest } from "@effect/platform"
 import { describe, expect, it } from "@effect/vitest"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import * as Schema from "effect/Schema"
 import {
-  HttpClient,
-  HttpClientRequest,
-  HttpClientResponse
-} from "@effect/platform"
-import {
-  ODataClientConfig,
-  buildEntityPath,
-  ODataSingleResponse,
-  ODataCollectionResponse,
   DEFAULT_HEADERS,
-  MERGE_HEADERS
+  HttpClient,
+  MERGE_HEADERS,
+  ODataClientConfig,
+  ODataCollectionResponse,
+  ODataSingleResponse
 } from "../src/ODataClient.js"
 import * as OData from "../src/ODataClientFn.js"
 
@@ -66,7 +63,7 @@ describe("ODataClient", () => {
 
   describe("ODataSingleResponse", () => {
     it("wraps schema in OData V2 single response format", () =>
-      Effect.gen(function* () {
+      Effect.gen(function*() {
         const responseSchema = ODataSingleResponse(TestEntity)
         const data = {
           d: {
@@ -84,7 +81,7 @@ describe("ODataClient", () => {
 
   describe("ODataCollectionResponse", () => {
     it("wraps schema in OData V2 collection response format", () =>
-      Effect.gen(function* () {
+      Effect.gen(function*() {
         const responseSchema = ODataCollectionResponse(TestEntity)
         const data = {
           d: {
@@ -115,7 +112,7 @@ describe("ODataClient", () => {
   describe("Tree-Shakable OData Functions", () => {
     describe("get", () => {
       it.effect("fetches a single entity", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           const result = yield* OData.get("entities('123')", TestEntity)
 
           expect(result.id).toBe("123")
@@ -137,11 +134,10 @@ describe("ODataClient", () => {
               )
             )
           )
-        )
-      )
+        ))
 
       it.effect("includes query options in URL", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           yield* OData.get("entities('1')", TestEntity, {
             $select: "id,name",
             $expand: "details",
@@ -165,13 +161,12 @@ describe("ODataClient", () => {
               )
             })
           )
-        )
-      )
+        ))
     })
 
     describe("getCollection", () => {
       it.effect("fetches a collection of entities", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           const results = yield* OData.getCollection("entities", TestEntity)
 
           expect(results).toHaveLength(3)
@@ -200,11 +195,10 @@ describe("ODataClient", () => {
               )
             )
           )
-        )
-      )
+        ))
 
       it.effect("handles empty collection", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           const results = yield* OData.getCollection("entities", TestEntity)
 
           expect(results).toHaveLength(0)
@@ -222,13 +216,12 @@ describe("ODataClient", () => {
               )
             )
           )
-        )
-      )
+        ))
     })
 
     describe("post", () => {
       it.effect("creates an entity", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           const result = yield* OData.post(
             "entities",
             { name: "New Entity", value: 50 },
@@ -254,13 +247,12 @@ describe("ODataClient", () => {
               )
             )
           )
-        )
-      )
+        ))
     })
 
     describe("patch", () => {
       it.effect("uses POST with X-Http-Method: MERGE header for OData V2", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           yield* OData.patch(
             "entities('123')",
             { name: "Updated Name" },
@@ -280,11 +272,10 @@ describe("ODataClient", () => {
               )
             })
           )
-        )
-      )
+        ))
 
       it.effect("returns void on successful patch", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           const result = yield* OData.patch(
             "entities('123')",
             { value: 999 },
@@ -303,13 +294,12 @@ describe("ODataClient", () => {
               )
             )
           )
-        )
-      )
+        ))
     })
 
     describe("delete", () => {
       it.effect("deletes an entity and returns void", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           const result = yield* OData.del("entities('123')")
 
           expect(result).toBeUndefined()
@@ -324,11 +314,10 @@ describe("ODataClient", () => {
               )
             )
           )
-        )
-      )
+        ))
 
       it.effect("uses DELETE method", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           yield* OData.del("entities('456')")
         }).pipe(
           Effect.provide(
@@ -342,13 +331,12 @@ describe("ODataClient", () => {
               )
             })
           )
-        )
-      )
+        ))
     })
 
     describe("error handling", () => {
       it.effect("wraps HTTP errors in ODataError", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           const result = yield* OData.get("entities('not-found')", TestEntity).pipe(Effect.flip)
 
           expect(result._tag).toBe("ODataError")
@@ -366,13 +354,12 @@ describe("ODataClient", () => {
               )
             )
           )
-        )
-      )
+        ))
     })
 
     describe("URL construction", () => {
       it.effect("prepends base URL and service path", () =>
-        Effect.gen(function* () {
+        Effect.gen(function*() {
           yield* OData.get("entities('1')", TestEntity)
         }).pipe(
           Effect.provide(
@@ -391,8 +378,7 @@ describe("ODataClient", () => {
               )
             })
           )
-        )
-      )
+        ))
     })
   })
 })

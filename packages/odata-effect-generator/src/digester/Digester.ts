@@ -6,43 +6,44 @@
  */
 import * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"
+import { getClassName, getPropertyName } from "../generator/NamingHelper.js"
+import {
+  type ComplexTypeModel,
+  createDataModel,
+  type DataModel,
+  type EntitySetModel,
+  type EntityTypeModel,
+  type EnumTypeModel,
+  type NavigationPropertyModel,
+  type OperationModel,
+  type OperationParameterModel,
+  type PropertyModel,
+  type SingletonModel
+} from "../model/DataModel.js"
 import type {
-  ODataEdmxModel,
-  Schema as EdmxSchema,
-  EntityType,
+  Association,
   ComplexType as EdmxComplexType,
+  detectODataVersion,
+  EntityContainer,
+  EntityType,
   EnumType,
-  Property,
   NavigationProperty,
   NavigationPropertyV2,
   NavigationPropertyV4,
-  EntityContainer,
-  Association,
-  Operation
+  ODataEdmxModel,
+  ODataVersion,
+  Operation,
+  Property,
+  Schema as EdmxSchema
 } from "../parser/EdmxSchema.js"
-import { detectODataVersion, type ODataVersion } from "../parser/EdmxSchema.js"
 import {
-  type DataModel,
-  type EntityTypeModel,
-  type ComplexTypeModel,
-  type EnumTypeModel,
-  type PropertyModel,
-  type NavigationPropertyModel,
-  type EntitySetModel,
-  type SingletonModel,
-  type OperationModel,
-  type OperationParameterModel,
-  createDataModel
-} from "../model/DataModel.js"
-import {
-  parseODataType,
-  isPrimitiveType,
-  getPrimitiveTypeMapping,
   getComplexTypeMapping,
   getEnumTypeMapping,
-  getSimpleTypeName
+  getPrimitiveTypeMapping,
+  getSimpleTypeName,
+  isPrimitiveType,
+  parseODataType
 } from "./TypeMapper.js"
-import { getPropertyName, getClassName } from "../generator/NamingHelper.js"
 
 /**
  * Error thrown during metadata digestion.
@@ -265,12 +266,8 @@ const digestComplexType = (
   context: DigestContext
 ): ComplexTypeModel => {
   const name = complexType.$.Name
-  const properties = (complexType.Property ?? []).map((p) =>
-    digestProperty(p, [], context)
-  )
-  const navigationProperties = (complexType.NavigationProperty ?? []).map((np) =>
-    digestNavigationProperty(np, context)
-  )
+  const properties = (complexType.Property ?? []).map((p) => digestProperty(p, [], context))
+  const navigationProperties = (complexType.NavigationProperty ?? []).map((np) => digestNavigationProperty(np, context))
 
   const result: ComplexTypeModel = {
     fqName: `${namespace}.${name}`,
@@ -307,14 +304,10 @@ const digestEntityType = (
     }
   }
 
-  const properties = (entityType.Property ?? []).map((p) =>
-    digestProperty(p, Array.from(keyNames), context)
-  )
+  const properties = (entityType.Property ?? []).map((p) => digestProperty(p, Array.from(keyNames), context))
 
   const keys = properties.filter((p) => p.isKey)
-  const navigationProperties = (entityType.NavigationProperty ?? []).map((np) =>
-    digestNavigationProperty(np, context)
-  )
+  const navigationProperties = (entityType.NavigationProperty ?? []).map((np) => digestNavigationProperty(np, context))
 
   const result: EntityTypeModel = {
     fqName: `${namespace}.${name}`,
@@ -474,7 +467,7 @@ const digestEntityContainer = (
     for (const funcImport of container.FunctionImport) {
       // Only process V2 function imports (no Function reference)
       if (!funcImport.$.Function) {
-        const params: OperationParameterModel[] = (funcImport.Parameter ?? []).map((p) => {
+        const params: Array<OperationParameterModel> = (funcImport.Parameter ?? []).map((p) => {
           const { baseType, isCollection } = parseODataType(p.$.Type)
           return {
             name: getPropertyName(p.$.Name),

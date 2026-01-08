@@ -26,9 +26,9 @@
  *
  * @since 1.0.0
  */
-import type * as Schema from "effect/Schema"
 import { ODataV4ClientFn as ODataV4Fn } from "@odata-effect/odata-effect"
-import type { ODataV4Runtime, ODataV4QueryOptions, ODataV4RequestOptions, PagedResultV4 } from "./Runtime.js"
+import type * as Schema from "effect/Schema"
+import type { ODataV4QueryOptions, ODataV4RequestOptions, ODataV4Runtime, PagedResultV4 } from "./Runtime.js"
 
 /**
  * Fetch a single entity by path.
@@ -47,8 +47,7 @@ export const get = <A, I>(
   path: string,
   schema: Schema.Schema<A, I, never>,
   options?: ODataV4QueryOptions
-): Promise<A> =>
-  runtime.runPromise(ODataV4Fn.get(path, schema, options))
+): Promise<A> => runtime.runPromise(ODataV4Fn.get(path, schema, options))
 
 /**
  * Fetch a collection of entities.
@@ -71,8 +70,7 @@ export const getCollection = <A, I>(
   path: string,
   schema: Schema.Schema<A, I, never>,
   options?: ODataV4QueryOptions
-): Promise<ReadonlyArray<A>> =>
-  runtime.runPromise(ODataV4Fn.getCollection(path, schema, options))
+): Promise<ReadonlyArray<A>> => runtime.runPromise(ODataV4Fn.getCollection(path, schema, options))
 
 /**
  * Fetch a collection with pagination metadata.
@@ -95,8 +93,7 @@ export const getCollectionPaged = <A, I>(
   path: string,
   schema: Schema.Schema<A, I, never>,
   options?: ODataV4QueryOptions
-): Promise<PagedResultV4<A>> =>
-  runtime.runPromise(ODataV4Fn.getCollectionPaged(path, schema, options))
+): Promise<PagedResultV4<A>> => runtime.runPromise(ODataV4Fn.getCollectionPaged(path, schema, options))
 
 /**
  * Fetch a single property value.
@@ -114,8 +111,7 @@ export const getValue = <A, I>(
   runtime: ODataV4Runtime,
   path: string,
   schema: Schema.Schema<A, I, never>
-): Promise<A> =>
-  runtime.runPromise(ODataV4Fn.getValue(path, schema))
+): Promise<A> => runtime.runPromise(ODataV4Fn.getValue(path, schema))
 
 /**
  * Create a new entity.
@@ -143,8 +139,7 @@ export const post = <A, I, B, BI>(
   bodySchema: Schema.Schema<B, BI, never>,
   responseSchema: Schema.Schema<A, I, never>,
   requestOptions?: ODataV4RequestOptions
-): Promise<A> =>
-  runtime.runPromise(ODataV4Fn.post(path, body, bodySchema, responseSchema, requestOptions))
+): Promise<A> => runtime.runPromise(ODataV4Fn.post(path, body, bodySchema, responseSchema, requestOptions))
 
 /**
  * Update an entity using PATCH.
@@ -170,8 +165,7 @@ export const patch = <B, BI>(
   body: B,
   bodySchema: Schema.Schema<B, BI, never>,
   requestOptions?: ODataV4RequestOptions
-): Promise<void> =>
-  runtime.runPromise(ODataV4Fn.patch(path, body, bodySchema, requestOptions))
+): Promise<void> => runtime.runPromise(ODataV4Fn.patch(path, body, bodySchema, requestOptions))
 
 /**
  * Replace an entity using PUT.
@@ -197,8 +191,7 @@ export const put = <B, BI>(
   body: B,
   bodySchema: Schema.Schema<B, BI, never>,
   requestOptions?: ODataV4RequestOptions
-): Promise<void> =>
-  runtime.runPromise(ODataV4Fn.put(path, body, bodySchema, requestOptions))
+): Promise<void> => runtime.runPromise(ODataV4Fn.put(path, body, bodySchema, requestOptions))
 
 /**
  * Delete an entity.
@@ -215,8 +208,7 @@ export const del = (
   runtime: ODataV4Runtime,
   path: string,
   requestOptions?: ODataV4RequestOptions
-): Promise<void> =>
-  runtime.runPromise(ODataV4Fn.del(path, requestOptions))
+): Promise<void> => runtime.runPromise(ODataV4Fn.del(path, requestOptions))
 
 // Alias for nice naming
 export { del as delete }

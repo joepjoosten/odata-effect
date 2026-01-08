@@ -2,15 +2,15 @@ import { describe, expect, it } from "@effect/vitest"
 import * as Effect from "effect/Effect"
 import * as fs from "node:fs"
 import * as path from "node:path"
-import { parseODataMetadata } from "../../src/parser/XmlParser.js"
 import { detectODataVersion } from "../../src/parser/EdmxSchema.js"
+import { parseODataMetadata } from "../../src/parser/XmlParser.js"
 
 const resourceDir = path.resolve(__dirname, "../resource")
 
 describe("XmlParser", () => {
   describe("parseODataMetadata", () => {
     it("parses V2 metadata successfully", () =>
-      Effect.gen(function* () {
+      Effect.gen(function*() {
         const xmlContent = fs.readFileSync(
           path.join(resourceDir, "odata-v2.xml"),
           "utf-8"
@@ -28,7 +28,7 @@ describe("XmlParser", () => {
       }))
 
     it("parses V4 metadata successfully", () =>
-      Effect.gen(function* () {
+      Effect.gen(function*() {
         const xmlContent = fs.readFileSync(
           path.join(resourceDir, "trippin.xml"),
           "utf-8"
@@ -47,7 +47,7 @@ describe("XmlParser", () => {
       }))
 
     it("fails on invalid XML", () =>
-      Effect.gen(function* () {
+      Effect.gen(function*() {
         const result = yield* parseODataMetadata("not valid xml").pipe(
           Effect.flip
         )

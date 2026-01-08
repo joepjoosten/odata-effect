@@ -5,12 +5,12 @@
  */
 import type { DataModel } from "../model/DataModel.js"
 import {
-  getServiceClassName,
-  getIdTypeName,
   getEditableTypeName,
-  getQueryInterfaceName,
+  getIdTypeName,
+  getQueryFactoryName,
   getQueryInstanceName,
-  getQueryFactoryName
+  getQueryInterfaceName,
+  getServiceClassName
 } from "./NamingHelper.js"
 import { getPromiseServiceName } from "./ServiceFnPromiseGenerator.js"
 
@@ -21,7 +21,7 @@ import { getPromiseServiceName } from "./ServiceFnPromiseGenerator.js"
  * @category generation
  */
 export const generateIndex = (dataModel: DataModel): string => {
-  const lines: string[] = []
+  const lines: Array<string> = []
 
   // Header
   lines.push(`/**`)
@@ -36,7 +36,7 @@ export const generateIndex = (dataModel: DataModel): string => {
   lines.push(`// Models`)
   lines.push(`export {`)
 
-  const modelExports: string[] = []
+  const modelExports: Array<string> = []
 
   // Enums
   for (const enumType of dataModel.enumTypes.values()) {
@@ -156,7 +156,7 @@ export const generateIndex = (dataModel: DataModel): string => {
   lines.push(`// Query Models`)
   lines.push(`export {`)
 
-  const queryExports: string[] = []
+  const queryExports: Array<string> = []
 
   // Complex types
   for (const complexType of dataModel.complexTypes.values()) {

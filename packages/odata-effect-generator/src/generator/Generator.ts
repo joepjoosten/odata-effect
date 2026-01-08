@@ -3,25 +3,25 @@
  *
  * @since 1.0.0
  */
-import * as Effect from "effect/Effect"
 import * as FileSystem from "@effect/platform/FileSystem"
 import * as Path from "@effect/platform/Path"
+import * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"
 import type { DataModel } from "../model/DataModel.js"
-import { generateModels } from "./ModelsGenerator.js"
-import { generateQueryModels } from "./QueryModelsGenerator.js"
-import { generateServiceFns } from "./ServiceFnGenerator.js"
-import { generatePromiseServiceFns } from "./ServiceFnPromiseGenerator.js"
 import { generateIndex } from "./IndexGenerator.js"
+import { generateModels } from "./ModelsGenerator.js"
 import {
   generatePackageJson,
   generateTsconfig,
+  generateTsconfigBuild,
   generateTsconfigSrc,
   generateTsconfigTest,
-  generateTsconfigBuild,
   generateVitestConfig,
   type PackageConfig
 } from "./PackageGenerator.js"
+import { generateQueryModels } from "./QueryModelsGenerator.js"
+import { generateServiceFns } from "./ServiceFnGenerator.js"
+import { generatePromiseServiceFns } from "./ServiceFnPromiseGenerator.js"
 
 /**
  * Generator configuration.
@@ -68,7 +68,7 @@ export const generate = (
   dataModel: DataModel,
   config: GeneratorConfig
 ): Effect.Effect<void, GeneratorError, FileSystem.FileSystem | Path.Path> =>
-  Effect.gen(function* () {
+  Effect.gen(function*() {
     const fs = yield* FileSystem.FileSystem
     const path = yield* Path.Path
 
@@ -88,7 +88,7 @@ export const generate = (
     const promiseServiceResult = generatePromiseServiceFns(dataModel)
 
     // Generate all files
-    const files: GeneratedFile[] = [
+    const files: Array<GeneratedFile> = [
       // Source files
       {
         path: path.join(outputDir, "src", "Models.ts"),

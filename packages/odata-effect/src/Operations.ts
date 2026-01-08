@@ -6,25 +6,13 @@
  *
  * @since 1.0.0
  */
+import { HttpClient, type HttpClientError, HttpClientRequest, HttpClientResponse } from "@effect/platform"
 import * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"
-import {
-  HttpClient,
-  HttpClientRequest,
-  HttpClientResponse,
-  type HttpClientError
-} from "@effect/platform"
-import { ODataError, ParseError } from "./Errors.js"
-import {
-  ODataSingleResponse,
-  ODataCollectionResponse,
-  type ODataClientConfigService
-} from "./ODataClient.js"
-import {
-  ODataV4CollectionResponse,
-  ODataV4ValueResponse,
-  type ODataV4ClientConfigService
-} from "./ODataV4Client.js"
+import type { ParseError } from "./Errors.js"
+import { ODataError } from "./Errors.js"
+import { type ODataClientConfigService, ODataCollectionResponse, ODataSingleResponse } from "./ODataClient.js"
+import { type ODataV4ClientConfigService, ODataV4CollectionResponse, ODataV4ValueResponse } from "./ODataV4Client.js"
 
 // ============================================================================
 // Operation Parameter Types
@@ -109,7 +97,7 @@ export const executeFunctionImportVoid = (
   const url = `${config.baseUrl}${config.servicePath}${buildFunctionImportUrl(functionName, parameters)}`
   const method = options?.method ?? "POST"
 
-  return Effect.gen(function* () {
+  return Effect.gen(function*() {
     const request = method === "GET"
       ? HttpClientRequest.get(url)
       : HttpClientRequest.post(url)
@@ -125,9 +113,7 @@ export const executeFunctionImportVoid = (
     )
   }).pipe(
     Effect.scoped,
-    Effect.catchAll((error) =>
-      Effect.fail(new ODataError({ message: "Function import failed", cause: error }))
-    )
+    Effect.catchAll((error) => Effect.fail(new ODataError({ message: "Function import failed", cause: error })))
   )
 }
 
@@ -149,7 +135,7 @@ export const executeFunctionImportEntity = <A, I, R>(
   const method = options?.method ?? "GET"
   const responseSchema = ODataSingleResponse(schema)
 
-  return Effect.gen(function* () {
+  return Effect.gen(function*() {
     const request = method === "GET"
       ? HttpClientRequest.get(url)
       : HttpClientRequest.post(url)
@@ -167,9 +153,7 @@ export const executeFunctionImportEntity = <A, I, R>(
     return data.d
   }).pipe(
     Effect.scoped,
-    Effect.catchAll((error) =>
-      Effect.fail(new ODataError({ message: "Function import failed", cause: error }))
-    )
+    Effect.catchAll((error) => Effect.fail(new ODataError({ message: "Function import failed", cause: error })))
   )
 }
 
@@ -191,7 +175,7 @@ export const executeFunctionImportCollection = <A, I, R>(
   const method = options?.method ?? "GET"
   const responseSchema = ODataCollectionResponse(schema)
 
-  return Effect.gen(function* () {
+  return Effect.gen(function*() {
     const request = method === "GET"
       ? HttpClientRequest.get(url)
       : HttpClientRequest.post(url)
@@ -209,9 +193,7 @@ export const executeFunctionImportCollection = <A, I, R>(
     return data.d.results
   }).pipe(
     Effect.scoped,
-    Effect.catchAll((error) =>
-      Effect.fail(new ODataError({ message: "Function import failed", cause: error }))
-    )
+    Effect.catchAll((error) => Effect.fail(new ODataError({ message: "Function import failed", cause: error })))
   )
 }
 
@@ -238,7 +220,7 @@ export const executeFunctionImportPrimitive = <A, I, R>(
     })
   })
 
-  return Effect.gen(function* () {
+  return Effect.gen(function*() {
     const request = method === "GET"
       ? HttpClientRequest.get(url)
       : HttpClientRequest.post(url)
@@ -256,9 +238,7 @@ export const executeFunctionImportPrimitive = <A, I, R>(
     return (data.d as Record<string, A>)[propertyName]
   }).pipe(
     Effect.scoped,
-    Effect.catchAll((error) =>
-      Effect.fail(new ODataError({ message: "Function import failed", cause: error }))
-    )
+    Effect.catchAll((error) => Effect.fail(new ODataError({ message: "Function import failed", cause: error })))
   )
 }
 
@@ -347,7 +327,7 @@ export const executeV4FunctionVoid = (
 ): Effect.Effect<void, HttpClientError.HttpClientError | ODataError, never> => {
   const url = `${config.baseUrl}${config.servicePath}${functionUrl}`
 
-  return Effect.gen(function* () {
+  return Effect.gen(function*() {
     const request = HttpClientRequest.get(url).pipe(
       HttpClientRequest.setHeader("Accept", "application/json"),
       HttpClientRequest.setHeader("OData-Version", "4.0")
@@ -359,9 +339,7 @@ export const executeV4FunctionVoid = (
     )
   }).pipe(
     Effect.scoped,
-    Effect.catchAll((error) =>
-      Effect.fail(new ODataError({ message: "V4 function failed", cause: error }))
-    )
+    Effect.catchAll((error) => Effect.fail(new ODataError({ message: "V4 function failed", cause: error })))
   )
 }
 
@@ -379,7 +357,7 @@ export const executeV4FunctionEntity = <A, I, R>(
 ): Effect.Effect<A, HttpClientError.HttpClientError | ParseError | ODataError, R> => {
   const url = `${config.baseUrl}${config.servicePath}${functionUrl}`
 
-  return Effect.gen(function* () {
+  return Effect.gen(function*() {
     const request = HttpClientRequest.get(url).pipe(
       HttpClientRequest.setHeader("Accept", "application/json"),
       HttpClientRequest.setHeader("OData-Version", "4.0")
@@ -394,9 +372,7 @@ export const executeV4FunctionEntity = <A, I, R>(
     return data
   }).pipe(
     Effect.scoped,
-    Effect.catchAll((error) =>
-      Effect.fail(new ODataError({ message: "V4 function failed", cause: error }))
-    )
+    Effect.catchAll((error) => Effect.fail(new ODataError({ message: "V4 function failed", cause: error })))
   )
 }
 
@@ -415,7 +391,7 @@ export const executeV4FunctionCollection = <A, I, R>(
   const url = `${config.baseUrl}${config.servicePath}${functionUrl}`
   const responseSchema = ODataV4CollectionResponse(schema)
 
-  return Effect.gen(function* () {
+  return Effect.gen(function*() {
     const request = HttpClientRequest.get(url).pipe(
       HttpClientRequest.setHeader("Accept", "application/json"),
       HttpClientRequest.setHeader("OData-Version", "4.0")
@@ -429,9 +405,7 @@ export const executeV4FunctionCollection = <A, I, R>(
     return data.value
   }).pipe(
     Effect.scoped,
-    Effect.catchAll((error) =>
-      Effect.fail(new ODataError({ message: "V4 function failed", cause: error }))
-    )
+    Effect.catchAll((error) => Effect.fail(new ODataError({ message: "V4 function failed", cause: error })))
   )
 }
 
@@ -450,7 +424,7 @@ export const executeV4FunctionPrimitive = <A, I, R>(
   const url = `${config.baseUrl}${config.servicePath}${functionUrl}`
   const responseSchema = ODataV4ValueResponse(schema)
 
-  return Effect.gen(function* () {
+  return Effect.gen(function*() {
     const request = HttpClientRequest.get(url).pipe(
       HttpClientRequest.setHeader("Accept", "application/json"),
       HttpClientRequest.setHeader("OData-Version", "4.0")
@@ -464,9 +438,7 @@ export const executeV4FunctionPrimitive = <A, I, R>(
     return data.value
   }).pipe(
     Effect.scoped,
-    Effect.catchAll((error) =>
-      Effect.fail(new ODataError({ message: "V4 function failed", cause: error }))
-    )
+    Effect.catchAll((error) => Effect.fail(new ODataError({ message: "V4 function failed", cause: error })))
   )
 }
 
@@ -485,7 +457,7 @@ export const executeV4ActionVoid = <B, BI>(
 ): Effect.Effect<void, HttpClientError.HttpClientError | ODataError, never> => {
   const url = `${config.baseUrl}${config.servicePath}${actionUrl}`
 
-  return Effect.gen(function* () {
+  return Effect.gen(function*() {
     let request = HttpClientRequest.post(url).pipe(
       HttpClientRequest.setHeader("Accept", "application/json"),
       HttpClientRequest.setHeader("Content-Type", "application/json"),
@@ -502,9 +474,7 @@ export const executeV4ActionVoid = <B, BI>(
     )
   }).pipe(
     Effect.scoped,
-    Effect.catchAll((error) =>
-      Effect.fail(new ODataError({ message: "V4 action failed", cause: error }))
-    )
+    Effect.catchAll((error) => Effect.fail(new ODataError({ message: "V4 action failed", cause: error })))
   )
 }
 
@@ -524,7 +494,7 @@ export const executeV4ActionEntity = <A, I, R, B, BI>(
 ): Effect.Effect<A, HttpClientError.HttpClientError | ParseError | ODataError, R> => {
   const url = `${config.baseUrl}${config.servicePath}${actionUrl}`
 
-  return Effect.gen(function* () {
+  return Effect.gen(function*() {
     let request = HttpClientRequest.post(url).pipe(
       HttpClientRequest.setHeader("Accept", "application/json"),
       HttpClientRequest.setHeader("Content-Type", "application/json"),
@@ -543,9 +513,7 @@ export const executeV4ActionEntity = <A, I, R, B, BI>(
     return data
   }).pipe(
     Effect.scoped,
-    Effect.catchAll((error) =>
-      Effect.fail(new ODataError({ message: "V4 action failed", cause: error }))
-    )
+    Effect.catchAll((error) => Effect.fail(new ODataError({ message: "V4 action failed", cause: error })))
   )
 }
 
@@ -566,7 +534,7 @@ export const executeV4ActionCollection = <A, I, R, B, BI>(
   const url = `${config.baseUrl}${config.servicePath}${actionUrl}`
   const responseSchema = ODataV4CollectionResponse(schema)
 
-  return Effect.gen(function* () {
+  return Effect.gen(function*() {
     let request = HttpClientRequest.post(url).pipe(
       HttpClientRequest.setHeader("Accept", "application/json"),
       HttpClientRequest.setHeader("Content-Type", "application/json"),
@@ -585,8 +553,6 @@ export const executeV4ActionCollection = <A, I, R, B, BI>(
     return data.value
   }).pipe(
     Effect.scoped,
-    Effect.catchAll((error) =>
-      Effect.fail(new ODataError({ message: "V4 action failed", cause: error }))
-    )
+    Effect.catchAll((error) => Effect.fail(new ODataError({ message: "V4 action failed", cause: error })))
   )
 }

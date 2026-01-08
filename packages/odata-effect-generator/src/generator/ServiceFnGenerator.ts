@@ -133,7 +133,7 @@ const generateEntityServiceFnFile = (
     lines.push(`  type ${idTypeName},`)
   }
   lines.push(`  ${editableName}`)
-  lines.push(`} from "./Models.js"`)
+  lines.push(`} from "./Models"`)
   lines.push(``)
 
   // Import OData infrastructure (version-specific) using subpath imports for tree-shaking

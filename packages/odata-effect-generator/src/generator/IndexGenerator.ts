@@ -63,84 +63,14 @@ export const generateIndex = (dataModel: DataModel): string => {
     lines.push(`  ${modelExports[i]}${isLast ? "" : ","}`)
   }
 
-  lines.push(`} from "./Models.js"`)
-  lines.push(``)
-
-  // Re-export OData infrastructure
-  const isV4 = dataModel.version === "V4"
-  lines.push(`// Re-export OData infrastructure from @odata-effect/odata-effect`)
-  lines.push(`export {`)
-  lines.push(`  // Errors`)
-  if (!isV4) {
-    lines.push(`  SapErrorDetail,`)
-    lines.push(`  SapErrorResolution,`)
-    lines.push(`  SapApplication,`)
-    lines.push(`  SapInnerError,`)
-    lines.push(`  SapErrorMessage,`)
-    lines.push(`  SapErrorBody,`)
-    lines.push(`  SapErrorResponse,`)
-    lines.push(`  SapError,`)
-  }
-  lines.push(`  ODataError,`)
-  lines.push(`  EntityNotFoundError,`)
-  lines.push(`  ParseError,`)
-  if (isV4) {
-    // V4 exports
-    lines.push(`  // OData V4`)
-    lines.push(`  ODataV4,`)
-    lines.push(`  ODataV4CollectionResponse,`)
-    lines.push(`  ODataV4ValueResponse,`)
-    lines.push(`  ODataV4Annotations,`)
-    lines.push(`  ODataV4ClientConfig,`)
-    lines.push(`  buildEntityPathV4,`)
-    lines.push(`  type ODataV4QueryOptions,`)
-    lines.push(`  type ODataV4RequestOptions,`)
-    lines.push(`  type ODataV4ClientConfigService,`)
-    lines.push(`  type PagedResultV4,`)
-  } else {
-    // V2 exports
-    lines.push(`  // OData V2`)
-    lines.push(`  OData,`)
-    lines.push(`  ODataSingleResponse,`)
-    lines.push(`  ODataCollectionResponse,`)
-    lines.push(`  ODataCollectionResponseWithMeta,`)
-    lines.push(`  ODataValueResponse,`)
-    lines.push(`  EntityMetadata,`)
-    lines.push(`  MediaMetadata,`)
-    lines.push(`  DeferredContent,`)
-    lines.push(`  ODataClientConfig,`)
-    lines.push(`  buildEntityPath,`)
-    lines.push(`  DEFAULT_HEADERS,`)
-    lines.push(`  MERGE_HEADERS,`)
-    lines.push(`  type ODataQueryOptions,`)
-    lines.push(`  type ODataRequestOptions,`)
-    lines.push(`  type ODataClientConfigService,`)
-    lines.push(`  type PagedResult,`)
-  }
-  lines.push(`  // Query Builder`)
-  lines.push(`  FilterExpression,`)
-  lines.push(`  StringPath,`)
-  lines.push(`  NumberPath,`)
-  lines.push(`  BooleanPath,`)
-  lines.push(`  DateTimePath,`)
-  lines.push(`  EntityPath,`)
-  lines.push(`  CollectionPath,`)
-  lines.push(`  QueryBuilder,`)
-  lines.push(`  createQueryPaths,`)
-  lines.push(`  createQueryBuilder,`)
-  lines.push(`  type FieldToPath,`)
-  lines.push(`  type QueryPaths,`)
-  lines.push(`  type SelectableKeys,`)
-  lines.push(`  type ExpandableKeys,`)
-  lines.push(`  type BuiltQuery`)
-  lines.push(`} from "@odata-effect/odata-effect"`)
+  lines.push(`} from "./Models"`)
   lines.push(``)
 
   // Individual Entity Services (tree-shakable module namespace re-exports)
   lines.push(`// Individual Entity Services (tree-shakable)`)
   for (const entitySet of dataModel.entitySets.values()) {
     const serviceClassName = getServiceClassName(entitySet.name)
-    lines.push(`export * as ${serviceClassName} from "./${serviceClassName}.js"`)
+    lines.push(`export * as ${serviceClassName} from "./${serviceClassName}"`)
   }
   lines.push(``)
 
@@ -148,7 +78,7 @@ export const generateIndex = (dataModel: DataModel): string => {
   lines.push(`// Promise-based Entity Services (for non-Effect environments)`)
   for (const entitySet of dataModel.entitySets.values()) {
     const promiseServiceName = getPromiseServiceName(entitySet.name)
-    lines.push(`export * as ${promiseServiceName} from "./${promiseServiceName}.js"`)
+    lines.push(`export * as ${promiseServiceName} from "./${promiseServiceName}"`)
   }
   lines.push(``)
 
@@ -183,7 +113,7 @@ export const generateIndex = (dataModel: DataModel): string => {
     lines.push(`  ${queryExports[i]}${isLast ? "" : ","}`)
   }
 
-  lines.push(`} from "./QueryModels.js"`)
+  lines.push(`} from "./QueryModels"`)
 
   return lines.join("\n")
 }

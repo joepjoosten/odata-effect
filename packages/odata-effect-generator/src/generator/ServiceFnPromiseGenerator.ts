@@ -130,7 +130,7 @@ const generatePromiseServiceFile = (
   lines.push(` * @since 1.0.0`)
   lines.push(` */`)
   lines.push(`import { ${versionConfig.runtimeImport} } from "@odata-effect/odata-effect-promise/Runtime"`)
-  lines.push(`import * as ${serviceClassName} from "./${serviceClassName}.js"`)
+  lines.push(`import * as ${serviceClassName} from "./${serviceClassName}"`)
   lines.push(``)
 
   // Import models (type-only since they're only used in type annotations)
@@ -140,7 +140,7 @@ const generatePromiseServiceFile = (
     lines.push(`  ${idTypeName},`)
   }
   lines.push(`  ${editableName}`)
-  lines.push(`} from "./Models.js"`)
+  lines.push(`} from "./Models"`)
   lines.push(``)
 
   // Query options import (using subpath imports for tree-shaking)

@@ -35,7 +35,7 @@ export const generateQueryModels = (dataModel: DataModel): string => {
   lines.push(`  ${Array.from(queryPathTypes).join(",\n  ")},`)
   lines.push(`  createQueryBuilder,`)
   lines.push(`  type QueryBuilder`)
-  lines.push(`} from "@odata-effect/odata-effect"`)
+  lines.push(`} from "@odata-effect/odata-effect/QueryBuilder"`)
 
   // Import entity types that have entity sets (for QueryBuilder generics)
   const usedEntityNames: Array<string> = []
@@ -48,7 +48,7 @@ export const generateQueryModels = (dataModel: DataModel): string => {
   if (usedEntityNames.length > 0) {
     lines.push(`import type {`)
     lines.push(`  ${usedEntityNames.join(",\n  ")}`)
-    lines.push(`} from "./Models.js"`)
+    lines.push(`} from "./Models"`)
   }
   lines.push(``)
 

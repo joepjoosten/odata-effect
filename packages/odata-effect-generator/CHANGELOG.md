@@ -1,5 +1,13 @@
 # @odata-effect/odata-effect-generator
 
+## 0.1.2
+
+### Patch Changes
+
+- [`c810201`](https://github.com/joepjoosten/odata-effect/commit/c810201ba565419cb48a152386cb378304a5f4cb) Thanks [@joepjoosten](https://github.com/joepjoosten)! - Fix generated service imports to use subpath imports instead of main package exports. The generated code now correctly imports from `@odata-effect/odata-effect/ODataClient`, `@odata-effect/odata-effect/ODataV4Client`, `@odata-effect/odata-effect/OData`, `@odata-effect/odata-effect/ODataV4`, and `@odata-effect/odata-effect/Errors` for proper tree-shaking support.
+
+  Also fixed CLI documentation to show correct usage: `odata-effect-gen generate <metadata-path> <output-dir>`
+
 ## 0.1.1
 
 ### Patch Changes

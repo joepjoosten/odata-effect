@@ -51,13 +51,15 @@ Effect.runPromise(program.pipe(Effect.provide(MainLive)))
 
 ```typescript
 import { createODataRuntime } from "@odata-effect/odata-effect-promise"
-import * as OData from "@odata-effect/odata-effect-promise/v2"
+import * as OData from "@odata-effect/odata-effect-promise/OData"
 
 const runtime = createODataRuntime({
-  baseUrl: "https://api.example.com/odata"
+  baseUrl: "https://api.example.com",
+  servicePath: "/sap/opu/odata/sap/MY_SERVICE/"
 })
 
-const products = await OData.get(runtime, "/Products")
+const products = await OData.get(runtime, "Products", ProductSchema)
+await runtime.dispose()
 ```
 
 ### Generate Type-Safe Clients

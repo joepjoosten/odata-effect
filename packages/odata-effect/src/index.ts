@@ -27,13 +27,6 @@ export * as Errors from "./Errors.js"
 export * as Media from "./Media.js"
 
 /**
- * OData V2 types and schemas.
- *
- * @since 1.0.0
- */
-export * as ODataClient from "./ODataClient.js"
-
-/**
  * Tree-shakable OData V2 client functions.
  *
  * This module provides standalone functions that can be tree-shaken.
@@ -43,18 +36,48 @@ export * as ODataClient from "./ODataClient.js"
  * @example
  * ```ts
  * // Namespace import - nice autocomplete, tree-shakable
- * import { ODataClientFn } from "@odata-effect/odata-effect"
- * const entity = yield* ODataClientFn.get("Products('123')", ProductSchema)
- * const items = yield* ODataClientFn.getCollection("Products", ProductSchema)
+ * import { OData } from "@odata-effect/odata-effect"
+ * const entity = yield* OData.get("Products('123')", ProductSchema)
+ * const items = yield* OData.getCollection("Products", ProductSchema)
  *
  * // Direct import - maximum tree-shaking
- * import { get } from "@odata-effect/odata-effect/ODataClientFn"
+ * import { get } from "@odata-effect/odata-effect/OData"
  * const entity = yield* get("Products('123')", ProductSchema)
  * ```
  *
  * @since 1.0.0
  */
-export * as ODataClientFn from "./ODataClientFn.js"
+export * as OData from "./OData.js"
+
+/**
+ * OData V2 types and schemas.
+ *
+ * @since 1.0.0
+ */
+export * as ODataClient from "./ODataClient.js"
+
+/**
+ * Tree-shakable OData V4 client functions.
+ *
+ * This module provides standalone functions that can be tree-shaken.
+ * Use the namespace import for nice autocomplete, or import individual
+ * functions for maximum tree-shaking.
+ *
+ * @example
+ * ```ts
+ * // Namespace import - nice autocomplete, tree-shakable
+ * import { ODataV4 } from "@odata-effect/odata-effect"
+ * const entity = yield* ODataV4.get("Products(123)", ProductSchema)
+ * const items = yield* ODataV4.getCollection("Products", ProductSchema)
+ *
+ * // Direct import - maximum tree-shaking
+ * import { get } from "@odata-effect/odata-effect/ODataV4"
+ * const entity = yield* get("Products(123)", ProductSchema)
+ * ```
+ *
+ * @since 1.0.0
+ */
+export * as ODataV4 from "./ODataV4.js"
 
 /**
  * OData V4 types and schemas.
@@ -67,29 +90,6 @@ export * as ODataClientFn from "./ODataClientFn.js"
  * @since 1.0.0
  */
 export * as ODataV4Client from "./ODataV4Client.js"
-
-/**
- * Tree-shakable OData V4 client functions.
- *
- * This module provides standalone functions that can be tree-shaken.
- * Use the namespace import for nice autocomplete, or import individual
- * functions for maximum tree-shaking.
- *
- * @example
- * ```ts
- * // Namespace import - nice autocomplete, tree-shakable
- * import { ODataV4ClientFn } from "@odata-effect/odata-effect"
- * const entity = yield* ODataV4ClientFn.get("Products(123)", ProductSchema)
- * const items = yield* ODataV4ClientFn.getCollection("Products", ProductSchema)
- *
- * // Direct import - maximum tree-shaking
- * import { get } from "@odata-effect/odata-effect/ODataV4ClientFn"
- * const entity = yield* get("Products(123)", ProductSchema)
- * ```
- *
- * @since 1.0.0
- */
-export * as ODataV4ClientFn from "./ODataV4ClientFn.js"
 
 /**
  * OData Operations - Function Imports and Actions.

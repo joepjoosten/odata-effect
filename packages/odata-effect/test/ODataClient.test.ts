@@ -4,6 +4,7 @@ import { describe, expect, it } from "@effect/vitest"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import * as Schema from "effect/Schema"
+import * as OData from "../src/OData.js"
 import {
   buildEntityPath,
   DEFAULT_HEADERS,
@@ -12,7 +13,6 @@ import {
   ODataCollectionResponse,
   ODataSingleResponse
 } from "../src/ODataClient.js"
-import * as OData from "../src/ODataClientFn.js"
 
 // Test schema
 class TestEntity extends Schema.Class<TestEntity>("TestEntity")({

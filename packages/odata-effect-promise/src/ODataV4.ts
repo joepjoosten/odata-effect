@@ -6,19 +6,19 @@
  *
  * @example
  * ```ts
- * import { Runtime } from "@odata-effect/odata-effect-promise"
- * import * as v4 from "@odata-effect/odata-effect-promise/v4"
+ * import { createODataV4Runtime } from "@odata-effect/odata-effect-promise"
+ * import * as ODataV4 from "@odata-effect/odata-effect-promise/ODataV4"
  *
- * const runtime = Runtime.createODataV4Runtime({
+ * const runtime = createODataV4Runtime({
  *   baseUrl: "https://server.com",
  *   servicePath: "/odata/v4/"
  * })
  *
  * // Namespace import - nice autocomplete
- * const product = await v4.get(runtime, "Products(1)", ProductSchema)
+ * const product = await ODataV4.get(runtime, "Products(1)", ProductSchema)
  *
  * // Or create bound functions
- * const boundGet = (path, schema, opts) => v4.get(runtime, path, schema, opts)
+ * const boundGet = (path, schema, opts) => ODataV4.get(runtime, path, schema, opts)
  * const product2 = await boundGet("Products(2)", ProductSchema)
  *
  * await runtime.dispose()
@@ -26,7 +26,7 @@
  *
  * @since 1.0.0
  */
-import { ODataV4ClientFn as ODataV4Fn } from "@odata-effect/odata-effect"
+import { ODataV4 as ODataV4Fn } from "@odata-effect/odata-effect"
 import type * as Schema from "effect/Schema"
 import type { ODataV4QueryOptions, ODataV4RequestOptions, ODataV4Runtime, PagedResultV4 } from "./Runtime.js"
 

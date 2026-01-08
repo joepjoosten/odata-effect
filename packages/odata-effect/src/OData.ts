@@ -8,12 +8,12 @@
  * @example
  * ```ts
  * // Namespace import - nice autocomplete, tree-shakable
- * import { ODataClientFn } from "@odata-effect/odata-effect"
- * const entity = yield* ODataClientFn.get("Products('123')", ProductSchema)
- * const items = yield* ODataClientFn.getCollection("Products", ProductSchema)
+ * import { OData } from "@odata-effect/odata-effect"
+ * const entity = yield* OData.get("Products('123')", ProductSchema)
+ * const items = yield* OData.getCollection("Products", ProductSchema)
  *
  * // Direct import - maximum tree-shaking
- * import { get } from "@odata-effect/odata-effect/ODataClientFn"
+ * import { get } from "@odata-effect/odata-effect/OData"
  * const entity = yield* get("Products('123')", ProductSchema)
  * ```
  *
@@ -81,7 +81,7 @@ const handleError = <A, E, R>(
  * @category operations
  * @example
  * ```ts
- * import { get } from "@odata-effect/odata-effect/ODataClientFn"
+ * import { get } from "@odata-effect/odata-effect/OData"
  *
  * const entity = yield* get("Products('123')", ProductSchema)
  * ```

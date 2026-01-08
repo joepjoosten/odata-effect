@@ -32,28 +32,33 @@ describe("V4 Navigation Generation", () => {
       expect(content).toContain("readonly _entity: TEntity")
       expect(content).toContain("readonly _collection: IsCollection")
 
-      // Check entity set roots (camelCase to avoid collision with type names)
-      expect(content).toContain('export const people: Path<Person, true> = "People"')
-      expect(content).toContain('export const airlines: Path<Airline, true> = "Airlines"')
-      expect(content).toContain('export const airports: Path<Airport, true> = "Airports"')
+      // Check entity set roots (PascalCase, types use Model suffix)
+      expect(content).toContain('export const People: Path<PersonModel, true> = "People"')
+      expect(content).toContain('export const Airlines: Path<AirlineModel, true> = "Airlines"')
+      expect(content).toContain('export const Airports: Path<AirportModel, true> = "Airports"')
 
       // Check byKey function
       expect(content).toContain("export const byKey = <T>(key: string | number)")
       expect(content).toContain("(base: Path<T, true>): Path<T, false>")
 
-      // Check navigation property functions (flat exports)
-      expect(content).toContain("export const trips = (base: Path<Person, false>): Path<Trip, true>")
-      expect(content).toContain("export const bestFriend = (base: Path<Person, false>): Path<Person, false>")
-      expect(content).toContain("export const friends = (base: Path<Person, false>): Path<Person, true>")
-      expect(content).toContain("export const planItems = (base: Path<Trip, false>): Path<PlanItem, true>")
+      // Check navigation property functions (flat exports with Model suffix)
+      expect(content).toContain("export const trips = (base: Path<PersonModel, false>): Path<TripModel, true>")
+      expect(content).toContain("export const bestFriend = (base: Path<PersonModel, false>): Path<PersonModel, false>")
+      expect(content).toContain("export const friends = (base: Path<PersonModel, false>): Path<PersonModel, true>")
+      expect(content).toContain("export const planItems = (base: Path<TripModel, false>): Path<PlanItemModel, true>")
 
-      // Check type casting functions
-      expect(content).toContain("export const asFlight = (base: Path<PlanItem, true>): Path<Flight, true>")
-      expect(content).toContain("export const asEvent = (base: Path<PlanItem, true>): Path<Event, true>")
+      // Check type casting functions (with Model suffix)
+      expect(content).toContain("export const asFlight = (base: Path<PlanItemModel, true>): Path<FlightModel, true>")
+      expect(content).toContain("export const asEvent = (base: Path<PlanItemModel, true>): Path<EventModel, true>")
 
       // Check terminal operations
       expect(content).toContain("export const fetchCollection = <T, I>(schema: Schema.Schema<T, I>)")
       expect(content).toContain("export const fetchOne = <T, I>(schema: Schema.Schema<T, I>)")
+
+      // Check Model suffix imports to avoid collision with entity set names
+      expect(content).toContain("Person as PersonModel")
+      expect(content).toContain("Trip as TripModel")
+      expect(content).toContain("Flight as FlightModel")
 
       // Write generated code for inspection
       const outputPath = "/tmp/generated-PathBuilders.ts"

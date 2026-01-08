@@ -76,32 +76,32 @@ Best for navigating relationships with full type safety. Uses branded types to e
 ```typescript
 import { pipe } from "effect"
 import {
-  people, byKey, trips, planItems, asFlight, bestFriend,
+  People, byKey, trips, planItems, asFlight, bestFriend,
   fetchCollection, fetchOne
 } from "./generated"
 import { Person, Trip, Flight } from "./generated"
 
 // Navigate through relationships with pipe()
 const flights = yield* pipe(
-  people,                    // Path<Person, true>  - collection
-  byKey("russellwhyte"),     // Path<Person, false> - single entity
-  trips,                     // Path<Trip, true>    - collection
-  byKey(0),                  // Path<Trip, false>   - single entity
-  planItems,                 // Path<PlanItem, true>
-  asFlight,                  // Path<Flight, true>  - type cast
+  People,                    // Path<PersonModel, true>  - collection
+  byKey("russellwhyte"),     // Path<PersonModel, false> - single entity
+  trips,                     // Path<TripModel, true>    - collection
+  byKey(0),                  // Path<TripModel, false>   - single entity
+  planItems,                 // Path<PlanItemModel, true>
+  asFlight,                  // Path<FlightModel, true>  - type cast
   fetchCollection(Flight)    // Execute the query
 )
 
 // Get a single entity
 const person = yield* pipe(
-  people,
+  People,
   byKey("russellwhyte"),
   fetchOne(Person)
 )
 
 // Navigate to a single related entity
 const friend = yield* pipe(
-  people,
+  People,
   byKey("russellwhyte"),
   bestFriend,
   fetchOne(Person)
@@ -122,20 +122,20 @@ type Path<TEntity, IsCollection extends boolean = false> = string & {
 // TypeScript prevents invalid navigation:
 
 // ✅ Valid - trips is a navigation property on Person
-pipe(people, byKey("russell"), trips)
+pipe(People, byKey("russell"), trips)
 
 // ❌ Compile error - planItems is on Trip, not Person
-pipe(people, byKey("russell"), planItems)
+pipe(People, byKey("russell"), planItems)
 
 // ❌ Compile error - can't byKey on a single entity (not a collection)
-pipe(people, byKey("russell"), byKey("other"))
+pipe(People, byKey("russell"), byKey("other"))
 ```
 
 ### Path Builder Features
 
 | Feature | Example |
 |---------|---------|
-| Entity set root | `people` → `Path<Person, true>` |
+| Entity set root | `People` → `Path<PersonModel, true>` |
 | Key access | `byKey("id")` → converts collection to single |
 | Navigation | `trips` → type-safe navigation to related entity |
 | Type casting | `asFlight` → filter to derived type |
@@ -147,7 +147,7 @@ Path builders are fully tree-shakable. Each navigation function is a separate ex
 
 ```typescript
 // Only import what you use - unused navigation functions are removed by bundler
-import { people, byKey, trips } from "./generated"
+import { People, byKey, trips } from "./generated"
 ```
 
 ### Comparison with odata2ts
@@ -165,7 +165,7 @@ const response = await trippinService
 
 // odata-effect (pipe composition)
 const flights = yield* pipe(
-  people,
+  People,
   byKey("russellwhyte"),
   trips,
   byKey(0),
@@ -190,7 +190,7 @@ const products = yield* ProductService.getAll({
 
 // With path builders (via fetchCollection/fetchOne)
 const myTrips = yield* pipe(
-  people,
+  People,
   byKey("russellwhyte"),
   trips,
   (path) => fetchCollection(Trip)(path, {

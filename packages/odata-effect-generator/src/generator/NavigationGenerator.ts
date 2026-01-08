@@ -7,10 +7,10 @@
  * @example
  * ```typescript
  * import { pipe } from "effect"
- * import { people, byKey, trips, planItems, asFlight } from "./PathBuilders"
+ * import { People, byKey, trips, planItems, asFlight } from "./PathBuilders"
  *
  * const path = pipe(
- *   people,
+ *   People,
  *   byKey("russellwhyte"),
  *   trips,
  *   byKey(0),
@@ -210,10 +210,10 @@ const generatePathBuildersFile = (dataModel: DataModel): string => {
   lines.push(` * @example`)
   lines.push(` * \`\`\`typescript`)
   lines.push(` * import { pipe } from "effect"`)
-  lines.push(` * import { people, byKey, trips, planItems } from "./PathBuilders"`)
+  lines.push(` * import { People, byKey, trips, planItems } from "./PathBuilders"`)
   lines.push(` *`)
   lines.push(` * const path = pipe(`)
-  lines.push(` *   people,`)
+  lines.push(` *   People,`)
   lines.push(` *   byKey("russellwhyte"),`)
   lines.push(` *   trips,`)
   lines.push(` *   byKey(0),`)
@@ -231,13 +231,13 @@ const generatePathBuildersFile = (dataModel: DataModel): string => {
   lines.push(`import type * as Schema from "effect/Schema"`)
   lines.push(``)
 
-  // Import model types (as type-only for phantom types)
+  // Import model types with Model suffix to avoid collision with entity set names
   if (referencedTypes.size > 0) {
     lines.push(`import type {`)
     const typesList = Array.from(referencedTypes).sort()
     for (let i = 0; i < typesList.length; i++) {
       const isLast = i === typesList.length - 1
-      lines.push(`  ${typesList[i]}${isLast ? "" : ","}`)
+      lines.push(`  ${typesList[i]} as ${typesList[i]}Model${isLast ? "" : ","}`)
     }
     lines.push(`} from "./Models"`)
     lines.push(``)
@@ -262,7 +262,7 @@ const generatePathBuildersFile = (dataModel: DataModel): string => {
   lines.push(`}`)
   lines.push(``)
 
-  // Entity set roots (camelCase to avoid collision with type names)
+  // Entity set roots (PascalCase, types use Model suffix to avoid collision)
   lines.push(`// ============================================================================`)
   lines.push(`// Entity Set Roots`)
   lines.push(`// ============================================================================`)
@@ -270,14 +270,13 @@ const generatePathBuildersFile = (dataModel: DataModel): string => {
   for (const entitySet of dataModel.entitySets.values()) {
     const entityType = dataModel.entityTypes.get(entitySet.entityTypeFqName)
     if (entityType) {
-      const rootName = toCamelCase(entitySet.name)
       lines.push(`/**`)
       lines.push(` * Root path for ${entitySet.name} entity set.`)
       lines.push(` *`)
       lines.push(` * @since 1.0.0`)
       lines.push(` * @category entity-sets`)
       lines.push(` */`)
-      lines.push(`export const ${rootName}: Path<${entityType.name}, true> = "${entitySet.name}" as Path<${entityType.name}, true>`)
+      lines.push(`export const ${entitySet.name}: Path<${entityType.name}Model, true> = "${entitySet.name}" as Path<${entityType.name}Model, true>`)
       lines.push(``)
     }
   }
@@ -293,8 +292,8 @@ const generatePathBuildersFile = (dataModel: DataModel): string => {
   lines.push(` *`)
   lines.push(` * @example`)
   lines.push(` * \`\`\`typescript`)
-  lines.push(` * pipe(people, byKey("russellwhyte"))  // Path<Person, false>`)
-  lines.push(` * pipe(airports, byKey("KSFO"))        // Path<Airport, false>`)
+  lines.push(` * pipe(People, byKey("russellwhyte"))  // Path<PersonModel, false>`)
+  lines.push(` * pipe(Airports, byKey("KSFO"))        // Path<AirportModel, false>`)
   lines.push(` * \`\`\``)
   lines.push(` *`)
   lines.push(` * @since 1.0.0`)
@@ -332,8 +331,8 @@ const generatePathBuildersFile = (dataModel: DataModel): string => {
       lines.push(` * @since 1.0.0`)
       lines.push(` * @category navigation`)
       lines.push(` */`)
-      lines.push(`export const ${fnName} = (base: Path<${sourceEntity}, false>): Path<${targetType}, ${prop.isCollection}> =>`)
-      lines.push(`  \`\${base}/${prop.odataName}\` as Path<${targetType}, ${prop.isCollection}>`)
+      lines.push(`export const ${fnName} = (base: Path<${sourceEntity}Model, false>): Path<${targetType}Model, ${prop.isCollection}> =>`)
+      lines.push(`  \`\${base}/${prop.odataName}\` as Path<${targetType}Model, ${prop.isCollection}>`)
       lines.push(``)
     }
   }
@@ -358,7 +357,7 @@ const generatePathBuildersFile = (dataModel: DataModel): string => {
   lines.push(` *`)
   lines.push(` * @example`)
   lines.push(` * \`\`\`typescript`)
-  lines.push(` * const allPeople = yield* pipe(people, fetchCollection(Person))`)
+  lines.push(` * const allPeople = yield* pipe(People, fetchCollection(Person))`)
   lines.push(` * \`\`\``)
   lines.push(` *`)
   lines.push(` * @since 1.0.0`)
@@ -373,7 +372,7 @@ const generatePathBuildersFile = (dataModel: DataModel): string => {
   lines.push(` *`)
   lines.push(` * @example`)
   lines.push(` * \`\`\`typescript`)
-  lines.push(` * const person = yield* pipe(people, byKey("russell"), fetchOne(Person))`)
+  lines.push(` * const person = yield* pipe(People, byKey("russell"), fetchOne(Person))`)
   lines.push(` * \`\`\``)
   lines.push(` *`)
   lines.push(` * @since 1.0.0`)
@@ -410,8 +409,8 @@ const generateTypeCastFunctions = (dataModel: DataModel): Array<string> => {
       lines.push(` * @since 1.0.0`)
       lines.push(` * @category casting`)
       lines.push(` */`)
-      lines.push(`export const ${fnName} = (base: Path<${entityType.name}, true>): Path<${derived.name}, true> =>`)
-      lines.push(`  \`\${base}/${castPath}\` as Path<${derived.name}, true>`)
+      lines.push(`export const ${fnName} = (base: Path<${entityType.name}Model, true>): Path<${derived.name}Model, true> =>`)
+      lines.push(`  \`\${base}/${castPath}\` as Path<${derived.name}Model, true>`)
       lines.push(``)
     }
   }

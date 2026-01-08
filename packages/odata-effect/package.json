@@ -6,7 +6,7 @@
   "description": "Effect-based OData client infrastructure for SAP OData V2/V4 services",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jloleysens/odata-effect.git",
+    "url": "https://github.com/joepjoosten/odata-effect.git",
     "directory": "packages/odata-effect"
   },
   "publishConfig": {

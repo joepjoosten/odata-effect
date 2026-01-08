@@ -6,7 +6,7 @@
   "description": "Effect-based OData service code generator",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jloleysens/odata-effect.git",
+    "url": "https://github.com/joepjoosten/odata-effect.git",
     "directory": "packages/odata-effect-generator"
   },
   "publishConfig": {

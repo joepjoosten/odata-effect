@@ -6,7 +6,7 @@
   "description": "Promise-based OData client for non-Effect environments",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jloleysens/odata-effect.git",
+    "url": "https://github.com/joepjoosten/odata-effect.git",
     "directory": "packages/odata-effect-promise"
   },
   "publishConfig": {

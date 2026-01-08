@@ -33,9 +33,9 @@ describe("V4 Navigation Generation", () => {
       expect(content).toContain("readonly _collection: IsCollection")
 
       // Check entity set roots (PascalCase, types use Model suffix)
-      expect(content).toContain('export const People: Path<PersonModel, true> = "People"')
-      expect(content).toContain('export const Airlines: Path<AirlineModel, true> = "Airlines"')
-      expect(content).toContain('export const Airports: Path<AirportModel, true> = "Airports"')
+      expect(content).toContain("export const People: Path<PersonModel, true> = \"People\"")
+      expect(content).toContain("export const Airlines: Path<AirlineModel, true> = \"Airlines\"")
+      expect(content).toContain("export const Airports: Path<AirportModel, true> = \"Airports\"")
 
       // Check byKey function
       expect(content).toContain("export const byKey = <T>(key: string | number)")

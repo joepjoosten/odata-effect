@@ -21,15 +21,9 @@
  *
  * @since 1.0.0
  */
-import type {
-  DataModel,
-  EntityTypeModel
-} from "../model/DataModel.js"
+import type { DataModel, EntityTypeModel } from "../model/DataModel.js"
 import type { ODataVersion } from "../parser/EdmxSchema.js"
-import {
-  getClassName,
-  toCamelCase
-} from "./NamingHelper.js"
+import { getClassName, toCamelCase } from "./NamingHelper.js"
 
 /**
  * Version-specific configuration.
@@ -52,8 +46,7 @@ const V4_CONFIG: VersionConfig = {
   queryOptionsType: "ODataV4QueryOptions"
 }
 
-const getVersionConfig = (version: ODataVersion): VersionConfig =>
-  version === "V4" ? V4_CONFIG : V2_CONFIG
+const getVersionConfig = (version: ODataVersion): VersionConfig => version === "V4" ? V4_CONFIG : V2_CONFIG
 
 /**
  * Get the path builders module name.
@@ -163,7 +156,10 @@ const getDerivedTypes = (
     if (entityType.baseType === baseTypeFqName) {
       derived.push(entityType)
       // Recursively get further derived types
-      derived.push(...getDerivedTypes(entityType.fqName, dataModel))
+      const furtherDerived = getDerivedTypes(entityType.fqName, dataModel)
+      for (const d of furtherDerived) {
+        derived.push(d)
+      }
     }
   }
 
@@ -226,13 +222,12 @@ const generatePathBuildersFile = (dataModel: DataModel): string => {
   lines.push(``)
 
   // Imports
-  lines.push(`import * as ${versionConfig.odataNamespace} from "@odata-effect/odata-effect/${versionConfig.odataNamespace}"`)
-  lines.push(`import type { ${versionConfig.queryOptionsType} } from "@odata-effect/odata-effect/${versionConfig.clientModule}"`)
-  const runtimeModule = dataModel.version === "V4" ? "ODataV4Runtime" : "ODataRuntime"
+  lines.push(
+    `import { ${versionConfig.odataNamespace}, ${versionConfig.clientModule}} from "@odata-effect/odata-effect"`
+  )
   const runtimeType = dataModel.version === "V4" ? "ODataV4Runtime" : "ODataRuntime"
-  lines.push(`import type { ${runtimeType} } from "@odata-effect/odata-effect-promise/${runtimeModule}"`)
-  lines.push(`import type * as Schema from "effect/Schema"`)
-  lines.push(`import type { Effect } from "effect"`)
+  lines.push(`import type { Runtime } from "@odata-effect/odata-effect-promise"`)
+  lines.push(`import type { Effect, Schema } from "effect"`)
   lines.push(``)
 
   // Import model types with Model suffix to avoid collision with entity set names
@@ -280,7 +275,9 @@ const generatePathBuildersFile = (dataModel: DataModel): string => {
       lines.push(` * @since 1.0.0`)
       lines.push(` * @category entity-sets`)
       lines.push(` */`)
-      lines.push(`export const ${entitySet.name}: Path<${entityType.name}Model, true> = "${entitySet.name}" as Path<${entityType.name}Model, true>`)
+      lines.push(
+        `export const ${entitySet.name}: Path<${entityType.name}Model, true> = "${entitySet.name}" as Path<${entityType.name}Model, true>`
+      )
       lines.push(``)
     }
   }
@@ -335,7 +332,9 @@ const generatePathBuildersFile = (dataModel: DataModel): string => {
       lines.push(` * @since 1.0.0`)
       lines.push(` * @category navigation`)
       lines.push(` */`)
-      lines.push(`export const ${fnName} = (base: Path<${sourceEntity}Model, false>): Path<${targetType}Model, ${prop.isCollection}> =>`)
+      lines.push(
+        `export const ${fnName} = (base: Path<${sourceEntity}Model, false>): Path<${targetType}Model, ${prop.isCollection}> =>`
+      )
       lines.push(`  \`\${base}/${prop.odataName}\` as Path<${targetType}Model, ${prop.isCollection}>`)
       lines.push(``)
     }
@@ -348,7 +347,9 @@ const generatePathBuildersFile = (dataModel: DataModel): string => {
     lines.push(`// Type Casting (for entity inheritance)`)
     lines.push(`// ============================================================================`)
     lines.push(``)
-    lines.push(...castFunctions)
+    for (const castFunction of castFunctions) {
+      lines.push(castFunction)
+    }
   }
 
   // Terminal operations (Effect-based)
@@ -368,7 +369,7 @@ const generatePathBuildersFile = (dataModel: DataModel): string => {
   lines.push(` * @category operations`)
   lines.push(` */`)
   lines.push(`export const fetchCollection = <T, I>(schema: Schema.Schema<T, I>) =>`)
-  lines.push(`  (path: Path<T, true>, options?: ${versionConfig.queryOptionsType}) =>`)
+  lines.push(`  (path: Path<T, true>, options?: ${versionConfig.clientModule}.${versionConfig.queryOptionsType}) =>`)
   lines.push(`    ${versionConfig.odataNamespace}.getCollection(path, schema, options)`)
   lines.push(``)
   lines.push(`/**`)
@@ -383,7 +384,7 @@ const generatePathBuildersFile = (dataModel: DataModel): string => {
   lines.push(` * @category operations`)
   lines.push(` */`)
   lines.push(`export const fetchOne = <T, I>(schema: Schema.Schema<T, I>) =>`)
-  lines.push(`  (path: Path<T, false>, options?: ${versionConfig.queryOptionsType}) =>`)
+  lines.push(`  (path: Path<T, false>, options?: ${versionConfig.clientModule}.${versionConfig.queryOptionsType}) =>`)
   lines.push(`    ${versionConfig.odataNamespace}.get(path, schema, options)`)
   lines.push(``)
 
@@ -409,8 +410,8 @@ const generatePathBuildersFile = (dataModel: DataModel): string => {
   lines.push(` * @since 1.0.0`)
   lines.push(` * @category operations`)
   lines.push(` */`)
-  lines.push(`export const toPromise = (runtime: ${runtimeType}) =>`)
-  lines.push(`  <A, E, R>(effect: Effect<A, E, R>): Promise<A> =>`)
+  lines.push(`export const toPromise = (runtime: Runtime.${runtimeType}) =>`)
+  lines.push(`  <A, E, R>(effect: Effect.Effect<A, E, R>): Promise<A> =>`)
   lines.push(`    runtime.runPromise(effect as any)`)
   lines.push(``)
 
@@ -440,7 +441,9 @@ const generateTypeCastFunctions = (dataModel: DataModel): Array<string> => {
       lines.push(` * @since 1.0.0`)
       lines.push(` * @category casting`)
       lines.push(` */`)
-      lines.push(`export const ${fnName} = (base: Path<${entityType.name}Model, true>): Path<${derived.name}Model, true> =>`)
+      lines.push(
+        `export const ${fnName} = (base: Path<${entityType.name}Model, true>): Path<${derived.name}Model, true> =>`
+      )
       lines.push(`  \`\${base}/${castPath}\` as Path<${derived.name}Model, true>`)
       lines.push(``)
     }

@@ -23,7 +23,6 @@ import {
 } from "./PackageGenerator.js"
 import { generateQueryModels } from "./QueryModelsGenerator.js"
 import { generateServiceFns } from "./ServiceFnGenerator.js"
-import { generatePromiseServiceFns } from "./ServiceFnPromiseGenerator.js"
 
 /**
  * Generator configuration.
@@ -92,9 +91,6 @@ export const generate = (
     // Generate tree-shakable service function files
     const serviceResult = generateServiceFns(dataModel)
 
-    // Generate Promise-based service function files
-    const promiseServiceResult = generatePromiseServiceFns(dataModel)
-
     // Generate operations file (FunctionImports, Functions, Actions)
     const operationsResult = generateOperations(dataModel)
 
@@ -116,17 +112,12 @@ export const generate = (
         path: path.join(sourceDir, svc.fileName),
         content: svc.content
       })),
-      // Promise-based entity service function files
-      ...promiseServiceResult.entityServices.map((svc) => ({
-        path: path.join(sourceDir, svc.fileName),
-        content: svc.content
-      })),
       // Operations file (only if there are unbound operations)
       ...(operationsResult.operationsFile
         ? [{
-            path: path.join(sourceDir, operationsResult.operationsFile.fileName),
-            content: operationsResult.operationsFile.content
-          }]
+          path: path.join(sourceDir, operationsResult.operationsFile.fileName),
+          content: operationsResult.operationsFile.content
+        }]
         : []),
       // Navigation builder files
       ...navigationResult.navigationFiles.map((nav) => ({

@@ -8,7 +8,6 @@ import { generateModels } from "../../src/generator/ModelsGenerator.js"
 import { generateOperations } from "../../src/generator/OperationsGenerator.js"
 import { generateQueryModels } from "../../src/generator/QueryModelsGenerator.js"
 import { generateServiceFns } from "../../src/generator/ServiceFnGenerator.js"
-import { generatePromiseServiceFns } from "../../src/generator/ServiceFnPromiseGenerator.js"
 import { parseODataMetadata } from "../../src/parser/XmlParser.js"
 
 const resourceDir = path.resolve(__dirname, "../resource")
@@ -68,26 +67,6 @@ describe("V2 Integration", () => {
       expect(productService.content).toContain("export const del")
       expect(productService.content).toContain("export { del as delete }")
 
-      // Generate Promise-based service functions
-      const promiseServiceResult = generatePromiseServiceFns(dataModel)
-      expect(promiseServiceResult.entityServices.length).toBe(3)
-
-      // Check ProductServicePromise content
-      const productPromiseService = promiseServiceResult.entityServices.find(
-        (s) => s.fileName === "ProductServicePromise.ts"
-      )!
-      expect(productPromiseService).toBeDefined()
-      expect(productPromiseService.content).toContain("import { createODataRuntime, type ODataRuntime } from")
-      expect(productPromiseService.content).toContain("import * as ProductService from")
-      expect(productPromiseService.content).toContain("export const getAll = (")
-      expect(productPromiseService.content).toContain("runtime: ODataRuntime")
-      expect(productPromiseService.content).toContain("runtime.runPromise(ProductService.getAll")
-      expect(productPromiseService.content).toContain("export const getById = (")
-      expect(productPromiseService.content).toContain("export const create = (")
-      expect(productPromiseService.content).toContain("export const update = (")
-      expect(productPromiseService.content).toContain("export const del = (")
-      expect(productPromiseService.content).toContain("export { del as delete }")
-
       // Generate Operations.ts (FunctionImports)
       const operationsResult = generateOperations(dataModel)
       expect(operationsResult.operationsFile).toBeDefined()
@@ -104,7 +83,6 @@ describe("V2 Integration", () => {
       expect(indexCode).toContain("Product")
       expect(indexCode).toContain("EditableProduct")
       expect(indexCode).toContain("export * as ProductService")
-      expect(indexCode).toContain("export * as ProductServicePromise")
       expect(indexCode).toContain("export * as Operations")
       expect(indexCode).toContain("qProduct")
       expect(indexCode).toContain("productQuery")

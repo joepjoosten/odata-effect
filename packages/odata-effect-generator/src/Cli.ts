@@ -54,7 +54,14 @@ const generateCommand = Command.make(
 ).pipe(
   Command.withDescription("Generate Effect OData client from metadata"),
   Command.withHandler((
-    { force: forceOverwrite, metadataPath: metaPath, outputDir: outDir, packageName: pkgName, serviceName: svcName, filesOnly: onlyFiles }
+    {
+      filesOnly: onlyFiles,
+      force: forceOverwrite,
+      metadataPath: metaPath,
+      outputDir: outDir,
+      packageName: pkgName,
+      serviceName: svcName
+    }
   ) =>
     Effect.gen(function*() {
       const fs = yield* FileSystem.FileSystem

@@ -37,8 +37,7 @@ The generator produces:
 | `Models.ts` | Schema classes for entities and complex types |
 | `QueryModels.ts` | Type-safe query paths for filtering and ordering |
 | `*Service.ts` | Effect-based CRUD service functions for each entity set |
-| `*ServicePromise.ts` | Promise-based wrappers for non-Effect environments |
-| `PathBuilders.ts` | Tree-shakable navigation path builders |
+| `PathBuilders.ts` | Tree-shakable navigation path builders with `toPromise` |
 | `Operations.ts` | Functions/Actions (if present in metadata) |
 | `index.ts` | Re-exports all generated code |
 
@@ -219,20 +218,30 @@ const products = yield* ProductService.getAll(query)
 
 ## Promise-Based Usage
 
-For non-Effect environments, use the Promise-based service functions:
+For non-Effect environments, use the `toPromise` function to convert any Effect to a Promise:
 
 ```typescript
+import { pipe } from "effect"
 import { createODataRuntime } from "@odata-effect/odata-effect-promise"
-import { ProductServicePromise } from "./generated"
+import { ProductService, toPromise, People, byKey, trips, fetchCollection, Trip } from "./generated"
 
 const runtime = createODataRuntime({
   baseUrl: "https://api.example.com",
   servicePath: "/odata/v4/"
 })
 
-// All operations return Promises
-const products = await ProductServicePromise.getAll(runtime)
-const product = await ProductServicePromise.getById(runtime, 123)
+// Service functions - pipe through toPromise
+const products = await ProductService.getAll().pipe(toPromise(runtime))
+const product = await ProductService.getById(123).pipe(toPromise(runtime))
+
+// Path builders - add toPromise at the end of the pipe
+const myTrips = await pipe(
+  People,
+  byKey("russellwhyte"),
+  trips,
+  fetchCollection(Trip),
+  toPromise(runtime)
+)
 
 // Don't forget to dispose when done
 await runtime.dispose()

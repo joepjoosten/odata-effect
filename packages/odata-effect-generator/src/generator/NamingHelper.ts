@@ -86,9 +86,11 @@ export const getServiceClassName = (entitySetName: string): string => {
   if (singular.endsWith("ies")) {
     // "Categories" -> "Category"
     singular = singular.slice(0, -3) + "y"
-  } else if (singular.endsWith("xes") || singular.endsWith("ches") ||
-             singular.endsWith("shes") || singular.endsWith("sses") ||
-             singular.endsWith("zes")) {
+  } else if (
+    singular.endsWith("xes") || singular.endsWith("ches") ||
+    singular.endsWith("shes") || singular.endsWith("sses") ||
+    singular.endsWith("zes")
+  ) {
     // "Boxes" -> "Box", "Beaches" -> "Beach", etc.
     singular = singular.slice(0, -2)
   } else if (singular.endsWith("s") && !singular.endsWith("ss")) {

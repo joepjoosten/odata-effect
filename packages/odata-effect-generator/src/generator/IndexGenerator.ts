@@ -14,7 +14,6 @@ import {
 } from "./NamingHelper.js"
 import { getPathBuildersModuleName } from "./NavigationGenerator.js"
 import { getOperationsModuleName } from "./OperationsGenerator.js"
-import { getPromiseServiceName } from "./ServiceFnPromiseGenerator.js"
 
 /**
  * Generate the index.ts file content.
@@ -69,18 +68,11 @@ export const generateIndex = (dataModel: DataModel): string => {
   lines.push(``)
 
   // Individual Entity Services (tree-shakable module namespace re-exports)
-  lines.push(`// Individual Entity Services (tree-shakable)`)
+  lines.push(`// Entity Services (tree-shakable)`)
+  lines.push(`// Use toPromise(runtime) from PathBuilders to convert Effect to Promise`)
   for (const entitySet of dataModel.entitySets.values()) {
     const serviceClassName = getServiceClassName(entitySet.name)
     lines.push(`export * as ${serviceClassName} from "./${serviceClassName}"`)
-  }
-  lines.push(``)
-
-  // Promise-based Entity Services (for non-Effect environments)
-  lines.push(`// Promise-based Entity Services (for non-Effect environments)`)
-  for (const entitySet of dataModel.entitySets.values()) {
-    const promiseServiceName = getPromiseServiceName(entitySet.name)
-    lines.push(`export * as ${promiseServiceName} from "./${promiseServiceName}"`)
   }
   lines.push(``)
 

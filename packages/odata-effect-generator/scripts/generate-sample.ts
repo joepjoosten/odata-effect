@@ -2,14 +2,14 @@
  * Script to generate a sample PathBuilders file for inspection.
  * Run with: pnpm exec tsx scripts/generate-sample.ts
  */
+import { Effect } from "effect"
 import * as fs from "node:fs"
 import * as path from "node:path"
 import { fileURLToPath } from "node:url"
-import { Effect } from "effect"
-import { parseODataMetadata } from "../src/parser/XmlParser.js"
 import { digestMetadata } from "../src/digester/Digester.js"
-import { generateNavigations } from "../src/generator/NavigationGenerator.js"
 import { generateIndex } from "../src/generator/IndexGenerator.js"
+import { generateNavigations } from "../src/generator/NavigationGenerator.js"
+import { parseODataMetadata } from "../src/parser/XmlParser.js"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -31,7 +31,7 @@ Effect.runPromise(
     const indexContent = generateIndex(dataModel)
     // Print just the path builders section
     const lines = indexContent.split("\n")
-    const pathBuildersStart = lines.findIndex(l => l.includes("Path Builders"))
+    const pathBuildersStart = lines.findIndex((l) => l.includes("Path Builders"))
     if (pathBuildersStart >= 0) {
       console.log(lines.slice(pathBuildersStart, pathBuildersStart + 3).join("\n"))
     }

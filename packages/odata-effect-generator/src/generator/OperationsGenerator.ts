@@ -125,7 +125,7 @@ const returnsModelType = (operation: OperationModel, dataModel: DataModel): bool
 const getReturnTypeName = (operation: OperationModel): string => {
   if (!operation.returnType) return "void"
 
-  const { typeMapping, isCollection } = operation.returnType
+  const { isCollection, typeMapping } = operation.returnType
   const baseType = typeMapping.tsType
 
   return isCollection ? `ReadonlyArray<${baseType}>` : baseType
@@ -364,19 +364,29 @@ const generateV2FunctionImport = (
 
   // Determine the execute function to use
   if (!operation.returnType) {
-    lines.push(`    return yield* ODataOps.executeFunctionImportVoid(client, config, "${operation.odataName}", ${paramsArg})`)
+    lines.push(
+      `    return yield* ODataOps.executeFunctionImportVoid(client, config, "${operation.odataName}", ${paramsArg})`
+    )
   } else if (operation.returnType.isCollection) {
     if (returnsModel) {
-      lines.push(`    return yield* ODataOps.executeFunctionImportCollection(client, config, "${operation.odataName}", ${operation.returnType.typeMapping.tsType}, ${paramsArg})`)
+      lines.push(
+        `    return yield* ODataOps.executeFunctionImportCollection(client, config, "${operation.odataName}", ${operation.returnType.typeMapping.tsType}, ${paramsArg})`
+      )
     } else {
-      lines.push(`    return yield* ODataOps.executeFunctionImportCollection(client, config, "${operation.odataName}", ${operation.returnType.typeMapping.effectSchema}, ${paramsArg})`)
+      lines.push(
+        `    return yield* ODataOps.executeFunctionImportCollection(client, config, "${operation.odataName}", ${operation.returnType.typeMapping.effectSchema}, ${paramsArg})`
+      )
     }
   } else if (returnsModel) {
-    lines.push(`    return yield* ODataOps.executeFunctionImportEntity(client, config, "${operation.odataName}", ${operation.returnType.typeMapping.tsType}, ${paramsArg})`)
+    lines.push(
+      `    return yield* ODataOps.executeFunctionImportEntity(client, config, "${operation.odataName}", ${operation.returnType.typeMapping.tsType}, ${paramsArg})`
+    )
   } else {
     // Primitive return
     const propertyName = operation.odataName
-    lines.push(`    return yield* ODataOps.executeFunctionImportPrimitive(client, config, "${operation.odataName}", "${propertyName}", ${operation.returnType.typeMapping.effectSchema}, ${paramsArg})`)
+    lines.push(
+      `    return yield* ODataOps.executeFunctionImportPrimitive(client, config, "${operation.odataName}", "${propertyName}", ${operation.returnType.typeMapping.effectSchema}, ${paramsArg})`
+    )
   }
 
   lines.push(`  })`)
@@ -444,15 +454,23 @@ const generateV4Operation = (
       lines.push(`    return yield* ODataOps.executeV4FunctionVoid(client, config, url)`)
     } else if (operation.returnType.isCollection) {
       if (returnsModel) {
-        lines.push(`    return yield* ODataOps.executeV4FunctionCollection(client, config, url, ${operation.returnType.typeMapping.tsType})`)
+        lines.push(
+          `    return yield* ODataOps.executeV4FunctionCollection(client, config, url, ${operation.returnType.typeMapping.tsType})`
+        )
       } else {
-        lines.push(`    return yield* ODataOps.executeV4FunctionCollection(client, config, url, ${operation.returnType.typeMapping.effectSchema})`)
+        lines.push(
+          `    return yield* ODataOps.executeV4FunctionCollection(client, config, url, ${operation.returnType.typeMapping.effectSchema})`
+        )
       }
     } else if (returnsModel) {
-      lines.push(`    return yield* ODataOps.executeV4FunctionEntity(client, config, url, ${operation.returnType.typeMapping.tsType})`)
+      lines.push(
+        `    return yield* ODataOps.executeV4FunctionEntity(client, config, url, ${operation.returnType.typeMapping.tsType})`
+      )
     } else {
       // Primitive return
-      lines.push(`    return yield* ODataOps.executeV4FunctionPrimitive(client, config, url, ${operation.returnType.typeMapping.effectSchema})`)
+      lines.push(
+        `    return yield* ODataOps.executeV4FunctionPrimitive(client, config, url, ${operation.returnType.typeMapping.effectSchema})`
+      )
     }
   } else {
     // V4 Actions use POST with body
@@ -465,15 +483,23 @@ const generateV4Operation = (
       lines.push(`    return yield* ODataOps.executeV4ActionVoid(client, config, url, ${bodyArg})`)
     } else if (operation.returnType.isCollection) {
       if (returnsModel) {
-        lines.push(`    return yield* ODataOps.executeV4ActionCollection(client, config, url, ${operation.returnType.typeMapping.tsType}, ${bodyArg})`)
+        lines.push(
+          `    return yield* ODataOps.executeV4ActionCollection(client, config, url, ${operation.returnType.typeMapping.tsType}, ${bodyArg})`
+        )
       } else {
-        lines.push(`    return yield* ODataOps.executeV4ActionCollection(client, config, url, ${operation.returnType.typeMapping.effectSchema}, ${bodyArg})`)
+        lines.push(
+          `    return yield* ODataOps.executeV4ActionCollection(client, config, url, ${operation.returnType.typeMapping.effectSchema}, ${bodyArg})`
+        )
       }
     } else if (returnsModel) {
-      lines.push(`    return yield* ODataOps.executeV4ActionEntity(client, config, url, ${operation.returnType.typeMapping.tsType}, ${bodyArg})`)
+      lines.push(
+        `    return yield* ODataOps.executeV4ActionEntity(client, config, url, ${operation.returnType.typeMapping.tsType}, ${bodyArg})`
+      )
     } else {
       // Primitive return - use entity with schema
-      lines.push(`    return yield* ODataOps.executeV4FunctionPrimitive(client, config, url, ${operation.returnType.typeMapping.effectSchema})`)
+      lines.push(
+        `    return yield* ODataOps.executeV4FunctionPrimitive(client, config, url, ${operation.returnType.typeMapping.effectSchema})`
+      )
     }
   }
 

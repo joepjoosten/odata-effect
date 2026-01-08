@@ -81,14 +81,14 @@ export * as QueryModelsGenerator from "./generator/QueryModelsGenerator.js"
 export * as ServiceFnGenerator from "./generator/ServiceFnGenerator.js"
 
 /**
- * Generator for Promise-based service functions.
+ * Generator for tree-shakable navigation path builders.
  *
- * This module generates Promise-based wrappers around the Effect-based
- * service functions, allowing usage in non-Effect environments.
+ * This module generates pipe-based navigation functions and the toPromise
+ * helper for Promise-based environments.
  *
  * @since 1.0.0
  */
-export * as ServiceFnPromiseGenerator from "./generator/ServiceFnPromiseGenerator.js"
+export * as NavigationGenerator from "./generator/NavigationGenerator.js"
 
 /**
  * Intermediate representation for OData metadata.

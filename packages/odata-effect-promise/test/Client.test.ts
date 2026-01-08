@@ -3,13 +3,13 @@ import { describe, expect, it } from "vitest"
 describe("ODataEffectPromise", () => {
   describe("Runtime creation", () => {
     it("exports createODataRuntime", async () => {
-      const { createODataRuntime } = await import("../src/index.js")
-      expect(typeof createODataRuntime).toBe("function")
+      const { Runtime } = await import("../src/index.js")
+      expect(typeof Runtime.createODataRuntime).toBe("function")
     })
 
     it("exports createODataV4Runtime", async () => {
-      const { createODataV4Runtime } = await import("../src/index.js")
-      expect(typeof createODataV4Runtime).toBe("function")
+      const { Runtime } = await import("../src/index.js")
+      expect(typeof Runtime.createODataV4Runtime).toBe("function")
     })
   })
 
@@ -98,18 +98,18 @@ describe("ODataEffectPromise", () => {
   })
 
   describe("Namespace exports", () => {
-    it("exports OData namespace", async () => {
-      const { OData } = await import("../src/index.js")
-      expect(typeof OData.get).toBe("function")
-      expect(typeof OData.getCollection).toBe("function")
-      expect(typeof OData.post).toBe("function")
+    it("exports v2 namespace", async () => {
+      const { v2 } = await import("../src/index.js")
+      expect(typeof v2.get).toBe("function")
+      expect(typeof v2.getCollection).toBe("function")
+      expect(typeof v2.post).toBe("function")
     })
 
-    it("exports ODataV4 namespace", async () => {
-      const { ODataV4 } = await import("../src/index.js")
-      expect(typeof ODataV4.get).toBe("function")
-      expect(typeof ODataV4.getCollection).toBe("function")
-      expect(typeof ODataV4.post).toBe("function")
+    it("exports v4 namespace", async () => {
+      const { v4 } = await import("../src/index.js")
+      expect(typeof v4.get).toBe("function")
+      expect(typeof v4.getCollection).toBe("function")
+      expect(typeof v4.post).toBe("function")
     })
   })
 })

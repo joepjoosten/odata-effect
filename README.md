@@ -2,6 +2,8 @@
 
 Effect-based OData client library for SAP OData V2/V4 services.
 
+Inspired by [odata2ts](https://github.com/odata2ts/odata2ts).
+
 ## Packages
 
 | Package | Description |
@@ -66,6 +68,7 @@ odata-effect-gen --metadata ./metadata.xml --output ./generated
 
 ## Features
 
+- Fully treeshakable, including generated clients
 - Type-safe OData V2 and V4 clients
 - Effect-based error handling with detailed error types
 - Query builder with type-safe filtering and ordering

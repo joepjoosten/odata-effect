@@ -65,7 +65,7 @@ await runtime.dispose()
 ### Generate Type-Safe Clients
 
 ```bash
-odata-effect-gen --metadata ./metadata.xml --output ./generated
+odata-effect-gen generate ./metadata.xml ./generated
 ```
 
 ## Features

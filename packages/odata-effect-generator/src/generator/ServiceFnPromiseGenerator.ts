@@ -129,28 +129,29 @@ const generatePromiseServiceFile = (
   lines.push(` *`)
   lines.push(` * @since 1.0.0`)
   lines.push(` */`)
-  lines.push(`import { ${versionConfig.runtimeImport} } from "@odata-effect/odata-effect-promise"`)
+  lines.push(`import { ${versionConfig.runtimeImport} } from "@odata-effect/odata-effect-promise/Runtime"`)
   lines.push(`import * as ${serviceClassName} from "./${serviceClassName}.js"`)
   lines.push(``)
 
-  // Import models
-  lines.push(`import {`)
+  // Import models (type-only since they're only used in type annotations)
+  lines.push(`import type {`)
   lines.push(`  ${entityName},`)
   if (hasKeys) {
-    lines.push(`  type ${idTypeName},`)
+    lines.push(`  ${idTypeName},`)
   }
   lines.push(`  ${editableName}`)
   lines.push(`} from "./Models.js"`)
   lines.push(``)
 
-  // Query options import
+  // Query options import (using subpath imports for tree-shaking)
   const queryOptionsType = dataModel.version === "V4" ? "ODataV4QueryOptions" : "ODataQueryOptions"
-  lines.push(`import type { ${queryOptionsType} } from "@odata-effect/odata-effect"`)
+  const queryOptionsModule = dataModel.version === "V4" ? "ODataV4Client" : "ODataClient"
+  lines.push(`import type { ${queryOptionsType} } from "@odata-effect/odata-effect/${queryOptionsModule}"`)
   lines.push(``)
 
   // Re-export runtime type for convenience
   lines.push(`// Re-export runtime type for convenience`)
-  lines.push(`export type { ${versionConfig.runtimeType} } from "@odata-effect/odata-effect-promise"`)
+  lines.push(`export type { ${versionConfig.runtimeType} } from "@odata-effect/odata-effect-promise/Runtime"`)
   lines.push(``)
 
   lines.push(`// ============================================================================`)

@@ -136,18 +136,29 @@ const generateEntityServiceFnFile = (
   lines.push(`} from "./Models.js"`)
   lines.push(``)
 
-  // Import OData infrastructure (version-specific)
+  // Import OData infrastructure (version-specific) using subpath imports for tree-shaking
+  if (isV4) {
+    lines.push(`import * as ${versionConfig.odataNamespace} from "@odata-effect/odata-effect/ODataV4"`)
+    lines.push(`import {`)
+    lines.push(`  type ${versionConfig.clientConfigTag},`)
+    lines.push(`  ${versionConfig.buildEntityPath},`)
+    lines.push(`  type ${versionConfig.queryOptionsType}`)
+    lines.push(`} from "@odata-effect/odata-effect/ODataV4Client"`)
+  } else {
+    lines.push(`import * as ${versionConfig.odataNamespace} from "@odata-effect/odata-effect/OData"`)
+    lines.push(`import {`)
+    lines.push(`  type ${versionConfig.clientConfigTag},`)
+    lines.push(`  ${versionConfig.buildEntityPath},`)
+    lines.push(`  type ${versionConfig.queryOptionsType}`)
+    lines.push(`} from "@odata-effect/odata-effect/ODataClient"`)
+  }
   lines.push(`import {`)
-  lines.push(`  ${versionConfig.odataNamespace},`)
-  lines.push(`  ${versionConfig.buildEntityPath},`)
-  lines.push(`  ${versionConfig.clientConfigTag},`)
-  lines.push(`  type ${versionConfig.queryOptionsType},`)
   if (!isV4) {
     lines.push(`  type SapError,`)
   }
   lines.push(`  type ODataError,`)
   lines.push(`  type ParseError`)
-  lines.push(`} from "@odata-effect/odata-effect"`)
+  lines.push(`} from "@odata-effect/odata-effect/Errors"`)
   lines.push(``)
 
   // Service error type

@@ -13,14 +13,19 @@ pnpm add -g @odata-effect/odata-effect-generator
 ## Usage
 
 ```bash
-odata-effect-gen --metadata ./metadata.xml --output ./generated
+odata-effect-gen generate ./metadata.xml ./generated
 ```
+
+### Arguments
+
+- `<metadata-path>`: Path to OData metadata XML file (required)
+- `<output-dir>`: Output directory for generated code (required)
 
 ### Options
 
-- `--metadata, -m`: Path to OData metadata XML file (required)
-- `--output, -o`: Output directory for generated code (required)
-- `--package, -p`: NPM package name (optional)
+- `--service-name`: Override service name (defaults to EntityContainer name)
+- `--package-name`: NPM package name (defaults to @template/<service-name>-effect)
+- `--force`: Overwrite existing files
 
 ## Generated Code
 

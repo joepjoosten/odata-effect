@@ -26,6 +26,7 @@ odata-effect-gen generate ./metadata.xml ./generated
 - `--service-name`: Override service name (defaults to EntityContainer name)
 - `--package-name`: NPM package name (defaults to @template/<service-name>-effect)
 - `--force`: Overwrite existing files
+- `--files-only`: Generate only source files directly in output-dir (no package.json, tsconfig, src/ subdirectory)
 
 ## Generated Code
 

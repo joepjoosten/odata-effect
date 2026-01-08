@@ -34,6 +34,8 @@ export interface GeneratorConfig {
   readonly packageName?: string
   readonly serviceName?: string
   readonly force?: boolean
+  /** Generate only source files directly in outputDir (no package.json, tsconfig, src/ subdirectory) */
+  readonly filesOnly?: boolean
 }
 
 /**
@@ -75,6 +77,10 @@ export const generate = (
     const outputDir = config.outputDir
     const serviceName = config.serviceName ?? dataModel.serviceName
     const packageName = config.packageName ?? `@template/${serviceName.toLowerCase()}-effect`
+    const filesOnly = config.filesOnly ?? false
+
+    // When filesOnly is true, output directly to outputDir; otherwise use outputDir/src
+    const sourceDir = filesOnly ? outputDir : path.join(outputDir, "src")
 
     const packageConfig: PackageConfig = {
       packageName,
@@ -87,32 +93,34 @@ export const generate = (
     // Generate Promise-based service function files
     const promiseServiceResult = generatePromiseServiceFns(dataModel)
 
-    // Generate all files
-    const files: Array<GeneratedFile> = [
-      // Source files
+    // Generate source files
+    const sourceFiles: Array<GeneratedFile> = [
       {
-        path: path.join(outputDir, "src", "Models.ts"),
+        path: path.join(sourceDir, "Models.ts"),
         content: generateModels(dataModel)
       },
       {
-        path: path.join(outputDir, "src", "QueryModels.ts"),
+        path: path.join(sourceDir, "QueryModels.ts"),
         content: generateQueryModels(dataModel)
       },
       // Individual entity service function files (tree-shakable)
       ...serviceResult.entityServices.map((svc) => ({
-        path: path.join(outputDir, "src", svc.fileName),
+        path: path.join(sourceDir, svc.fileName),
         content: svc.content
       })),
       // Promise-based entity service function files
       ...promiseServiceResult.entityServices.map((svc) => ({
-        path: path.join(outputDir, "src", svc.fileName),
+        path: path.join(sourceDir, svc.fileName),
         content: svc.content
       })),
       {
-        path: path.join(outputDir, "src", "index.ts"),
+        path: path.join(sourceDir, "index.ts"),
         content: generateIndex(dataModel)
-      },
-      // Package configuration files
+      }
+    ]
+
+    // Package configuration files (only when not filesOnly)
+    const packageFiles: Array<GeneratedFile> = filesOnly ? [] : [
       {
         path: path.join(outputDir, "package.json"),
         content: generatePackageJson(dataModel, packageConfig)
@@ -139,11 +147,13 @@ export const generate = (
       }
     ]
 
-    // Create output directories
-    yield* fs.makeDirectory(path.join(outputDir, "src"), { recursive: true }).pipe(
+    const files = [...sourceFiles, ...packageFiles]
+
+    // Create output directory
+    yield* fs.makeDirectory(sourceDir, { recursive: true }).pipe(
       Effect.mapError((error) =>
         new GeneratorError({
-          message: `Failed to create output directory: ${outputDir}/src`,
+          message: `Failed to create output directory: ${sourceDir}`,
           cause: error
         })
       )

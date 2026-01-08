@@ -39,17 +39,22 @@ const force = Options.boolean("force").pipe(
   Options.withDescription("Overwrite existing files")
 )
 
+const filesOnly = Options.boolean("files-only").pipe(
+  Options.withDefault(false),
+  Options.withDescription("Generate only source files (no package.json, tsconfig, etc.) directly in output-dir")
+)
+
 // ============================================================================
 // Generate Command
 // ============================================================================
 
 const generateCommand = Command.make(
   "generate",
-  { metadataPath, outputDir, serviceName, packageName, force }
+  { metadataPath, outputDir, serviceName, packageName, force, filesOnly }
 ).pipe(
   Command.withDescription("Generate Effect OData client from metadata"),
   Command.withHandler((
-    { force: forceOverwrite, metadataPath: metaPath, outputDir: outDir, packageName: pkgName, serviceName: svcName }
+    { force: forceOverwrite, metadataPath: metaPath, outputDir: outDir, packageName: pkgName, serviceName: svcName, filesOnly: onlyFiles }
   ) =>
     Effect.gen(function*() {
       const fs = yield* FileSystem.FileSystem
@@ -85,6 +90,7 @@ const generateCommand = Command.make(
       const config = {
         outputDir: outDir,
         force: forceOverwrite,
+        filesOnly: onlyFiles,
         ...(svcName._tag === "Some" ? { serviceName: svcName.value } : {}),
         ...(pkgName._tag === "Some" ? { packageName: pkgName.value } : {})
       }

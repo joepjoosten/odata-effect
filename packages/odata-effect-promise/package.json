@@ -24,10 +24,10 @@
     "coverage": "vitest --coverage"
   },
   "dependencies": {
-    "@effect/platform": "latest",
-    "@effect/platform-node": "latest",
+    "@effect/platform": "^0.94.1",
+    "@effect/platform-node": "^0.104.0",
     "@odata-effect/odata-effect": "workspace:*",
-    "effect": "latest"
+    "effect": "^3.19.14"
   },
   "effect": {
     "generateExports": {

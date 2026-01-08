@@ -27,18 +27,14 @@
     "coverage": "vitest --coverage"
   },
   "dependencies": {
-    "@effect/cli": "latest",
-    "@effect/platform": "latest",
-    "@effect/platform-node": "latest",
-    "effect": "latest",
+    "@effect/cli": "^0.73.0",
+    "@effect/platform": "^0.94.1",
+    "@effect/platform-node": "^0.104.0",
+    "effect": "^3.19.14",
     "xml2js": "^0.6.2"
   },
   "devDependencies": {
-    "@effect/cli": "latest",
-    "@effect/platform": "latest",
-    "@effect/platform-node": "latest",
-    "@types/xml2js": "^0.4.14",
-    "effect": "latest"
+    "@types/xml2js": "^0.4.14"
   },
   "effect": {
     "generateExports": {

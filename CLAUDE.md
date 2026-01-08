@@ -110,3 +110,20 @@ import { HttpClient } from "@effect/platform"
 
 const mockClient = Layer.succeed(HttpClient.HttpClient, mockHttpClient)
 ```
+
+## Releasing
+
+Uses Changesets for versioning and publishing:
+
+```bash
+# Create a changeset (run after making changes)
+pnpm changeset
+
+# Version packages (updates package.json and CHANGELOG)
+pnpm changeset:version
+
+# Publish to npm (usually done by CI)
+pnpm changeset:publish
+```
+
+GitHub Actions automatically creates a "Version Packages" PR when changesets are merged to main. Merging that PR publishes to npm.

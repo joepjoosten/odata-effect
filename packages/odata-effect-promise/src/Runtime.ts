@@ -22,7 +22,7 @@
  */
 import type { HttpClient } from "@effect/platform"
 import { NodeHttpClient } from "@effect/platform-node"
-import type { ODataClient, ODataV4Client } from "@odata-effect/odata-effect"
+import { ODataClient, ODataV4Client } from "@odata-effect/odata-effect"
 import type * as Effect from "effect/Effect"
 import type * as Exit from "effect/Exit"
 import * as Layer from "effect/Layer"

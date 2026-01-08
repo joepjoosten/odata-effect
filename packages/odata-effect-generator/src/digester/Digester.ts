@@ -20,10 +20,10 @@ import {
   type PropertyModel,
   type SingletonModel
 } from "../model/DataModel.js"
+import { detectODataVersion } from "../parser/EdmxSchema.js"
 import type {
   Association,
   ComplexType as EdmxComplexType,
-  detectODataVersion,
   EntityContainer,
   EntityType,
   EnumType,

@@ -5,6 +5,7 @@ import * as path from "node:path"
 import { digestMetadata } from "../../src/digester/Digester.js"
 import { generateIndex } from "../../src/generator/IndexGenerator.js"
 import { generateModels } from "../../src/generator/ModelsGenerator.js"
+import { generateOperations } from "../../src/generator/OperationsGenerator.js"
 import { generateQueryModels } from "../../src/generator/QueryModelsGenerator.js"
 import { generateServiceFns } from "../../src/generator/ServiceFnGenerator.js"
 import { generatePromiseServiceFns } from "../../src/generator/ServiceFnPromiseGenerator.js"
@@ -87,6 +88,16 @@ describe("V2 Integration", () => {
       expect(productPromiseService.content).toContain("export const del = (")
       expect(productPromiseService.content).toContain("export { del as delete }")
 
+      // Generate Operations.ts (FunctionImports)
+      const operationsResult = generateOperations(dataModel)
+      expect(operationsResult.operationsFile).toBeDefined()
+      expect(operationsResult.operationsFile!.fileName).toBe("Operations.ts")
+      expect(operationsResult.operationsFile!.content).toContain("getProductsByRating")
+      expect(operationsResult.operationsFile!.content).toContain("GetProductsByRatingParams")
+      expect(operationsResult.operationsFile!.content).toContain("rating:")
+      expect(operationsResult.operationsFile!.content).toContain("ODataOps.executeFunctionImportCollection")
+      expect(operationsResult.operationsFile!.content).toContain("Effect.gen")
+
       // Generate index.ts
       const indexCode = generateIndex(dataModel)
       expect(indexCode).toContain("export {")
@@ -94,6 +105,7 @@ describe("V2 Integration", () => {
       expect(indexCode).toContain("EditableProduct")
       expect(indexCode).toContain("export * as ProductService")
       expect(indexCode).toContain("export * as ProductServicePromise")
+      expect(indexCode).toContain("export * as Operations")
       expect(indexCode).toContain("qProduct")
       expect(indexCode).toContain("productQuery")
     }))

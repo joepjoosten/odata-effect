@@ -12,6 +12,7 @@ import {
   getQueryInterfaceName,
   getServiceClassName
 } from "./NamingHelper.js"
+import { getOperationsModuleName } from "./OperationsGenerator.js"
 import { getPromiseServiceName } from "./ServiceFnPromiseGenerator.js"
 
 /**
@@ -81,6 +82,15 @@ export const generateIndex = (dataModel: DataModel): string => {
     lines.push(`export * as ${promiseServiceName} from "./${promiseServiceName}"`)
   }
   lines.push(``)
+
+  // Operations (FunctionImports, Functions, Actions) - only if there are unbound operations
+  const hasUnboundOperations = Array.from(dataModel.operations.values()).some((op) => !op.isBound)
+  if (hasUnboundOperations) {
+    lines.push(`// Operations (FunctionImports, Functions, Actions)`)
+    const operationsModuleName = getOperationsModuleName()
+    lines.push(`export * as ${operationsModuleName} from "./${operationsModuleName}"`)
+    lines.push(``)
+  }
 
   // Query Models
   lines.push(`// Query Models`)

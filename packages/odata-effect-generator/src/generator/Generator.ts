@@ -10,6 +10,7 @@ import * as Schema from "effect/Schema"
 import type { DataModel } from "../model/DataModel.js"
 import { generateIndex } from "./IndexGenerator.js"
 import { generateModels } from "./ModelsGenerator.js"
+import { generateOperations } from "./OperationsGenerator.js"
 import {
   generatePackageJson,
   generateTsconfig,
@@ -93,6 +94,9 @@ export const generate = (
     // Generate Promise-based service function files
     const promiseServiceResult = generatePromiseServiceFns(dataModel)
 
+    // Generate operations file (FunctionImports, Functions, Actions)
+    const operationsResult = generateOperations(dataModel)
+
     // Generate source files
     const sourceFiles: Array<GeneratedFile> = [
       {
@@ -113,6 +117,13 @@ export const generate = (
         path: path.join(sourceDir, svc.fileName),
         content: svc.content
       })),
+      // Operations file (only if there are unbound operations)
+      ...(operationsResult.operationsFile
+        ? [{
+            path: path.join(sourceDir, operationsResult.operationsFile.fileName),
+            content: operationsResult.operationsFile.content
+          }]
+        : []),
       {
         path: path.join(sourceDir, "index.ts"),
         content: generateIndex(dataModel)

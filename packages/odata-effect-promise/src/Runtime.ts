@@ -6,15 +6,15 @@
  *
  * @example
  * ```ts
- * import { createODataRuntime } from "@odata-effect/odata-effect-promise"
- * import * as OData from "@odata-effect/odata-effect-promise/v2"
+ * import { Runtime } from "@odata-effect/odata-effect-promise"
+ * import * as v2 from "@odata-effect/odata-effect-promise/v2"
  *
- * const runtime = createODataRuntime({
+ * const runtime = Runtime.createODataRuntime({
  *   baseUrl: "https://server.com",
  *   servicePath: "/odata/v2/"
  * })
  *
- * const product = await OData.get(runtime, "Products('1')", ProductSchema)
+ * const product = await v2.get(runtime, "Products('1')", ProductSchema)
  * await runtime.dispose()
  * ```
  *

@@ -8,9 +8,9 @@
  * @example
  * ```ts
  * // Namespace import - nice autocomplete, tree-shakable
- * import { ODataV4 } from "@odata-effect/odata-effect"
- * const entity = yield* ODataV4.get("Products(123)", ProductSchema)
- * const items = yield* ODataV4.getCollection("Products", ProductSchema)
+ * import { ODataV4ClientFn } from "@odata-effect/odata-effect"
+ * const entity = yield* ODataV4ClientFn.get("Products(123)", ProductSchema)
+ * const items = yield* ODataV4ClientFn.getCollection("Products", ProductSchema)
  *
  * // Direct import - maximum tree-shaking
  * import { get } from "@odata-effect/odata-effect/ODataV4ClientFn"

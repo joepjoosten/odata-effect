@@ -1,5 +1,5 @@
 /**
- * Error types for CI EMOB SMCH Customer OData service.
+ * Error types for OData services.
  *
  * @since 1.0.0
  */

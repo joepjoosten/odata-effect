@@ -10,7 +10,7 @@
 export * as Batch from "./Batch.js"
 
 /**
- * Error types for CI EMOB SMCH Customer OData service.
+ * Error types for OData services.
  *
  * @since 1.0.0
  */
@@ -43,9 +43,9 @@ export * as ODataClient from "./ODataClient.js"
  * @example
  * ```ts
  * // Namespace import - nice autocomplete, tree-shakable
- * import { OData } from "@odata-effect/odata-effect"
- * const entity = yield* OData.get("Products('123')", ProductSchema)
- * const items = yield* OData.getCollection("Products", ProductSchema)
+ * import { ODataClientFn } from "@odata-effect/odata-effect"
+ * const entity = yield* ODataClientFn.get("Products('123')", ProductSchema)
+ * const items = yield* ODataClientFn.getCollection("Products", ProductSchema)
  *
  * // Direct import - maximum tree-shaking
  * import { get } from "@odata-effect/odata-effect/ODataClientFn"
@@ -78,9 +78,9 @@ export * as ODataV4Client from "./ODataV4Client.js"
  * @example
  * ```ts
  * // Namespace import - nice autocomplete, tree-shakable
- * import { ODataV4 } from "@odata-effect/odata-effect"
- * const entity = yield* ODataV4.get("Products(123)", ProductSchema)
- * const items = yield* ODataV4.getCollection("Products", ProductSchema)
+ * import { ODataV4ClientFn } from "@odata-effect/odata-effect"
+ * const entity = yield* ODataV4ClientFn.get("Products(123)", ProductSchema)
+ * const items = yield* ODataV4ClientFn.getCollection("Products", ProductSchema)
  *
  * // Direct import - maximum tree-shaking
  * import { get } from "@odata-effect/odata-effect/ODataV4ClientFn"

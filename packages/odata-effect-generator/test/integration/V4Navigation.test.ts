@@ -32,10 +32,10 @@ describe("V4 Navigation Generation", () => {
       expect(content).toContain("readonly _entity: TEntity")
       expect(content).toContain("readonly _collection: IsCollection")
 
-      // Check entity set roots
-      expect(content).toContain('export const People: Path<Person, true> = "People"')
-      expect(content).toContain('export const Airlines: Path<Airline, true> = "Airlines"')
-      expect(content).toContain('export const Airports: Path<Airport, true> = "Airports"')
+      // Check entity set roots (camelCase to avoid collision with type names)
+      expect(content).toContain('export const people: Path<Person, true> = "People"')
+      expect(content).toContain('export const airlines: Path<Airline, true> = "Airlines"')
+      expect(content).toContain('export const airports: Path<Airport, true> = "Airports"')
 
       // Check byKey function
       expect(content).toContain("export const byKey = <T>(key: string | number)")

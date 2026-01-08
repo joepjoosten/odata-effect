@@ -1,99 +1,83 @@
 /**
- * Promise-based OData client for non-Effect environments.
+ * Runtime management for OData Promise client.
  *
- * This package provides Promise-based wrappers for the Effect-based OData client,
- * allowing you to use OData operations in non-Effect codebases.
+ * This module provides utilities to create a managed runtime that can execute
+ * Effect-based OData operations as Promises.
  *
- * ## Usage: Runtime + Functions (Tree-shakable)
- *
- * For maximum tree-shaking, use the runtime with tree-shakable functions:
- *
+ * @example
  * ```ts
- * import { createODataRuntime, createODataV4Runtime } from "@odata-effect/odata-effect-promise"
+ * import { createODataRuntime } from "@odata-effect/odata-effect-promise"
  * import * as OData from "@odata-effect/odata-effect-promise/v2"
- * import * as ODataV4 from "@odata-effect/odata-effect-promise/v4"
  *
- * // OData V2
+ * const runtime = createODataRuntime({
+ *   baseUrl: "https://server.com",
+ *   servicePath: "/odata/v2/"
+ * })
+ *
+ * const product = await OData.get(runtime, "Products('1')", ProductSchema)
+ * await runtime.dispose()
+ * ```
+ *
+ * @since 1.0.0
+ */
+export * as Runtime from "./Runtime.js"
+
+/**
+ * Tree-shakable OData V2 Promise functions.
+ *
+ * This module provides Promise-based functions for OData V2 operations.
+ * Import only the functions you need for maximum tree-shaking.
+ *
+ * @example
+ * ```ts
+ * import { createODataRuntime } from "@odata-effect/odata-effect-promise"
+ * import * as OData from "@odata-effect/odata-effect-promise/v2"
+ *
  * const runtime = createODataRuntime({
  *   baseUrl: "https://server.com",
  *   servicePath: "/sap/opu/odata/sap/MY_SERVICE/"
  * })
  *
+ * // Namespace import - nice autocomplete
  * const product = await OData.get(runtime, "Products('1')", ProductSchema)
+ *
+ * // Or create bound functions
+ * const boundGet = OData.get.bind(null, runtime)
+ * const product2 = await boundGet("Products('2')", ProductSchema)
+ *
  * await runtime.dispose()
- *
- * // OData V4
- * const v4runtime = createODataV4Runtime({
- *   baseUrl: "https://server.com",
- *   servicePath: "/odata/v4/"
- * })
- *
- * const product = await ODataV4.get(v4runtime, "Products(1)", ProductSchema)
- * await v4runtime.dispose()
- * ```
- *
- * ## Error Handling
- *
- * Errors are thrown as JavaScript errors. Use try/catch to handle them:
- *
- * ```ts
- * try {
- *   const product = await OData.get(runtime, "Products('999')", ProductSchema)
- * } catch (error) {
- *   console.error("Failed to fetch product:", error)
- * }
- * ```
- *
- * For structured error handling, use `runPromiseExit` on the runtime:
- *
- * ```ts
- * import { Exit } from "effect"
- *
- * const exit = await runtime.runPromiseExit(OData.get(runtime, "Products('1')", ProductSchema))
- *
- * if (Exit.isSuccess(exit)) {
- *   console.log("Product:", exit.value)
- * } else {
- *   console.error("Failed:", exit.cause)
- * }
- * ```
- *
- * ## Lifecycle Management
- *
- * Always dispose of the runtime when you're done to release resources:
- *
- * ```ts
- * const runtime = createODataRuntime({ ... })
- *
- * try {
- *   // ... use runtime
- * } finally {
- *   await runtime.dispose()
- * }
  * ```
  *
  * @since 1.0.0
  */
+export * as v2 from "./v2.js"
 
-// Runtime exports
-// V2 namespace export
-import * as v2Exports from "./v2.js"
-
-// V4 namespace export
-import * as v4Exports from "./v4.js"
-
-export {
-  createODataRuntime,
-  createODataV4Runtime,
-  type ODataQueryOptions,
-  type ODataRequestOptions,
-  type ODataRuntime,
-  type ODataRuntimeConfig,
-  type ODataV4QueryOptions,
-  type ODataV4RequestOptions,
-  type ODataV4Runtime,
-  type PagedResult,
-  type PagedResultV4
-} from "./Runtime.js"
-export { v2Exports as OData }
-export { v4Exports as ODataV4 }
+/**
+ * Tree-shakable OData V4 Promise functions.
+ *
+ * This module provides Promise-based functions for OData V4 operations.
+ * Import only the functions you need for maximum tree-shaking.
+ *
+ * @example
+ * ```ts
+ * import { createODataV4Runtime } from "@odata-effect/odata-effect-promise"
+ * import * as ODataV4 from "@odata-effect/odata-effect-promise/v4"
+ *
+ * const runtime = createODataV4Runtime({
+ *   baseUrl: "https://server.com",
+ *   servicePath: "/odata/v4/"
+ * })
+ *
+ * // Namespace import - nice autocomplete
+ * const product = await ODataV4.get(runtime, "Products(1)", ProductSchema)
+ *
+ * // Or create bound functions
+ * const boundGet = (path, schema, opts) => ODataV4.get(runtime, path, schema, opts)
+ * const product2 = await boundGet("Products(2)", ProductSchema)
+ *
+ * await runtime.dispose()
+ * ```
+ *
+ * @since 1.0.0
+ */
+export * as v4 from "./v4.js"

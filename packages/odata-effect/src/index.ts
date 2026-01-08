@@ -1,28 +1,16 @@
 /**
- * OData Effect - Effect-based OData client infrastructure.
- *
- * @since 1.0.0
- */
-
-// ============================================================================
-// Namespace Exports (for explicit imports)
-// ============================================================================
-
-/**
  * OData Batch Request Support.
  *
+ * Supports OData $batch operations for executing multiple requests in a single HTTP call.
+ * - V2: Multipart/mixed format only
+ * - V4: Multipart/mixed or JSON format
+ *
  * @since 1.0.0
  */
-// Re-export namespace as OData for convenience
-import * as _ODataClientFn from "./ODataClientFn.js"
-
-// Re-export namespace as ODataV4 for convenience
-import * as _ODataV4ClientFn from "./ODataV4ClientFn.js"
-
 export * as Batch from "./Batch.js"
 
 /**
- * Error types for OData services.
+ * Error types for CI EMOB SMCH Customer OData service.
  *
  * @since 1.0.0
  */
@@ -30,6 +18,9 @@ export * as Errors from "./Errors.js"
 
 /**
  * OData Media Entity Support.
+ *
+ * Provides functionality for working with OData media entities (binary content).
+ * Supports both V2 and V4 media handling.
  *
  * @since 1.0.0
  */
@@ -45,12 +36,33 @@ export * as ODataClient from "./ODataClient.js"
 /**
  * Tree-shakable OData V2 client functions.
  *
+ * This module provides standalone functions that can be tree-shaken.
+ * Use the namespace import for nice autocomplete, or import individual
+ * functions for maximum tree-shaking.
+ *
+ * @example
+ * ```ts
+ * // Namespace import - nice autocomplete, tree-shakable
+ * import { OData } from "@odata-effect/odata-effect"
+ * const entity = yield* OData.get("Products('123')", ProductSchema)
+ * const items = yield* OData.getCollection("Products", ProductSchema)
+ *
+ * // Direct import - maximum tree-shaking
+ * import { get } from "@odata-effect/odata-effect/ODataClientFn"
+ * const entity = yield* get("Products('123')", ProductSchema)
+ * ```
+ *
  * @since 1.0.0
  */
 export * as ODataClientFn from "./ODataClientFn.js"
 
 /**
  * OData V4 types and schemas.
+ *
+ * OData V4 uses different response formats than V2:
+ * - Single entity: entity object with @odata.* annotations
+ * - Collection: { value: [...], @odata.count?, @odata.nextLink? }
+ * - Value: { value: T } or raw T for $value
  *
  * @since 1.0.0
  */
@@ -59,12 +71,31 @@ export * as ODataV4Client from "./ODataV4Client.js"
 /**
  * Tree-shakable OData V4 client functions.
  *
+ * This module provides standalone functions that can be tree-shaken.
+ * Use the namespace import for nice autocomplete, or import individual
+ * functions for maximum tree-shaking.
+ *
+ * @example
+ * ```ts
+ * // Namespace import - nice autocomplete, tree-shakable
+ * import { ODataV4 } from "@odata-effect/odata-effect"
+ * const entity = yield* ODataV4.get("Products(123)", ProductSchema)
+ * const items = yield* ODataV4.getCollection("Products", ProductSchema)
+ *
+ * // Direct import - maximum tree-shaking
+ * import { get } from "@odata-effect/odata-effect/ODataV4ClientFn"
+ * const entity = yield* get("Products(123)", ProductSchema)
+ * ```
+ *
  * @since 1.0.0
  */
 export * as ODataV4ClientFn from "./ODataV4ClientFn.js"
 
 /**
  * OData Operations - Function Imports and Actions.
+ *
+ * OData V2: Function Imports (GET or POST based on side effects)
+ * OData V4: Functions (GET, no side effects) and Actions (POST, with side effects)
  *
  * @since 1.0.0
  */
@@ -73,93 +104,10 @@ export * as Operations from "./Operations.js"
 /**
  * Type-safe OData query builder using Effect Schema.
  *
+ * This module provides a type-safe way to build OData queries based on
+ * Effect Schema definitions. It uses the schema's structure to provide
+ * compile-time type safety for $select, $filter, $expand, and $orderby.
+ *
  * @since 1.0.0
  */
-export * as QueryBuilderModule from "./QueryBuilder.js"
-
-// ============================================================================
-// Direct Exports for Convenience
-// ============================================================================
-
-// Errors
-export {
-  EntityNotFoundError,
-  ODataError,
-  ParseError,
-  SapApplication,
-  SapError,
-  SapErrorBody,
-  SapErrorDetail,
-  SapErrorMessage,
-  SapErrorResolution,
-  SapErrorResponse,
-  SapInnerError
-} from "./Errors.js"
-
-// OData V2 Client
-export {
-  buildEntityPath,
-  DEFAULT_HEADERS,
-  DeferredContent,
-  EntityMetadata,
-  MediaMetadata,
-  MERGE_HEADERS,
-  ODataClientConfig,
-  type ODataClientConfigService,
-  ODataCollectionResponse,
-  ODataCollectionResponseWithMeta,
-  type ODataQueryOptions,
-  type ODataRequestOptions,
-  ODataSingleResponse,
-  ODataValueResponse,
-  type PagedResult
-} from "./ODataClient.js"
-
-// OData V2 Client Functions
-export { del, get, getCollection, getCollectionPaged, getValue, patch, post } from "./ODataClientFn.js"
-export { _ODataClientFn as OData }
-
-// OData V4 Client
-export {
-  buildEntityPathV4,
-  ODataV4Annotations,
-  ODataV4ClientConfig,
-  type ODataV4ClientConfigService,
-  ODataV4CollectionResponse,
-  type ODataV4QueryOptions,
-  type ODataV4RequestOptions,
-  ODataV4ValueResponse,
-  type PagedResultV4
-} from "./ODataV4Client.js"
-
-// OData V4 Client Functions
-export {
-  del as delV4,
-  get as getV4,
-  getCollection as getCollectionV4,
-  getCollectionPaged as getCollectionPagedV4,
-  getValue as getValueV4,
-  patch as patchV4,
-  post as postV4,
-  put as putV4
-} from "./ODataV4ClientFn.js"
-export { _ODataV4ClientFn as ODataV4 }
-
-// Query Builder
-export {
-  BooleanPath,
-  type BuiltQuery,
-  CollectionPath,
-  createQueryBuilder,
-  createQueryPaths,
-  DateTimePath,
-  EntityPath,
-  type ExpandableKeys,
-  type FieldToPath,
-  FilterExpression,
-  NumberPath,
-  QueryBuilder,
-  type QueryPaths,
-  type SelectableKeys,
-  StringPath
-} from "./QueryBuilder.js"
+export * as QueryBuilder from "./QueryBuilder.js"

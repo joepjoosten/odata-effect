@@ -1,4 +1,5 @@
 import { HttpClient, HttpClientResponse } from "@effect/platform"
+import type { HttpClientRequest } from "@effect/platform"
 import { describe, expect, it } from "@effect/vitest"
 import * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"

@@ -14,7 +14,7 @@
     "directory": "dist"
   },
   "bin": {
-    "odata-effect-gen": "./build/esm/bin.js"
+    "odata-effect-gen": "./dist/esm/bin.js"
   },
   "scripts": {
     "codegen": "build-utils prepare-v2",

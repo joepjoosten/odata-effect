@@ -23,7 +23,13 @@ jobs:
         uses: ./.github/actions/setup
       - run: pnpm codegen
       - name: Check source state
-        run: git add packages/*/src && git diff-index --cached HEAD --exit-code packages/*/src
+        run: |
+          if [ -n "$(git status --porcelain packages/*/src)" ]; then
+            echo "Error: codegen produced changes that are not committed"
+            git status --porcelain packages/*/src
+            git diff packages/*/src
+            exit 1
+          fi
 
   types:
     name: Types

@@ -16,8 +16,8 @@
     "test": "vitest",
     "coverage": "vitest --coverage",
     "changeset": "changeset",
-    "changeset:version": "changeset version",
-    "changeset:publish": "changeset publish"
+    "changeset-version": "changeset version && pnpm install --lockfile-only",
+    "changeset-publish": "pnpm build && changeset publish"
   },
   "devDependencies": {
     "@babel/cli": "^7.25.9",

@@ -12,6 +12,7 @@ import {
   getQueryInterfaceName,
   getServiceClassName
 } from "./NamingHelper.js"
+import { getPathBuildersModuleName } from "./NavigationGenerator.js"
 import { getOperationsModuleName } from "./OperationsGenerator.js"
 import { getPromiseServiceName } from "./ServiceFnPromiseGenerator.js"
 
@@ -91,6 +92,12 @@ export const generateIndex = (dataModel: DataModel): string => {
     lines.push(`export * as ${operationsModuleName} from "./${operationsModuleName}"`)
     lines.push(``)
   }
+
+  // Path Builders (tree-shakable navigation)
+  lines.push(`// Path Builders (tree-shakable navigation)`)
+  const pathBuildersModuleName = getPathBuildersModuleName()
+  lines.push(`export * from "./${pathBuildersModuleName}"`)
+  lines.push(``)
 
   // Query Models
   lines.push(`// Query Models`)

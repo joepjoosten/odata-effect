@@ -10,6 +10,7 @@ import * as Schema from "effect/Schema"
 import type { DataModel } from "../model/DataModel.js"
 import { generateIndex } from "./IndexGenerator.js"
 import { generateModels } from "./ModelsGenerator.js"
+import { generateNavigations } from "./NavigationGenerator.js"
 import { generateOperations } from "./OperationsGenerator.js"
 import {
   generatePackageJson,
@@ -97,6 +98,9 @@ export const generate = (
     // Generate operations file (FunctionImports, Functions, Actions)
     const operationsResult = generateOperations(dataModel)
 
+    // Generate navigation builders
+    const navigationResult = generateNavigations(dataModel)
+
     // Generate source files
     const sourceFiles: Array<GeneratedFile> = [
       {
@@ -124,6 +128,11 @@ export const generate = (
             content: operationsResult.operationsFile.content
           }]
         : []),
+      // Navigation builder files
+      ...navigationResult.navigationFiles.map((nav) => ({
+        path: path.join(sourceDir, nav.fileName),
+        content: nav.content
+      })),
       {
         path: path.join(sourceDir, "index.ts"),
         content: generateIndex(dataModel)

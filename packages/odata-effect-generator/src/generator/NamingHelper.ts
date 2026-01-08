@@ -84,10 +84,15 @@ export const getServiceClassName = (entitySetName: string): string => {
   // Remove trailing 's' if present to singularize
   let singular = entitySetName
   if (singular.endsWith("ies")) {
+    // "Categories" -> "Category"
     singular = singular.slice(0, -3) + "y"
-  } else if (singular.endsWith("es") && !singular.endsWith("ses")) {
+  } else if (singular.endsWith("xes") || singular.endsWith("ches") ||
+             singular.endsWith("shes") || singular.endsWith("sses") ||
+             singular.endsWith("zes")) {
+    // "Boxes" -> "Box", "Beaches" -> "Beach", etc.
     singular = singular.slice(0, -2)
   } else if (singular.endsWith("s") && !singular.endsWith("ss")) {
+    // "Products" -> "Product", "Airlines" -> "Airline"
     singular = singular.slice(0, -1)
   }
   return `${toPascalCase(singular)}Service`

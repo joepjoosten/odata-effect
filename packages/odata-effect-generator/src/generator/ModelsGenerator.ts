@@ -243,15 +243,12 @@ const generateEntityType = (
       lines.push(`  Schema.Struct({ ${key.name}: ${keySchema} })`)
       lines.push(`)`)
     } else {
-      // Composite key
+      // Composite key - only struct form makes sense
       const keyFields = entityType.keys.map((k) => {
         const schema = getPropertySchemaType(k, false)
         return `${k.name}: ${schema}`
       })
-      lines.push(`export const ${idTypeName} = Schema.Union(`)
-      lines.push(`  Schema.String,`)
-      lines.push(`  Schema.Struct({ ${keyFields.join(", ")} })`)
-      lines.push(`)`)
+      lines.push(`export const ${idTypeName} = Schema.Struct({ ${keyFields.join(", ")} })`)
     }
     lines.push(`export type ${idTypeName} = Schema.Schema.Type<typeof ${idTypeName}>`)
   }

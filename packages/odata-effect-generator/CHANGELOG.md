@@ -1,5 +1,13 @@
 # @odata-effect/odata-effect-generator
 
+## 0.2.1
+
+### Patch Changes
+
+- Fix composite key ID type generation to use only Struct schema instead of Union with String
+
+  Previously, composite keys were generated as `Schema.Union(Schema.String, Schema.Struct({ ... }))` which made no sense - a single string cannot represent multiple key values. Now composite keys correctly generate as just `Schema.Struct({ key1: ..., key2: ... })`.
+
 ## 0.2.0
 
 ### Minor Changes

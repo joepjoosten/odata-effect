@@ -22,13 +22,13 @@ interface VersionConfig {
 const V2_CONFIG: VersionConfig = {
   clientConfigTag: "ODataClientConfig",
   clientConfigImport: "ODataClientConfig",
-  clientModule: "ODataClient"
+  clientModule: "OData"
 }
 
 const V4_CONFIG: VersionConfig = {
   clientConfigTag: "ODataV4ClientConfig",
   clientConfigImport: "ODataV4ClientConfig",
-  clientModule: "ODataV4Client"
+  clientModule: "ODataV4"
 }
 
 const getVersionConfig = (version: ODataVersion): VersionConfig => version === "V4" ? V4_CONFIG : V2_CONFIG

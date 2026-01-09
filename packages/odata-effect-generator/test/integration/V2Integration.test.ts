@@ -73,6 +73,9 @@ describe("V2 Integration", () => {
       expect(operationsResult.operationsFile!.content).toContain("rating:")
       expect(operationsResult.operationsFile!.content).toContain("ODataOps.executeFunctionImportCollection")
       expect(operationsResult.operationsFile!.content).toContain("Effect.gen")
+      // Verify correct import paths (OData, not ODataClient)
+      expect(operationsResult.operationsFile!.content).toContain("from \"@odata-effect/odata-effect/OData\"")
+      expect(operationsResult.operationsFile!.content).not.toContain("ODataClient")
 
       // Generate index.ts
       const indexCode = generateIndex(dataModel)

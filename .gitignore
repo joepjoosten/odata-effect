@@ -15,3 +15,6 @@ scratchpad/*
 .env.development.local
 .env.test.local
 .env.production.local
+
+packages/odata-effect-generator/test/resource/example.xml
+packages/odata-effect-generator/generated/

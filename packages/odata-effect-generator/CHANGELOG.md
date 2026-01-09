@@ -1,5 +1,23 @@
 # @odata-effect/odata-effect-generator
 
+## 0.3.0
+
+### Minor Changes
+
+- Add CRUD factory for type-safe entity operations
+
+  **@odata-effect/odata-effect:**
+
+  - Add `Crud` module with `crud()` factory for OData V2 entity services
+  - Add `CrudV4` module with `crud()` factory for OData V4 entity services
+  - Provides `getAll`, `getById`, `create`, `update`, `delete` operations
+  - Can be used standalone or with generated code
+
+  **@odata-effect/odata-effect-generator:**
+
+  - Simplify generated `Services.ts` to use the crud factory instead of generating duplicate CRUD code
+  - Reduces generated code size significantly
+
 ## 0.2.1
 
 ### Patch Changes

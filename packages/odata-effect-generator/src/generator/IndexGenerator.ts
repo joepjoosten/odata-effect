@@ -67,13 +67,23 @@ export const generateIndex = (dataModel: DataModel): string => {
   lines.push(`} from "./Models"`)
   lines.push(``)
 
-  // Individual Entity Services (tree-shakable module namespace re-exports)
-  lines.push(`// Entity Services (tree-shakable)`)
+  // Entity Services (all in one file using crud factory)
+  lines.push(`// Entity Services`)
   lines.push(`// Use toPromise(runtime) from PathBuilders to convert Effect to Promise`)
+  lines.push(`export {`)
+  const serviceExports: Array<string> = []
   for (const entitySet of dataModel.entitySets.values()) {
-    const serviceClassName = getServiceClassName(entitySet.name)
-    lines.push(`export * as ${serviceClassName} from "./${serviceClassName}"`)
+    serviceExports.push(getServiceClassName(entitySet.name))
   }
+  // Also export types
+  serviceExports.push(`type CrudError`)
+  serviceExports.push(`type CrudContext`)
+  serviceExports.push(`type CrudService`)
+  for (let i = 0; i < serviceExports.length; i++) {
+    const isLast = i === serviceExports.length - 1
+    lines.push(`  ${serviceExports[i]}${isLast ? "" : ","}`)
+  }
+  lines.push(`} from "./Services"`)
   lines.push(``)
 
   // Operations (FunctionImports, Functions, Actions) - only if there are unbound operations

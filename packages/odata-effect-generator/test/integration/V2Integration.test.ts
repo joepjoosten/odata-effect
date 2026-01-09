@@ -49,23 +49,20 @@ describe("V2 Integration", () => {
       expect(queryModelsCode).toContain("export const qProduct: QProduct")
       expect(queryModelsCode).toContain("export const productQuery = ()")
 
-      // Generate tree-shakable service functions
+      // Generate Services.ts (single file with crud factory)
       const serviceResult = generateServiceFns(dataModel)
-      expect(serviceResult.entityServices.length).toBe(3) // Products, Categories, Suppliers
+      expect(serviceResult.servicesFile.fileName).toBe("Services.ts")
 
-      // Check ProductService content
-      const productService = serviceResult.entityServices.find(
-        (s) => s.fileName === "ProductService.ts"
-      )!
-      expect(productService).toBeDefined()
-      expect(productService.content).toContain("import type * as Effect from")
-      expect(productService.content).toContain("import { OData,")
-      expect(productService.content).toContain("export const getAll")
-      expect(productService.content).toContain("export const getById")
-      expect(productService.content).toContain("export const create")
-      expect(productService.content).toContain("export const update")
-      expect(productService.content).toContain("export const del")
-      expect(productService.content).toContain("export { del as delete }")
+      // Check Services.ts content
+      const servicesContent = serviceResult.servicesFile.content
+      expect(servicesContent).toContain("import { crud } from \"@odata-effect/odata-effect/Crud\"")
+      expect(servicesContent).toContain("export const ProductService = crud({")
+      expect(servicesContent).toContain("export const CategoryService = crud({")
+      expect(servicesContent).toContain("export const SupplierService = crud({")
+      expect(servicesContent).toContain("path: \"Products\"")
+      expect(servicesContent).toContain("schema: Product,")
+      expect(servicesContent).toContain("editableSchema: EditableProduct,")
+      expect(servicesContent).toContain("idToKey:")
 
       // Generate Operations.ts (FunctionImports)
       const operationsResult = generateOperations(dataModel)
@@ -82,7 +79,8 @@ describe("V2 Integration", () => {
       expect(indexCode).toContain("export {")
       expect(indexCode).toContain("Product")
       expect(indexCode).toContain("EditableProduct")
-      expect(indexCode).toContain("export * as ProductService")
+      expect(indexCode).toContain("ProductService")
+      expect(indexCode).toContain("} from \"./Services\"")
       expect(indexCode).toContain("export * as Operations")
       expect(indexCode).toContain("qProduct")
       expect(indexCode).toContain("productQuery")

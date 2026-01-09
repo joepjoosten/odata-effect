@@ -36,7 +36,7 @@ The generator produces:
 |------|-------------|
 | `Models.ts` | Schema classes for entities and complex types |
 | `QueryModels.ts` | Type-safe query paths for filtering and ordering |
-| `*Service.ts` | Effect-based CRUD service functions for each entity set |
+| `Services.ts` | CRUD services for all entity sets (using crud factory) |
 | `PathBuilders.ts` | Tree-shakable navigation path builders with `toPromise` |
 | `Operations.ts` | Functions/Actions (if present in metadata) |
 | `index.ts` | Re-exports all generated code |

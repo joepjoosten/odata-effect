@@ -10,6 +10,48 @@
 export * as Batch from "./Batch.js"
 
 /**
+ * CRUD factory for OData V2 entity services.
+ *
+ * Creates type-safe CRUD operations for entity sets without code generation.
+ *
+ * @example
+ * ```ts
+ * import { Crud } from "@odata-effect/odata-effect"
+ *
+ * export const ProductService = Crud.crud({
+ *   path: "Products",
+ *   schema: Product,
+ *   editableSchema: EditableProduct,
+ *   idToKey: (id) => ({ ID: String(id) })
+ * })
+ * ```
+ *
+ * @since 1.0.0
+ */
+export * as Crud from "./Crud.js"
+
+/**
+ * CRUD factory for OData V4 entity services.
+ *
+ * Creates type-safe CRUD operations for entity sets without code generation.
+ *
+ * @example
+ * ```ts
+ * import { CrudV4 } from "@odata-effect/odata-effect"
+ *
+ * export const PersonService = CrudV4.crud({
+ *   path: "People",
+ *   schema: Person,
+ *   editableSchema: EditablePerson,
+ *   idToKey: (id) => ({ UserName: id })
+ * })
+ * ```
+ *
+ * @since 1.0.0
+ */
+export * as CrudV4 from "./CrudV4.js"
+
+/**
  * Error types for OData services.
  *
  * @since 1.0.0

@@ -107,11 +107,11 @@ export const generate = (
         path: path.join(sourceDir, "QueryModels.ts"),
         content: generateQueryModels(dataModel)
       },
-      // Individual entity service function files (tree-shakable)
-      ...serviceResult.entityServices.map((svc) => ({
-        path: path.join(sourceDir, svc.fileName),
-        content: svc.content
-      })),
+      // Services file (all entity CRUD services in one file)
+      {
+        path: path.join(sourceDir, serviceResult.servicesFile.fileName),
+        content: serviceResult.servicesFile.content
+      },
       // Operations file (only if there are unbound operations)
       ...(operationsResult.operationsFile
         ? [{

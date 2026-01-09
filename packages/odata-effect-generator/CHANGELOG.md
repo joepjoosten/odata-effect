@@ -1,5 +1,13 @@
 # @odata-effect/odata-effect-generator
 
+## 0.3.2
+
+### Patch Changes
+
+- [`85cff95`](https://github.com/joepjoosten/odata-effect/commit/85cff95e675e22972b6cdb0c7c91053d2e727282) Thanks [@joepjoosten](https://github.com/joepjoosten)! - Fix OperationsGenerator using incorrect module paths
+
+  The OperationsGenerator was importing from the old module paths (`ODataClient` and `ODataV4Client`) which were renamed to `OData` and `ODataV4`. This caused TypeScript to fail type inference, resulting in generated operations returning `Effect<T, unknown, unknown>` instead of the proper error and context types.
+
 ## 0.3.1
 
 ### Patch Changes

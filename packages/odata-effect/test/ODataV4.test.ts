@@ -5,7 +5,7 @@ import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import * as Schema from "effect/Schema"
 import * as ODataV4 from "../src/ODataV4.js"
-import { ODataV4ClientConfig } from "../src/ODataV4Client.js"
+import { ODataV4ClientConfig } from "../src/ODataV4.js"
 
 // Test schema
 class TestEntity extends Schema.Class<TestEntity>("TestEntity")({

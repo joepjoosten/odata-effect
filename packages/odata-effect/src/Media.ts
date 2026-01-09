@@ -12,8 +12,8 @@ import * as Schema from "effect/Schema"
 import type * as Stream from "effect/Stream"
 import type { ParseError } from "./Errors.js"
 import { ODataError } from "./Errors.js"
-import type { ODataClientConfigService } from "./ODataClient.js"
-import type { ODataV4ClientConfigService } from "./ODataV4Client.js"
+import type { ODataClientConfigService } from "./OData.js"
+import type { ODataV4ClientConfigService } from "./ODataV4.js"
 
 // ============================================================================
 // Media Types

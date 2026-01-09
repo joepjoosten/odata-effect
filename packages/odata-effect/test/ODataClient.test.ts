@@ -12,7 +12,7 @@ import {
   ODataClientConfig,
   ODataCollectionResponse,
   ODataSingleResponse
-} from "../src/ODataClient.js"
+} from "../src/OData.js"
 
 // Test schema
 class TestEntity extends Schema.Class<TestEntity>("TestEntity")({

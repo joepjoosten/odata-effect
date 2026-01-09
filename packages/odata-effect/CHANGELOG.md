@@ -1,5 +1,29 @@
 # @odata-effect/odata-effect
 
+## 0.3.0
+
+### Minor Changes
+
+- Merge ODataClient/ODataV4Client modules into OData/ODataV4
+
+  **BREAKING CHANGE:** The `ODataClient` and `ODataV4Client` modules have been removed. All their exports are now available in `OData` and `ODataV4` respectively.
+
+  Before:
+
+  ```ts
+  import { OData, ODataClient } from "@odata-effect/odata-effect";
+  const config = ODataClient.ODataClientConfig;
+  ```
+
+  After:
+
+  ```ts
+  import { OData } from "@odata-effect/odata-effect";
+  const config = OData.ODataClientConfig;
+  ```
+
+  This simplifies the API - each version (V2/V4) now has a single module containing everything: config, schemas, types, and operations.
+
 ## 0.2.0
 
 ### Minor Changes

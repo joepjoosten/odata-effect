@@ -69,11 +69,14 @@ export * as Errors from "./Errors.js"
 export * as Media from "./Media.js"
 
 /**
- * Tree-shakable OData V2 client functions.
+ * OData V2 client module.
  *
- * This module provides standalone functions that can be tree-shaken.
- * Use the namespace import for nice autocomplete, or import individual
- * functions for maximum tree-shaking.
+ * This module provides everything needed for OData V2 operations:
+ * - Configuration context tag (ODataClientConfig)
+ * - Response schemas for parsing OData responses
+ * - Query options types
+ * - Tree-shakable operation functions (get, post, patch, del)
+ * - Utility functions for path building
  *
  * @example
  * ```ts
@@ -83,7 +86,7 @@ export * as Media from "./Media.js"
  * const items = yield* OData.getCollection("Products", ProductSchema)
  *
  * // Direct import - maximum tree-shaking
- * import { get } from "@odata-effect/odata-effect/OData"
+ * import { get, ODataClientConfig } from "@odata-effect/odata-effect/OData"
  * const entity = yield* get("Products('123')", ProductSchema)
  * ```
  *
@@ -92,18 +95,19 @@ export * as Media from "./Media.js"
 export * as OData from "./OData.js"
 
 /**
- * OData V2 types and schemas.
+ * OData V4 client module.
  *
- * @since 1.0.0
- */
-export * as ODataClient from "./ODataClient.js"
-
-/**
- * Tree-shakable OData V4 client functions.
+ * This module provides everything needed for OData V4 operations:
+ * - Configuration context tag (ODataV4ClientConfig)
+ * - Response schemas for parsing OData responses
+ * - Query options types
+ * - Tree-shakable operation functions (get, post, patch, put, del)
+ * - Utility functions for path building
  *
- * This module provides standalone functions that can be tree-shaken.
- * Use the namespace import for nice autocomplete, or import individual
- * functions for maximum tree-shaking.
+ * OData V4 uses different response formats than V2:
+ * - Single entity: entity object with @odata.* annotations
+ * - Collection: { value: [...], @odata.count?, @odata.nextLink? }
+ * - Value: { value: T } or raw T for $value
  *
  * @example
  * ```ts
@@ -113,25 +117,13 @@ export * as ODataClient from "./ODataClient.js"
  * const items = yield* ODataV4.getCollection("Products", ProductSchema)
  *
  * // Direct import - maximum tree-shaking
- * import { get } from "@odata-effect/odata-effect/ODataV4"
+ * import { get, ODataV4ClientConfig } from "@odata-effect/odata-effect/ODataV4"
  * const entity = yield* get("Products(123)", ProductSchema)
  * ```
  *
  * @since 1.0.0
  */
 export * as ODataV4 from "./ODataV4.js"
-
-/**
- * OData V4 types and schemas.
- *
- * OData V4 uses different response formats than V2:
- * - Single entity: entity object with @odata.* annotations
- * - Collection: { value: [...], @odata.count?, @odata.nextLink? }
- * - Value: { value: T } or raw T for $value
- *
- * @since 1.0.0
- */
-export * as ODataV4Client from "./ODataV4Client.js"
 
 /**
  * OData Operations - Function Imports and Actions.

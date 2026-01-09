@@ -11,8 +11,8 @@ import { HttpClient, type HttpClientError, HttpClientRequest, HttpClientResponse
 import * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"
 import { ODataError, ParseError } from "./Errors.js"
-import type { ODataClientConfigService } from "./ODataClient.js"
-import type { ODataV4ClientConfigService } from "./ODataV4Client.js"
+import type { ODataClientConfigService } from "./OData.js"
+import type { ODataV4ClientConfigService } from "./ODataV4.js"
 
 // ============================================================================
 // Batch Request Types

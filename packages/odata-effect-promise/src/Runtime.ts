@@ -22,7 +22,7 @@
  */
 import type { HttpClient } from "@effect/platform"
 import { NodeHttpClient } from "@effect/platform-node"
-import { ODataClient, ODataV4Client } from "@odata-effect/odata-effect"
+import { OData, ODataV4 } from "@odata-effect/odata-effect"
 import type * as Effect from "effect/Effect"
 import type * as Exit from "effect/Exit"
 import * as Layer from "effect/Layer"
@@ -53,7 +53,7 @@ export interface ODataRuntime {
    * Returns a Promise that resolves with the result.
    */
   readonly runPromise: <A, E>(
-    effect: Effect.Effect<A, E, ODataClient.ODataClientConfig | HttpClient.HttpClient>,
+    effect: Effect.Effect<A, E, OData.ODataClientConfig | HttpClient.HttpClient>,
     options?: { readonly signal?: AbortSignal }
   ) => Promise<A>
 
@@ -62,7 +62,7 @@ export interface ODataRuntime {
    * Useful for handling errors without throwing.
    */
   readonly runPromiseExit: <A, E>(
-    effect: Effect.Effect<A, E, ODataClient.ODataClientConfig | HttpClient.HttpClient>,
+    effect: Effect.Effect<A, E, OData.ODataClientConfig | HttpClient.HttpClient>,
     options?: { readonly signal?: AbortSignal }
   ) => Promise<Exit.Exit<A, E>>
 
@@ -90,7 +90,7 @@ export interface ODataV4Runtime {
    * Returns a Promise that resolves with the result.
    */
   readonly runPromise: <A, E>(
-    effect: Effect.Effect<A, E, ODataV4Client.ODataV4ClientConfig | HttpClient.HttpClient>,
+    effect: Effect.Effect<A, E, ODataV4.ODataV4ClientConfig | HttpClient.HttpClient>,
     options?: { readonly signal?: AbortSignal }
   ) => Promise<A>
 
@@ -99,7 +99,7 @@ export interface ODataV4Runtime {
    * Useful for handling errors without throwing.
    */
   readonly runPromiseExit: <A, E>(
-    effect: Effect.Effect<A, E, ODataV4Client.ODataV4ClientConfig | HttpClient.HttpClient>,
+    effect: Effect.Effect<A, E, ODataV4.ODataV4ClientConfig | HttpClient.HttpClient>,
     options?: { readonly signal?: AbortSignal }
   ) => Promise<Exit.Exit<A, E>>
 
@@ -141,7 +141,7 @@ export interface ODataV4Runtime {
  * @category constructors
  */
 export const createODataRuntime = (config: ODataRuntimeConfig): ODataRuntime => {
-  const configLayer = Layer.succeed(ODataClient.ODataClientConfig, config)
+  const configLayer = Layer.succeed(OData.ODataClientConfig, config)
   const fullLayer = Layer.merge(configLayer, NodeHttpClient.layer)
   const managedRuntime = ManagedRuntime.make(fullLayer)
 
@@ -179,7 +179,7 @@ export const createODataRuntime = (config: ODataRuntimeConfig): ODataRuntime => 
  * @category constructors
  */
 export const createODataV4Runtime = (config: ODataRuntimeConfig): ODataV4Runtime => {
-  const configLayer = Layer.succeed(ODataV4Client.ODataV4ClientConfig, config)
+  const configLayer = Layer.succeed(ODataV4.ODataV4ClientConfig, config)
   const fullLayer = Layer.merge(configLayer, NodeHttpClient.layer)
   const managedRuntime = ManagedRuntime.make(fullLayer)
 
@@ -192,9 +192,9 @@ export const createODataV4Runtime = (config: ODataRuntimeConfig): ODataV4Runtime
 }
 
 // Re-export commonly used types
-export type ODataQueryOptions = ODataClient.ODataQueryOptions
-export type ODataRequestOptions = ODataClient.ODataRequestOptions
-export type PagedResult<A> = ODataClient.PagedResult<A>
-export type ODataV4QueryOptions = ODataV4Client.ODataV4QueryOptions
-export type ODataV4RequestOptions = ODataV4Client.ODataV4RequestOptions
-export type PagedResultV4<A> = ODataV4Client.PagedResultV4<A>
+export type ODataQueryOptions = OData.ODataQueryOptions
+export type ODataRequestOptions = OData.ODataRequestOptions
+export type PagedResult<A> = OData.PagedResult<A>
+export type ODataV4QueryOptions = ODataV4.ODataV4QueryOptions
+export type ODataV4RequestOptions = ODataV4.ODataV4RequestOptions
+export type PagedResultV4<A> = ODataV4.PagedResultV4<A>

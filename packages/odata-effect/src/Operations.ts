@@ -11,8 +11,8 @@ import * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"
 import type { ParseError } from "./Errors.js"
 import { ODataError } from "./Errors.js"
-import { type ODataClientConfigService, ODataCollectionResponse, ODataSingleResponse } from "./ODataClient.js"
-import { type ODataV4ClientConfigService, ODataV4CollectionResponse, ODataV4ValueResponse } from "./ODataV4Client.js"
+import { type ODataClientConfigService, ODataCollectionResponse, ODataSingleResponse } from "./OData.js"
+import { type ODataV4ClientConfigService, ODataV4CollectionResponse, ODataV4ValueResponse } from "./ODataV4.js"
 
 // ============================================================================
 // Operation Parameter Types

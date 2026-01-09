@@ -7,7 +7,7 @@ import {
   ODataV4ClientConfig,
   ODataV4CollectionResponse,
   ODataV4ValueResponse
-} from "../src/ODataV4Client.js"
+} from "../src/ODataV4.js"
 
 describe("ODataV4Client", () => {
   describe("ODataV4Annotations", () => {

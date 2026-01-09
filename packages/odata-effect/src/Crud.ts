@@ -36,7 +36,7 @@ import type * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"
 import type { ODataError, ParseError, SapError } from "./Errors.js"
 import * as OData from "./OData.js"
-import { buildEntityPath, type ODataClientConfig, type ODataQueryOptions } from "./ODataClient.js"
+import { buildEntityPath, type ODataClientConfig, type ODataQueryOptions } from "./OData.js"
 
 // ============================================================================
 // Types

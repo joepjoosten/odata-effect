@@ -1,5 +1,39 @@
 # @odata-effect/odata-effect-promise
 
+## 1.0.0
+
+### Major Changes
+
+- Remove OData and ODataV4 wrapper modules in favor of toPromise
+
+  **BREAKING CHANGE:** The `OData` and `ODataV4` namespace exports have been removed from this package.
+
+  Before:
+
+  ```typescript
+  import * as OData from "@odata-effect/odata-effect-promise/OData";
+  const product = await OData.get(runtime, "Products('1')", ProductSchema);
+  ```
+
+  After:
+
+  ```typescript
+  import { pipe } from "effect";
+  import { OData } from "@odata-effect/odata-effect";
+  import { toPromise } from "@odata-effect/odata-effect-promise";
+
+  const product = await pipe(
+    OData.get("Products('1')", ProductSchema),
+    toPromise(runtime)
+  );
+  ```
+
+  The new pattern is more composable and works with any Effect-based operation:
+
+  - OData/ODataV4 functions from `@odata-effect/odata-effect`
+  - Generated CRUD services
+  - Generated PathBuilders
+
 ## 0.2.0
 
 ### Minor Changes

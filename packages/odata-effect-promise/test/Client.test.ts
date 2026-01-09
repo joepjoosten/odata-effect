@@ -11,105 +11,43 @@ describe("ODataEffectPromise", () => {
       const { Runtime } = await import("../src/index.js")
       expect(typeof Runtime.createODataV4Runtime).toBe("function")
     })
-  })
 
-  describe("V2 functions", () => {
-    it("exports get function", async () => {
-      const OData = await import("../src/OData.js")
-      expect(typeof OData.get).toBe("function")
-    })
-
-    it("exports getCollection function", async () => {
-      const OData = await import("../src/OData.js")
-      expect(typeof OData.getCollection).toBe("function")
-    })
-
-    it("exports getCollectionPaged function", async () => {
-      const OData = await import("../src/OData.js")
-      expect(typeof OData.getCollectionPaged).toBe("function")
-    })
-
-    it("exports post function", async () => {
-      const OData = await import("../src/OData.js")
-      expect(typeof OData.post).toBe("function")
-    })
-
-    it("exports patch function", async () => {
-      const OData = await import("../src/OData.js")
-      expect(typeof OData.patch).toBe("function")
-    })
-
-    it("exports del function", async () => {
-      const OData = await import("../src/OData.js")
-      expect(typeof OData.del).toBe("function")
-    })
-
-    it("exports delete alias", async () => {
-      const OData = await import("../src/OData.js")
-      expect(OData.delete).toBe(OData.del)
+    it("exports toPromise", async () => {
+      const { Runtime } = await import("../src/index.js")
+      expect(typeof Runtime.toPromise).toBe("function")
     })
   })
 
-  describe("V4 functions", () => {
-    it("exports get function", async () => {
-      const ODataV4 = await import("../src/ODataV4.js")
-      expect(typeof ODataV4.get).toBe("function")
+  describe("Direct exports", () => {
+    it("exports createODataRuntime directly", async () => {
+      const { createODataRuntime } = await import("../src/index.js")
+      expect(typeof createODataRuntime).toBe("function")
     })
 
-    it("exports getCollection function", async () => {
-      const ODataV4 = await import("../src/ODataV4.js")
-      expect(typeof ODataV4.getCollection).toBe("function")
+    it("exports createODataV4Runtime directly", async () => {
+      const { createODataV4Runtime } = await import("../src/index.js")
+      expect(typeof createODataV4Runtime).toBe("function")
     })
 
-    it("exports getCollectionPaged function", async () => {
-      const ODataV4 = await import("../src/ODataV4.js")
-      expect(typeof ODataV4.getCollectionPaged).toBe("function")
-    })
-
-    it("exports getValue function", async () => {
-      const ODataV4 = await import("../src/ODataV4.js")
-      expect(typeof ODataV4.getValue).toBe("function")
-    })
-
-    it("exports post function", async () => {
-      const ODataV4 = await import("../src/ODataV4.js")
-      expect(typeof ODataV4.post).toBe("function")
-    })
-
-    it("exports patch function", async () => {
-      const ODataV4 = await import("../src/ODataV4.js")
-      expect(typeof ODataV4.patch).toBe("function")
-    })
-
-    it("exports put function", async () => {
-      const ODataV4 = await import("../src/ODataV4.js")
-      expect(typeof ODataV4.put).toBe("function")
-    })
-
-    it("exports del function", async () => {
-      const ODataV4 = await import("../src/ODataV4.js")
-      expect(typeof ODataV4.del).toBe("function")
-    })
-
-    it("exports delete alias", async () => {
-      const ODataV4 = await import("../src/ODataV4.js")
-      expect(ODataV4.delete).toBe(ODataV4.del)
+    it("exports toPromise directly", async () => {
+      const { toPromise } = await import("../src/index.js")
+      expect(typeof toPromise).toBe("function")
     })
   })
 
-  describe("Namespace exports", () => {
-    it("exports OData namespace", async () => {
-      const { OData } = await import("../src/index.js")
-      expect(typeof OData.get).toBe("function")
-      expect(typeof OData.getCollection).toBe("function")
-      expect(typeof OData.post).toBe("function")
-    })
+  describe("toPromise functionality", () => {
+    it("toPromise returns a function that returns a Promise", async () => {
+      const { createODataRuntime, toPromise } = await import("../src/index.js")
 
-    it("exports ODataV4 namespace", async () => {
-      const { ODataV4 } = await import("../src/index.js")
-      expect(typeof ODataV4.get).toBe("function")
-      expect(typeof ODataV4.getCollection).toBe("function")
-      expect(typeof ODataV4.post).toBe("function")
+      const runtime = createODataRuntime({
+        baseUrl: "https://example.com",
+        servicePath: "/odata/"
+      })
+
+      const converter = toPromise(runtime)
+      expect(typeof converter).toBe("function")
+
+      await runtime.dispose()
     })
   })
 })

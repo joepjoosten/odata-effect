@@ -1,82 +1,50 @@
 /**
- * Tree-shakable OData V2 Promise functions.
+ * Promise-based OData client using Effect runtime.
  *
- * This module provides Promise-based functions for OData V2 operations.
- * Import only the functions you need for maximum tree-shaking.
+ * This package provides a simple way to use the Effect-based OData client
+ * in Promise-based codebases. Use `toPromise(runtime)` to convert any
+ * Effect-based OData operation to a Promise.
  *
  * @example
  * ```ts
- * import { createODataRuntime } from "@odata-effect/odata-effect-promise"
- * import * as OData from "@odata-effect/odata-effect-promise/OData"
+ * import { pipe } from "effect"
+ * import { OData } from "@odata-effect/odata-effect"
+ * import { createODataRuntime, toPromise } from "@odata-effect/odata-effect-promise"
  *
  * const runtime = createODataRuntime({
  *   baseUrl: "https://server.com",
  *   servicePath: "/sap/opu/odata/sap/MY_SERVICE/"
  * })
  *
- * // Namespace import - nice autocomplete
- * const product = await OData.get(runtime, "Products('1')", ProductSchema)
+ * // Use with OData functions
+ * const product = await pipe(
+ *   OData.get("Products('1')", ProductSchema),
+ *   toPromise(runtime)
+ * )
  *
- * // Or create bound functions
- * const boundGet = OData.get.bind(null, runtime)
- * const product2 = await boundGet("Products('2')", ProductSchema)
+ * // Use with generated services
+ * const products = await pipe(
+ *   ProductService.getAll(),
+ *   toPromise(runtime)
+ * )
  *
- * await runtime.dispose()
- * ```
- *
- * @since 1.0.0
- */
-export * as OData from "./OData.js"
-
-/**
- * Tree-shakable OData V4 Promise functions.
- *
- * This module provides Promise-based functions for OData V4 operations.
- * Import only the functions you need for maximum tree-shaking.
- *
- * @example
- * ```ts
- * import { createODataV4Runtime } from "@odata-effect/odata-effect-promise"
- * import * as ODataV4 from "@odata-effect/odata-effect-promise/ODataV4"
- *
- * const runtime = createODataV4Runtime({
- *   baseUrl: "https://server.com",
- *   servicePath: "/odata/v4/"
- * })
- *
- * // Namespace import - nice autocomplete
- * const product = await ODataV4.get(runtime, "Products(1)", ProductSchema)
- *
- * // Or create bound functions
- * const boundGet = (path, schema, opts) => ODataV4.get(runtime, path, schema, opts)
- * const product2 = await boundGet("Products(2)", ProductSchema)
+ * // Use with PathBuilders
+ * const trips = await pipe(
+ *   People,
+ *   byKey("bob"),
+ *   trips,
+ *   fetchCollection(TripSchema),
+ *   toPromise(runtime)
+ * )
  *
  * await runtime.dispose()
  * ```
  *
  * @since 1.0.0
  */
-export * as ODataV4 from "./ODataV4.js"
 
 /**
  * Runtime management for OData Promise client.
- *
- * This module provides utilities to create a managed runtime that can execute
- * Effect-based OData operations as Promises.
- *
- * @example
- * ```ts
- * import { Runtime } from "@odata-effect/odata-effect-promise"
- * import * as OData from "@odata-effect/odata-effect-promise/OData"
- *
- * const runtime = Runtime.createODataRuntime({
- *   baseUrl: "https://server.com",
- *   servicePath: "/sap/opu/odata/sap/MY_SERVICE/"
- * })
- *
- * const product = await OData.get(runtime, "Products('1')", ProductSchema)
- * await runtime.dispose()
- * ```
  *
  * @since 1.0.0
  */
@@ -86,8 +54,8 @@ export * as Runtime from "./Runtime.js"
 export {
   createODataRuntime,
   createODataV4Runtime,
-  toPromise,
   type ODataRuntime,
+  type ODataRuntimeConfig,
   type ODataV4Runtime,
-  type ODataRuntimeConfig
+  toPromise
 } from "./Runtime.js"

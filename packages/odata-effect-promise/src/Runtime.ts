@@ -239,9 +239,8 @@ export const createODataV4Runtime = (config: ODataRuntimeConfig): ODataV4Runtime
 export const toPromise: {
   (runtime: ODataRuntime): <A, E>(effect: Effect.Effect<A, E, any>) => Promise<A>
   (runtime: ODataV4Runtime): <A, E>(effect: Effect.Effect<A, E, any>) => Promise<A>
-} = (runtime: ODataRuntime | ODataV4Runtime) =>
-  <A, E>(effect: Effect.Effect<A, E, any>): Promise<A> =>
-    runtime.runPromise(effect as any)
+} = (runtime: ODataRuntime | ODataV4Runtime) => <A, E>(effect: Effect.Effect<A, E, any>): Promise<A> =>
+  runtime.runPromise(effect as any)
 
 // Re-export commonly used types
 export type ODataQueryOptions = OData.ODataQueryOptions

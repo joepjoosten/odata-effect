@@ -81,3 +81,13 @@ export * as ODataV4 from "./ODataV4.js"
  * @since 1.0.0
  */
 export * as Runtime from "./Runtime.js"
+
+// Direct exports for convenience
+export {
+  createODataRuntime,
+  createODataV4Runtime,
+  toPromise,
+  type ODataRuntime,
+  type ODataV4Runtime,
+  type ODataRuntimeConfig
+} from "./Runtime.js"

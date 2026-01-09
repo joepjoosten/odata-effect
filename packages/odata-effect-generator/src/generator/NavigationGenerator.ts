@@ -36,13 +36,13 @@ interface VersionConfig {
 
 const V2_CONFIG: VersionConfig = {
   odataNamespace: "OData",
-  clientModule: "ODataClient",
+  clientModule: "OData",
   queryOptionsType: "ODataQueryOptions"
 }
 
 const V4_CONFIG: VersionConfig = {
   odataNamespace: "ODataV4",
-  clientModule: "ODataV4Client",
+  clientModule: "ODataV4",
   queryOptionsType: "ODataV4QueryOptions"
 }
 
@@ -222,11 +222,8 @@ const generatePathBuildersFile = (dataModel: DataModel): string => {
   lines.push(``)
 
   // Imports
-  lines.push(
-    `import { ${versionConfig.odataNamespace}, ${versionConfig.clientModule}} from "@odata-effect/odata-effect"`
-  )
-  const runtimeType = dataModel.version === "V4" ? "ODataV4Runtime" : "ODataRuntime"
-  lines.push(`import type { Runtime } from "@odata-effect/odata-effect-promise"`)
+  lines.push(`import { ${versionConfig.odataNamespace} } from "@odata-effect/odata-effect"`)
+  lines.push(`import { toPromise } from "@odata-effect/odata-effect-promise"`)
   lines.push(`import type { Effect, Schema } from "effect"`)
   lines.push(``)
 
@@ -388,7 +385,7 @@ const generatePathBuildersFile = (dataModel: DataModel): string => {
   lines.push(`    ${versionConfig.odataNamespace}.get(path, schema, options)`)
   lines.push(``)
 
-  // Promise conversion (pipe-friendly)
+  // Promise conversion (re-export from odata-effect-promise)
   lines.push(`// ============================================================================`)
   lines.push(`// Promise Conversion`)
   lines.push(`// ============================================================================`)
@@ -410,9 +407,7 @@ const generatePathBuildersFile = (dataModel: DataModel): string => {
   lines.push(` * @since 1.0.0`)
   lines.push(` * @category operations`)
   lines.push(` */`)
-  lines.push(`export const toPromise = (runtime: Runtime.${runtimeType}) =>`)
-  lines.push(`  <A, E, R>(effect: Effect.Effect<A, E, R>): Promise<A> =>`)
-  lines.push(`    runtime.runPromise(effect as any)`)
+  lines.push(`export { toPromise }`)
   lines.push(``)
 
   return lines.join("\n")

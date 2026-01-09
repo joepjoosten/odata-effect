@@ -191,6 +191,58 @@ export const createODataV4Runtime = (config: ODataRuntimeConfig): ODataV4Runtime
   }
 }
 
+// ============================================================================
+// toPromise - Universal Effect to Promise converter
+// ============================================================================
+
+/**
+ * Convert an Effect to a Promise using the provided runtime.
+ *
+ * This is a curried function designed to be used with `pipe`:
+ *
+ * @example
+ * ```ts
+ * import { pipe } from "effect"
+ * import { OData } from "@odata-effect/odata-effect"
+ * import { createODataRuntime, toPromise } from "@odata-effect/odata-effect-promise"
+ *
+ * const runtime = createODataRuntime({
+ *   baseUrl: "https://api.example.com",
+ *   servicePath: "/odata/"
+ * })
+ *
+ * // Use with OData functions
+ * const product = await pipe(
+ *   OData.get("Products('1')", ProductSchema),
+ *   toPromise(runtime)
+ * )
+ *
+ * // Use with generated services
+ * const products = await pipe(
+ *   ProductService.getAll(),
+ *   toPromise(runtime)
+ * )
+ *
+ * // Use with PathBuilders
+ * const trips = await pipe(
+ *   People,
+ *   byKey("bob"),
+ *   trips,
+ *   fetchCollection(TripSchema),
+ *   toPromise(runtime)
+ * )
+ * ```
+ *
+ * @since 1.0.0
+ * @category operations
+ */
+export const toPromise: {
+  (runtime: ODataRuntime): <A, E>(effect: Effect.Effect<A, E, any>) => Promise<A>
+  (runtime: ODataV4Runtime): <A, E>(effect: Effect.Effect<A, E, any>) => Promise<A>
+} = (runtime: ODataRuntime | ODataV4Runtime) =>
+  <A, E>(effect: Effect.Effect<A, E, any>): Promise<A> =>
+    runtime.runPromise(effect as any)
+
 // Re-export commonly used types
 export type ODataQueryOptions = OData.ODataQueryOptions
 export type ODataRequestOptions = OData.ODataRequestOptions

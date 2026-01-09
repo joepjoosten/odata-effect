@@ -1,5 +1,13 @@
 # @odata-effect/odata-effect
 
+## 0.3.1
+
+### Patch Changes
+
+- [`7f74d96`](https://github.com/joepjoosten/odata-effect/commit/7f74d9637c447983450178a6f6219149e3adaee8) Thanks [@joepjoosten](https://github.com/joepjoosten)! - Support optional parameters in OData operations
+
+  Added `undefined` to the `OperationParameters` type and filter out undefined values when building function import URLs. This allows callers to pass optional parameters that are excluded from the generated URL when not provided.
+
 ## 0.3.0
 
 ### Minor Changes

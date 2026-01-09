@@ -24,7 +24,7 @@ import { type ODataV4ClientConfigService, ODataV4CollectionResponse, ODataV4Valu
  * @since 1.0.0
  * @category models
  */
-export type OperationParameters = Record<string, string | number | boolean | Date | null>
+export type OperationParameters = Record<string, string | number | boolean | Date | null | undefined>
 
 /**
  * Return type specification for operations.
@@ -64,6 +64,7 @@ export const buildFunctionImportUrl = (
   }
 
   const params = Object.entries(parameters)
+    .filter(([, value]) => value !== undefined)
     .map(([key, value]) => {
       if (value === null) {
         return `${key}=null`
@@ -77,6 +78,10 @@ export const buildFunctionImportUrl = (
       return `${key}=${value}`
     })
     .join(",")
+
+  if (!params) {
+    return functionName
+  }
 
   return `${functionName}?${params}`
 }
@@ -262,6 +267,7 @@ export const buildV4FunctionUrl = (
   }
 
   const params = Object.entries(parameters)
+    .filter(([, value]) => value !== undefined)
     .map(([key, value]) => {
       if (value === null) {
         return `${key}=null`
@@ -297,6 +303,7 @@ export const buildV4BoundOperationUrl = (
   }
 
   const params = Object.entries(parameters)
+    .filter(([, value]) => value !== undefined)
     .map(([key, value]) => {
       if (value === null) {
         return `${key}=null`

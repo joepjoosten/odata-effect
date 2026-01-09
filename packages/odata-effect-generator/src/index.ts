@@ -56,6 +56,41 @@ export * as ModelsGenerator from "./generator/ModelsGenerator.js"
 export * as NamingHelper from "./generator/NamingHelper.js"
 
 /**
+ * Generator for type-safe, tree-shakable navigation path builders.
+ *
+ * Generates branded path types and navigation functions that can be composed
+ * with pipe() for type-safe OData path construction.
+ *
+ * @example
+ * ```typescript
+ * import { pipe } from "effect"
+ * import { People, byKey, trips, planItems, asFlight } from "./PathBuilders"
+ *
+ * const path = pipe(
+ *   People,
+ *   byKey("russellwhyte"),
+ *   trips,
+ *   byKey(0),
+ *   planItems,
+ *   asFlight
+ * )
+ * ```
+ *
+ * @since 1.0.0
+ */
+export * as NavigationGenerator from "./generator/NavigationGenerator.js"
+
+/**
+ * Generator for OData operations (FunctionImports, Functions, Actions).
+ *
+ * OData V2: FunctionImports
+ * OData V4: Functions (GET, no side effects) and Actions (POST, with side effects)
+ *
+ * @since 1.0.0
+ */
+export * as OperationsGenerator from "./generator/OperationsGenerator.js"
+
+/**
  * Generator for package configuration files.
  *
  * @since 1.0.0
@@ -70,25 +105,14 @@ export * as PackageGenerator from "./generator/PackageGenerator.js"
 export * as QueryModelsGenerator from "./generator/QueryModelsGenerator.js"
 
 /**
- * Generator for tree-shakable service functions.
+ * Generator for entity services using the crud factory.
  *
- * This module generates standalone functions that can be tree-shaken.
- * Each entity service is a module of standalone functions that use
- * the tree-shakable OData functions directly.
+ * This module generates a single Services.ts file that creates CRUD services
+ * for all entity sets using the crud factory from @odata-effect/odata-effect.
  *
  * @since 1.0.0
  */
 export * as ServiceFnGenerator from "./generator/ServiceFnGenerator.js"
-
-/**
- * Generator for tree-shakable navigation path builders.
- *
- * This module generates pipe-based navigation functions and the toPromise
- * helper for Promise-based environments.
- *
- * @since 1.0.0
- */
-export * as NavigationGenerator from "./generator/NavigationGenerator.js"
 
 /**
  * Intermediate representation for OData metadata.

@@ -12,18 +12,30 @@ export * as Batch from "./Batch.js"
 /**
  * CRUD factory for OData V2 entity services.
  *
- * Creates type-safe CRUD operations for entity sets without code generation.
+ * This module provides a factory function to create type-safe CRUD operations
+ * for OData V2 entity sets. Instead of generating duplicate code for each entity,
+ * use this factory with your entity schemas.
  *
  * @example
  * ```ts
- * import { Crud } from "@odata-effect/odata-effect"
+ * import { crud } from "@odata-effect/odata-effect/Crud"
+ * import { Product, ProductId, EditableProduct } from "./Models"
  *
- * export const ProductService = Crud.crud({
+ * export const ProductService = crud({
  *   path: "Products",
  *   schema: Product,
  *   editableSchema: EditableProduct,
- *   idToKey: (id) => ({ ID: String(id) })
+ *   idToKey: (id: ProductId) => typeof id === "number"
+ *     ? { ID: String(id) }
+ *     : { ID: String(id.id) }
  * })
+ *
+ * // Usage:
+ * const products = yield* ProductService.getAll()
+ * const product = yield* ProductService.getById(123)
+ * const created = yield* ProductService.create({ name: "Widget", price: 9.99 })
+ * yield* ProductService.update(123, { price: 12.99 })
+ * yield* ProductService.delete(123)
  * ```
  *
  * @since 1.0.0
@@ -33,18 +45,30 @@ export * as Crud from "./Crud.js"
 /**
  * CRUD factory for OData V4 entity services.
  *
- * Creates type-safe CRUD operations for entity sets without code generation.
+ * This module provides a factory function to create type-safe CRUD operations
+ * for OData V4 entity sets. Instead of generating duplicate code for each entity,
+ * use this factory with your entity schemas.
  *
  * @example
  * ```ts
- * import { CrudV4 } from "@odata-effect/odata-effect"
+ * import { crud } from "@odata-effect/odata-effect/CrudV4"
+ * import { Person, PersonId, EditablePerson } from "./Models"
  *
- * export const PersonService = CrudV4.crud({
+ * export const PersonService = crud({
  *   path: "People",
  *   schema: Person,
  *   editableSchema: EditablePerson,
- *   idToKey: (id) => ({ UserName: id })
+ *   idToKey: (id: PersonId) => typeof id === "string"
+ *     ? { UserName: id }
+ *     : { UserName: id.userName }
  * })
+ *
+ * // Usage:
+ * const people = yield* PersonService.getAll()
+ * const person = yield* PersonService.getById("russellwhyte")
+ * const created = yield* PersonService.create({ firstName: "John", lastName: "Doe" })
+ * yield* PersonService.update("russellwhyte", { firstName: "Russell" })
+ * yield* PersonService.delete("russellwhyte")
  * ```
  *
  * @since 1.0.0
@@ -72,7 +96,7 @@ export * as Media from "./Media.js"
  * OData V2 client module.
  *
  * This module provides everything needed for OData V2 operations:
- * - Configuration context tag (ODataClientConfig)
+ * - Configuration context tag
  * - Response schemas for parsing OData responses
  * - Query options types
  * - Tree-shakable operation functions (get, post, patch, del)
@@ -98,7 +122,7 @@ export * as OData from "./OData.js"
  * OData V4 client module.
  *
  * This module provides everything needed for OData V4 operations:
- * - Configuration context tag (ODataV4ClientConfig)
+ * - Configuration context tag
  * - Response schemas for parsing OData responses
  * - Query options types
  * - Tree-shakable operation functions (get, post, patch, put, del)

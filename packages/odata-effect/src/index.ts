@@ -10,6 +10,28 @@
 export * as Batch from "./Batch.js"
 
 /**
+ * OData client configuration.
+ *
+ * This module provides the unified configuration context tag used by both
+ * OData V2 and V4 operations. Since V2 and V4 share the same configuration
+ * structure (baseUrl and servicePath), a single config works for both.
+ *
+ * @example
+ * ```ts
+ * import { Config } from "@odata-effect/odata-effect"
+ * import * as Layer from "effect/Layer"
+ *
+ * const configLayer = Layer.succeed(Config.ODataClientConfig, {
+ *   baseUrl: "https://server.com",
+ *   servicePath: "/sap/opu/odata/sap/MY_SERVICE/"
+ * })
+ * ```
+ *
+ * @since 1.0.0
+ */
+export * as Config from "./Config.js"
+
+/**
  * CRUD factory for OData V2 entity services.
  *
  * This module provides a factory function to create type-safe CRUD operations
@@ -141,7 +163,7 @@ export * as OData from "./OData.js"
  * const items = yield* ODataV4.getCollection("Products", ProductSchema)
  *
  * // Direct import - maximum tree-shaking
- * import { get, ODataV4ClientConfig } from "@odata-effect/odata-effect/ODataV4"
+ * import { get, ODataClientConfig } from "@odata-effect/odata-effect/ODataV4"
  * const entity = yield* get("Products(123)", ProductSchema)
  * ```
  *

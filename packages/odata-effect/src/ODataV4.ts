@@ -21,7 +21,7 @@
  * const items = yield* ODataV4.getCollection("Products", ProductSchema)
  *
  * // Direct import - maximum tree-shaking
- * import { get, ODataV4ClientConfig } from "@odata-effect/odata-effect/ODataV4"
+ * import { get, ODataClientConfig } from "@odata-effect/odata-effect/ODataV4"
  * const entity = yield* get("Products(123)", ProductSchema)
  * ```
  *
@@ -34,37 +34,14 @@ import {
   HttpClientRequest,
   HttpClientResponse
 } from "@effect/platform"
-import * as Context from "effect/Context"
 import * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"
+import { ODataClientConfig } from "./Config.js"
 import type { ParseError } from "./Errors.js"
 import { ODataError } from "./Errors.js"
 
-// ============================================================================
-// Configuration
-// ============================================================================
-
-/**
- * Configuration for the OData V4 client.
- *
- * @since 1.0.0
- * @category models
- */
-export interface ODataV4ClientConfigService {
-  readonly baseUrl: string
-  readonly servicePath: string
-}
-
-/**
- * OData V4 client configuration tag.
- *
- * @since 1.0.0
- * @category context
- */
-export class ODataV4ClientConfig extends Context.Tag("ODataV4ClientConfig")<
-  ODataV4ClientConfig,
-  ODataV4ClientConfigService
->() {}
+// Re-export config - V4 uses the same unified config as V2
+export { ODataClientConfig, type ODataClientConfigService } from "./Config.js"
 
 // ============================================================================
 // Response Schemas
@@ -292,12 +269,12 @@ export const get = <A, I, R>(
 ): Effect.Effect<
   A,
   HttpClientError.HttpClientError | ParseError | ODataError,
-  R | ODataV4ClientConfig | HttpClient.HttpClient
+  R | ODataClientConfig | HttpClient.HttpClient
 > => {
   const url = `${path}${buildQueryString(options)}`
 
   return Effect.gen(function*() {
-    const config = yield* ODataV4ClientConfig
+    const config = yield* ODataClientConfig
     const httpClient = yield* HttpClient.HttpClient
 
     const client = httpClient.pipe(
@@ -334,13 +311,13 @@ export const getCollection = <A, I, R>(
 ): Effect.Effect<
   ReadonlyArray<A>,
   HttpClientError.HttpClientError | ParseError | ODataError,
-  R | ODataV4ClientConfig | HttpClient.HttpClient
+  R | ODataClientConfig | HttpClient.HttpClient
 > => {
   const url = `${path}${buildQueryString(options)}`
   const responseSchema = ODataV4CollectionResponse(schema)
 
   return Effect.gen(function*() {
-    const config = yield* ODataV4ClientConfig
+    const config = yield* ODataClientConfig
     const httpClient = yield* HttpClient.HttpClient
 
     const client = httpClient.pipe(
@@ -377,13 +354,13 @@ export const getCollectionPaged = <A, I, R>(
 ): Effect.Effect<
   PagedResultV4<A>,
   HttpClientError.HttpClientError | ParseError | ODataError,
-  R | ODataV4ClientConfig | HttpClient.HttpClient
+  R | ODataClientConfig | HttpClient.HttpClient
 > => {
   const url = `${path}${buildQueryString(options)}`
   const responseSchema = ODataV4CollectionResponse(schema)
 
   return Effect.gen(function*() {
-    const config = yield* ODataV4ClientConfig
+    const config = yield* ODataClientConfig
     const httpClient = yield* HttpClient.HttpClient
 
     const client = httpClient.pipe(
@@ -424,12 +401,12 @@ export const getValue = <A, I, R>(
 ): Effect.Effect<
   A,
   HttpClientError.HttpClientError | ParseError | ODataError,
-  R | ODataV4ClientConfig | HttpClient.HttpClient
+  R | ODataClientConfig | HttpClient.HttpClient
 > => {
   const responseSchema = ODataV4ValueResponse(schema)
 
   return Effect.gen(function*() {
-    const config = yield* ODataV4ClientConfig
+    const config = yield* ODataClientConfig
     const httpClient = yield* HttpClient.HttpClient
 
     const client = httpClient.pipe(
@@ -468,10 +445,10 @@ export const post = <A, I, R, B, BI>(
 ): Effect.Effect<
   A,
   HttpClientError.HttpClientError | HttpBody.HttpBodyError | ParseError | ODataError,
-  R | ODataV4ClientConfig | HttpClient.HttpClient
+  R | ODataClientConfig | HttpClient.HttpClient
 > =>
   Effect.gen(function*() {
-    const config = yield* ODataV4ClientConfig
+    const config = yield* ODataClientConfig
     const httpClient = yield* HttpClient.HttpClient
 
     const client = httpClient.pipe(
@@ -513,10 +490,10 @@ export const patch = <B, BI>(
 ): Effect.Effect<
   void,
   HttpClientError.HttpClientError | HttpBody.HttpBodyError | ODataError,
-  ODataV4ClientConfig | HttpClient.HttpClient
+  ODataClientConfig | HttpClient.HttpClient
 > =>
   Effect.gen(function*() {
-    const config = yield* ODataV4ClientConfig
+    const config = yield* ODataClientConfig
     const httpClient = yield* HttpClient.HttpClient
 
     const client = httpClient.pipe(
@@ -556,10 +533,10 @@ export const put = <B, BI>(
 ): Effect.Effect<
   void,
   HttpClientError.HttpClientError | HttpBody.HttpBodyError | ODataError,
-  ODataV4ClientConfig | HttpClient.HttpClient
+  ODataClientConfig | HttpClient.HttpClient
 > =>
   Effect.gen(function*() {
-    const config = yield* ODataV4ClientConfig
+    const config = yield* ODataClientConfig
     const httpClient = yield* HttpClient.HttpClient
 
     const client = httpClient.pipe(
@@ -596,10 +573,10 @@ export const del = (
 ): Effect.Effect<
   void,
   HttpClientError.HttpClientError | ODataError,
-  ODataV4ClientConfig | HttpClient.HttpClient
+  ODataClientConfig | HttpClient.HttpClient
 > =>
   Effect.gen(function*() {
-    const config = yield* ODataV4ClientConfig
+    const config = yield* ODataClientConfig
     const httpClient = yield* HttpClient.HttpClient
 
     const client = httpClient.pipe(

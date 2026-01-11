@@ -12,8 +12,7 @@ import * as Schema from "effect/Schema"
 import type * as Stream from "effect/Stream"
 import type { ParseError } from "./Errors.js"
 import { ODataError } from "./Errors.js"
-import type { ODataClientConfigService } from "./OData.js"
-import type { ODataV4ClientConfigService } from "./ODataV4.js"
+import type { ODataClientConfigService } from "./Config.js"
 
 // ============================================================================
 // Media Types
@@ -359,7 +358,7 @@ export const deleteMediaV2 = (
  */
 export const getMediaV4 = (
   client: HttpClient.HttpClient,
-  config: ODataV4ClientConfigService,
+  config: ODataClientConfigService,
   path: string,
   options?: MediaDownloadOptions
 ): Effect.Effect<MediaDownloadResult, HttpClientError.HttpClientError | ODataError, never> => {
@@ -411,7 +410,7 @@ export const getMediaV4 = (
  */
 export const getMediaStreamV4 = (
   client: HttpClient.HttpClient,
-  config: ODataV4ClientConfigService,
+  config: ODataClientConfigService,
   path: string,
   options?: MediaDownloadOptions
 ): Effect.Effect<MediaStreamResult, HttpClientError.HttpClientError | ODataError, never> => {
@@ -459,7 +458,7 @@ export const getMediaStreamV4 = (
  */
 export const uploadMediaV4 = <A, I, R>(
   client: HttpClient.HttpClient,
-  config: ODataV4ClientConfigService,
+  config: ODataClientConfigService,
   path: string,
   data: Uint8Array,
   options: MediaUploadOptions,
@@ -517,7 +516,7 @@ export const uploadMediaV4 = <A, I, R>(
  */
 export const updateMediaV4 = (
   client: HttpClient.HttpClient,
-  config: ODataV4ClientConfigService,
+  config: ODataClientConfigService,
   path: string,
   data: Uint8Array,
   options: MediaUploadOptions & { readonly etag?: string }
@@ -560,7 +559,7 @@ export const updateMediaV4 = (
  */
 export const deleteMediaV4 = (
   client: HttpClient.HttpClient,
-  config: ODataV4ClientConfigService,
+  config: ODataClientConfigService,
   path: string,
   etag?: string
 ): Effect.Effect<void, HttpClientError.HttpClientError | ODataError, never> => {

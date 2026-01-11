@@ -11,8 +11,7 @@ import { HttpClient, type HttpClientError, HttpClientRequest, HttpClientResponse
 import * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"
 import { ODataError, ParseError } from "./Errors.js"
-import type { ODataClientConfigService } from "./OData.js"
-import type { ODataV4ClientConfigService } from "./ODataV4.js"
+import type { ODataClientConfigService } from "./Config.js"
 
 // ============================================================================
 // Batch Request Types
@@ -869,7 +868,7 @@ export const executeBatchV2 = (
  */
 export const executeBatchV4Json = (
   client: HttpClient.HttpClient,
-  config: ODataV4ClientConfigService,
+  config: ODataClientConfigService,
   operations: ReadonlyArray<BatchOperation>,
   options?: BatchExecutionOptions
 ): Effect.Effect<
@@ -915,7 +914,7 @@ export const executeBatchV4Json = (
  */
 export const executeBatchV4Multipart = (
   client: HttpClient.HttpClient,
-  config: ODataV4ClientConfigService,
+  config: ODataClientConfigService,
   operations: ReadonlyArray<BatchOperation>,
   options?: BatchExecutionOptions
 ): Effect.Effect<

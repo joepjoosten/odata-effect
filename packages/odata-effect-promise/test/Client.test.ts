@@ -1,3 +1,4 @@
+import * as NodeHttpClient from "@effect/platform-node/NodeHttpClient"
 import { describe, expect, it } from "vitest"
 
 describe("ODataEffectPromise", () => {
@@ -5,11 +6,6 @@ describe("ODataEffectPromise", () => {
     it("exports createODataRuntime", async () => {
       const { Runtime } = await import("../src/index.js")
       expect(typeof Runtime.createODataRuntime).toBe("function")
-    })
-
-    it("exports createODataV4Runtime", async () => {
-      const { Runtime } = await import("../src/index.js")
-      expect(typeof Runtime.createODataV4Runtime).toBe("function")
     })
 
     it("exports toPromise", async () => {
@@ -24,11 +20,6 @@ describe("ODataEffectPromise", () => {
       expect(typeof createODataRuntime).toBe("function")
     })
 
-    it("exports createODataV4Runtime directly", async () => {
-      const { createODataV4Runtime } = await import("../src/index.js")
-      expect(typeof createODataV4Runtime).toBe("function")
-    })
-
     it("exports toPromise directly", async () => {
       const { toPromise } = await import("../src/index.js")
       expect(typeof toPromise).toBe("function")
@@ -39,13 +30,30 @@ describe("ODataEffectPromise", () => {
     it("toPromise returns a function that returns a Promise", async () => {
       const { createODataRuntime, toPromise } = await import("../src/index.js")
 
-      const runtime = createODataRuntime({
-        baseUrl: "https://example.com",
-        servicePath: "/odata/"
-      })
+      const runtime = createODataRuntime(
+        { baseUrl: "https://example.com", servicePath: "/odata/" },
+        NodeHttpClient.layer
+      )
 
       const converter = toPromise(runtime)
       expect(typeof converter).toBe("function")
+
+      await runtime.dispose()
+    })
+  })
+
+  describe("Unified runtime for V2 and V4", () => {
+    it("creates a single runtime that works with both V2 and V4", async () => {
+      const { createODataRuntime } = await import("../src/index.js")
+
+      const runtime = createODataRuntime(
+        { baseUrl: "https://example.com", servicePath: "/odata/" },
+        NodeHttpClient.layer
+      )
+
+      // Runtime should be created successfully
+      expect(runtime.config.baseUrl).toBe("https://example.com")
+      expect(runtime.config.servicePath).toBe("/odata/")
 
       await runtime.dispose()
     })

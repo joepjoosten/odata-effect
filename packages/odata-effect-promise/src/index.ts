@@ -5,20 +5,31 @@
  * in Promise-based codebases. Use `toPromise(runtime)` to convert any
  * Effect-based OData operation to a Promise.
  *
- * @example
+ * The library is platform-independent - you bring your own HTTP client layer
+ * (Node.js, Bun, browser, etc.).
+ *
+ * @example Node.js
  * ```ts
+ * import * as NodeHttpClient from "@effect/platform-node/NodeHttpClient"
  * import { pipe } from "effect"
- * import { OData } from "@odata-effect/odata-effect"
+ * import { OData, ODataV4 } from "@odata-effect/odata-effect"
  * import { createODataRuntime, toPromise } from "@odata-effect/odata-effect-promise"
  *
- * const runtime = createODataRuntime({
- *   baseUrl: "https://server.com",
- *   servicePath: "/sap/opu/odata/sap/MY_SERVICE/"
- * })
+ * // Create runtime with Node.js HTTP client
+ * const runtime = createODataRuntime(
+ *   { baseUrl: "https://server.com", servicePath: "/sap/opu/odata/sap/MY_SERVICE/" },
+ *   NodeHttpClient.layer
+ * )
  *
- * // Use with OData functions
+ * // Use with V2 OData functions
  * const product = await pipe(
  *   OData.get("Products('1')", ProductSchema),
+ *   toPromise(runtime)
+ * )
+ *
+ * // Use with V4 OData functions (same runtime!)
+ * const productV4 = await pipe(
+ *   ODataV4.get("Products(1)", ProductSchema),
  *   toPromise(runtime)
  * )
  *
@@ -28,16 +39,18 @@
  *   toPromise(runtime)
  * )
  *
- * // Use with PathBuilders
- * const trips = await pipe(
- *   People,
- *   byKey("bob"),
- *   trips,
- *   fetchCollection(TripSchema),
- *   toPromise(runtime)
- * )
- *
  * await runtime.dispose()
+ * ```
+ *
+ * @example Bun
+ * ```ts
+ * import * as BunHttpClient from "@effect/platform-bun/BunHttpClient"
+ * import { createODataRuntime } from "@odata-effect/odata-effect-promise"
+ *
+ * const runtime = createODataRuntime(
+ *   { baseUrl: "https://server.com", servicePath: "/odata/v4/" },
+ *   BunHttpClient.layer
+ * )
  * ```
  *
  * @since 1.0.0
@@ -53,9 +66,7 @@ export * as Runtime from "./Runtime.js"
 // Direct exports for convenience
 export {
   createODataRuntime,
-  createODataV4Runtime,
   type ODataRuntime,
   type ODataRuntimeConfig,
-  type ODataV4Runtime,
   toPromise
 } from "./Runtime.js"

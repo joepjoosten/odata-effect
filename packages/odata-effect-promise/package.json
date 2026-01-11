@@ -24,8 +24,10 @@
   },
   "dependencies": {
     "@effect/platform": "^0.94.1",
-    "@effect/platform-node": "^0.104.0",
     "@odata-effect/odata-effect": "workspace:*",
     "effect": "^3.19.14"
+  },
+  "devDependencies": {
+    "@effect/platform-node": "^0.104.0"
   }
 }

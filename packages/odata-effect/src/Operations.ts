@@ -11,8 +11,9 @@ import * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"
 import type { ParseError } from "./Errors.js"
 import { ODataError } from "./Errors.js"
-import { type ODataClientConfigService, ODataCollectionResponse, ODataSingleResponse } from "./OData.js"
-import { type ODataV4ClientConfigService, ODataV4CollectionResponse, ODataV4ValueResponse } from "./ODataV4.js"
+import type { ODataClientConfigService } from "./Config.js"
+import { ODataCollectionResponse, ODataSingleResponse } from "./OData.js"
+import { ODataV4CollectionResponse, ODataV4ValueResponse } from "./ODataV4.js"
 
 // ============================================================================
 // Operation Parameter Types
@@ -329,7 +330,7 @@ export const buildV4BoundOperationUrl = (
  */
 export const executeV4FunctionVoid = (
   client: HttpClient.HttpClient,
-  config: ODataV4ClientConfigService,
+  config: ODataClientConfigService,
   functionUrl: string
 ): Effect.Effect<void, HttpClientError.HttpClientError | ODataError, never> => {
   const url = `${config.baseUrl}${config.servicePath}${functionUrl}`
@@ -358,7 +359,7 @@ export const executeV4FunctionVoid = (
  */
 export const executeV4FunctionEntity = <A, I, R>(
   client: HttpClient.HttpClient,
-  config: ODataV4ClientConfigService,
+  config: ODataClientConfigService,
   functionUrl: string,
   schema: Schema.Schema<A, I, R>
 ): Effect.Effect<A, HttpClientError.HttpClientError | ParseError | ODataError, R> => {
@@ -391,7 +392,7 @@ export const executeV4FunctionEntity = <A, I, R>(
  */
 export const executeV4FunctionCollection = <A, I, R>(
   client: HttpClient.HttpClient,
-  config: ODataV4ClientConfigService,
+  config: ODataClientConfigService,
   functionUrl: string,
   schema: Schema.Schema<A, I, R>
 ): Effect.Effect<ReadonlyArray<A>, HttpClientError.HttpClientError | ParseError | ODataError, R> => {
@@ -424,7 +425,7 @@ export const executeV4FunctionCollection = <A, I, R>(
  */
 export const executeV4FunctionPrimitive = <A, I, R>(
   client: HttpClient.HttpClient,
-  config: ODataV4ClientConfigService,
+  config: ODataClientConfigService,
   functionUrl: string,
   schema: Schema.Schema<A, I, R>
 ): Effect.Effect<A, HttpClientError.HttpClientError | ParseError | ODataError, R> => {
@@ -457,7 +458,7 @@ export const executeV4FunctionPrimitive = <A, I, R>(
  */
 export const executeV4ActionVoid = <B, BI>(
   client: HttpClient.HttpClient,
-  config: ODataV4ClientConfigService,
+  config: ODataClientConfigService,
   actionUrl: string,
   body?: B,
   bodySchema?: Schema.Schema<B, BI>
@@ -493,7 +494,7 @@ export const executeV4ActionVoid = <B, BI>(
  */
 export const executeV4ActionEntity = <A, I, R, B, BI>(
   client: HttpClient.HttpClient,
-  config: ODataV4ClientConfigService,
+  config: ODataClientConfigService,
   actionUrl: string,
   responseSchema: Schema.Schema<A, I, R>,
   body?: B,
@@ -532,7 +533,7 @@ export const executeV4ActionEntity = <A, I, R, B, BI>(
  */
 export const executeV4ActionCollection = <A, I, R, B, BI>(
   client: HttpClient.HttpClient,
-  config: ODataV4ClientConfigService,
+  config: ODataClientConfigService,
   actionUrl: string,
   schema: Schema.Schema<A, I, R>,
   body?: B,

@@ -29,37 +29,14 @@ import {
   HttpClientRequest,
   HttpClientResponse
 } from "@effect/platform"
-import * as Context from "effect/Context"
 import * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"
+import { ODataClientConfig } from "./Config.js"
 import type { ParseError, SapError } from "./Errors.js"
 import { ODataError } from "./Errors.js"
 
-// ============================================================================
-// Configuration
-// ============================================================================
-
-/**
- * Configuration for the OData client.
- *
- * @since 1.0.0
- * @category models
- */
-export interface ODataClientConfigService {
-  readonly baseUrl: string
-  readonly servicePath: string
-}
-
-/**
- * OData client configuration tag.
- *
- * @since 1.0.0
- * @category context
- */
-export class ODataClientConfig extends Context.Tag("ODataClientConfig")<
-  ODataClientConfig,
-  ODataClientConfigService
->() {}
+// Re-export config for backward compatibility
+export { ODataClientConfig, type ODataClientConfigService } from "./Config.js"
 
 // ============================================================================
 // Response Schemas

@@ -5,7 +5,7 @@ import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import * as Schema from "effect/Schema"
 import * as ODataV4 from "../src/ODataV4.js"
-import { ODataV4ClientConfig } from "../src/ODataV4.js"
+import { ODataClientConfig } from "../src/ODataV4.js"
 
 // Test schema
 class TestEntity extends Schema.Class<TestEntity>("TestEntity")({
@@ -20,7 +20,7 @@ const EditableTestEntity = Schema.Struct({
 })
 
 // Test configuration layer
-const testConfig = Layer.succeed(ODataV4ClientConfig, {
+const testConfig = Layer.succeed(ODataClientConfig, {
   baseUrl: "https://test-server.com",
   servicePath: "/odata/v4/"
 })

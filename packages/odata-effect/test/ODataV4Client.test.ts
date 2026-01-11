@@ -3,8 +3,8 @@ import * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"
 import {
   buildEntityPathV4,
+  ODataClientConfig,
   ODataV4Annotations,
-  ODataV4ClientConfig,
   ODataV4CollectionResponse,
   ODataV4ValueResponse
 } from "../src/ODataV4.js"
@@ -171,9 +171,9 @@ describe("ODataV4Client", () => {
       }))
   })
 
-  describe("ODataV4ClientConfig", () => {
+  describe("ODataClientConfig", () => {
     it("is a Context.Tag", () => {
-      expect(ODataV4ClientConfig.key).toBe("ODataV4ClientConfig")
+      expect(ODataClientConfig.key).toBe("ODataClientConfig")
     })
   })
 

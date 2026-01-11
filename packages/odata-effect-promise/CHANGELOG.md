@@ -1,5 +1,68 @@
 # @odata-effect/odata-effect-promise
 
+## 2.0.0
+
+### Major Changes
+
+- [`5f2449e`](https://github.com/joepjoosten/odata-effect/commit/5f2449e8da46cfae51f6f5a463ee8275c76c79ab) Thanks [@joepjoosten](https://github.com/joepjoosten)! - Unified ODataClientConfig for V2 and V4, platform-independent HTTP client
+
+  ### @odata-effect/odata-effect
+
+  - Added `Config` module with unified `ODataClientConfig` context tag
+  - V2 and V4 now share the same configuration (`ODataClientConfig`)
+  - Removed `ODataV4ClientConfig` and `ODataV4ClientConfigService` (use `ODataClientConfig` and `ODataClientConfigService` instead)
+
+  ### @odata-effect/odata-effect-promise
+
+  **Breaking Changes:**
+
+  - `createODataRuntime` now requires an `httpClientLayer` parameter for platform independence
+  - Removed `createODataV4Runtime` (use `createODataRuntime` for both V2 and V4)
+  - Removed `ODataV4Runtime` type (use `ODataRuntime` for both V2 and V4)
+  - Removed `@effect/platform-node` from dependencies (users must provide their own HTTP client layer)
+
+  **Migration:**
+
+  Before:
+
+  ```typescript
+  import { createODataRuntime } from "@odata-effect/odata-effect-promise";
+
+  const runtime = createODataRuntime({
+    baseUrl: "https://server.com",
+    servicePath: "/odata/",
+  });
+  ```
+
+  After:
+
+  ```typescript
+  import * as NodeHttpClient from "@effect/platform-node/NodeHttpClient";
+  import { createODataRuntime } from "@odata-effect/odata-effect-promise";
+
+  const runtime = createODataRuntime(
+    { baseUrl: "https://server.com", servicePath: "/odata/" },
+    NodeHttpClient.layer
+  );
+  ```
+
+  For Bun:
+
+  ```typescript
+  import * as BunHttpClient from "@effect/platform-bun/BunHttpClient";
+  import { createODataRuntime } from "@odata-effect/odata-effect-promise";
+
+  const runtime = createODataRuntime(
+    { baseUrl: "https://server.com", servicePath: "/odata/" },
+    BunHttpClient.layer
+  );
+  ```
+
+### Patch Changes
+
+- Updated dependencies [[`5f2449e`](https://github.com/joepjoosten/odata-effect/commit/5f2449e8da46cfae51f6f5a463ee8275c76c79ab)]:
+  - @odata-effect/odata-effect@0.4.0
+
 ## 1.0.1
 
 ### Patch Changes

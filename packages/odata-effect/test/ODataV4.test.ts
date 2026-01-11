@@ -448,6 +448,148 @@ describe("ODataV4", () => {
       ))
   })
 
+  describe("tunneling", () => {
+    // Helper to create a test layer with tunneling enabled
+    const createTunnelingTestLayer = (
+      handler: (request: HttpClientRequest.HttpClientRequest) => Effect.Effect<HttpClientResponse.HttpClientResponse>
+    ) => {
+      const tunnelingConfig = Layer.succeed(ODataClientConfig, {
+        baseUrl: "https://test-server.com",
+        servicePath: "/odata/v4/",
+        useTunneling: true
+      })
+      const mockHttpClient = Layer.succeed(
+        HttpClient.HttpClient,
+        HttpClient.make(handler)
+      )
+      return Layer.merge(tunnelingConfig, mockHttpClient)
+    }
+
+    it.effect("patch uses POST with X-HTTP-Method: PATCH when tunneling is enabled", () =>
+      Effect.gen(function*() {
+        yield* ODataV4.patch(
+          "Products(1)",
+          { name: "Updated" },
+          Schema.partial(EditableTestEntity)
+        )
+      }).pipe(
+        Effect.provide(
+          createTunnelingTestLayer((request) => {
+            expect(request.method).toBe("POST")
+            expect(request.headers["x-http-method"]).toBe("PATCH")
+            return Effect.succeed(
+              HttpClientResponse.fromWeb(
+                request,
+                new Response(null, { status: 204 })
+              )
+            )
+          })
+        )
+      ))
+
+    it.effect("put uses POST with X-HTTP-Method: PUT when tunneling is enabled", () =>
+      Effect.gen(function*() {
+        yield* ODataV4.put(
+          "Products(1)",
+          { name: "Replaced", value: 100 },
+          EditableTestEntity
+        )
+      }).pipe(
+        Effect.provide(
+          createTunnelingTestLayer((request) => {
+            expect(request.method).toBe("POST")
+            expect(request.headers["x-http-method"]).toBe("PUT")
+            return Effect.succeed(
+              HttpClientResponse.fromWeb(
+                request,
+                new Response(null, { status: 204 })
+              )
+            )
+          })
+        )
+      ))
+
+    it.effect("del uses POST with X-HTTP-Method: DELETE when tunneling is enabled", () =>
+      Effect.gen(function*() {
+        yield* ODataV4.del("Products(1)")
+      }).pipe(
+        Effect.provide(
+          createTunnelingTestLayer((request) => {
+            expect(request.method).toBe("POST")
+            expect(request.headers["x-http-method"]).toBe("DELETE")
+            return Effect.succeed(
+              HttpClientResponse.fromWeb(
+                request,
+                new Response(null, { status: 204 })
+              )
+            )
+          })
+        )
+      ))
+
+    it.effect("patch uses standard PATCH when tunneling is disabled", () =>
+      Effect.gen(function*() {
+        yield* ODataV4.patch(
+          "Products(1)",
+          { name: "Updated" },
+          Schema.partial(EditableTestEntity)
+        )
+      }).pipe(
+        Effect.provide(
+          createTestLayer((request) => {
+            expect(request.method).toBe("PATCH")
+            expect(request.headers["x-http-method"]).toBeUndefined()
+            return Effect.succeed(
+              HttpClientResponse.fromWeb(
+                request,
+                new Response(null, { status: 204 })
+              )
+            )
+          })
+        )
+      ))
+
+    it.effect("put uses standard PUT when tunneling is disabled", () =>
+      Effect.gen(function*() {
+        yield* ODataV4.put(
+          "Products(1)",
+          { name: "Replaced", value: 100 },
+          EditableTestEntity
+        )
+      }).pipe(
+        Effect.provide(
+          createTestLayer((request) => {
+            expect(request.method).toBe("PUT")
+            expect(request.headers["x-http-method"]).toBeUndefined()
+            return Effect.succeed(
+              HttpClientResponse.fromWeb(
+                request,
+                new Response(null, { status: 204 })
+              )
+            )
+          })
+        )
+      ))
+
+    it.effect("del uses standard DELETE when tunneling is disabled", () =>
+      Effect.gen(function*() {
+        yield* ODataV4.del("Products(1)")
+      }).pipe(
+        Effect.provide(
+          createTestLayer((request) => {
+            expect(request.method).toBe("DELETE")
+            expect(request.headers["x-http-method"]).toBeUndefined()
+            return Effect.succeed(
+              HttpClientResponse.fromWeb(
+                request,
+                new Response(null, { status: 204 })
+              )
+            )
+          })
+        )
+      ))
+  })
+
   describe("error handling", () => {
     it.effect("wraps HTTP errors in ODataError", () =>
       Effect.gen(function*() {

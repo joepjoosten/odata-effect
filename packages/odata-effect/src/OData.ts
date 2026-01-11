@@ -710,7 +710,12 @@ export const del = (
       )
     )
 
-    let request = HttpClientRequest.del(path)
+    // Use POST with X-HTTP-Method header when tunneling is enabled
+    let request = config.useTunneling
+      ? HttpClientRequest.post(path).pipe(
+        HttpClientRequest.setHeader("X-HTTP-Method", "DELETE")
+      )
+      : HttpClientRequest.del(path)
 
     if (requestOptions?.forceUpdate) {
       request = HttpClientRequest.setHeader("If-Match", "*")(request)

@@ -334,6 +334,60 @@ describe("ODataClient", () => {
         ))
     })
 
+    describe("tunneling", () => {
+      // Helper to create a test layer with tunneling enabled
+      const createTunnelingTestLayer = (
+        handler: (request: HttpClientRequest.HttpClientRequest) => Effect.Effect<HttpClientResponse.HttpClientResponse>
+      ) => {
+        const tunnelingConfig = Layer.succeed(ODataClientConfig, {
+          baseUrl: "https://test-server.com",
+          servicePath: "/sap/opu/odata/sap/TEST_SRV/",
+          useTunneling: true
+        })
+        const mockHttpClient = Layer.succeed(
+          HttpClient.HttpClient,
+          HttpClient.make(handler)
+        )
+        return Layer.merge(tunnelingConfig, mockHttpClient)
+      }
+
+      it.effect("del uses POST with X-HTTP-Method: DELETE when tunneling is enabled", () =>
+        Effect.gen(function*() {
+          yield* OData.del("entities('123')")
+        }).pipe(
+          Effect.provide(
+            createTunnelingTestLayer((request) => {
+              expect(request.method).toBe("POST")
+              expect(request.headers["x-http-method"]).toBe("DELETE")
+              return Effect.succeed(
+                HttpClientResponse.fromWeb(
+                  request,
+                  new Response(null, { status: 204 })
+                )
+              )
+            })
+          )
+        ))
+
+      it.effect("del uses standard DELETE when tunneling is disabled", () =>
+        Effect.gen(function*() {
+          yield* OData.del("entities('123')")
+        }).pipe(
+          Effect.provide(
+            createTestLayer((request) => {
+              expect(request.method).toBe("DELETE")
+              expect(request.headers["x-http-method"]).toBeUndefined()
+              return Effect.succeed(
+                HttpClientResponse.fromWeb(
+                  request,
+                  new Response(null, { status: 204 })
+                )
+              )
+            })
+          )
+        ))
+    })
+
     describe("error handling", () => {
       it.effect("wraps HTTP errors in ODataError", () =>
         Effect.gen(function*() {

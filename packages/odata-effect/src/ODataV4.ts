@@ -512,7 +512,12 @@ export const patch = <B, BI>(
       )
     )
 
-    let baseRequest = HttpClientRequest.patch(path)
+    // Use POST with X-HTTP-Method header when tunneling is enabled
+    let baseRequest = config.useTunneling
+      ? HttpClientRequest.post(path).pipe(
+        HttpClientRequest.setHeader("X-HTTP-Method", "PATCH")
+      )
+      : HttpClientRequest.patch(path)
     baseRequest = applyRequestOptions(baseRequest, requestOptions)
     const request = yield* HttpClientRequest.schemaBodyJson(bodySchema)(baseRequest, body)
     yield* client.execute(request)
@@ -555,7 +560,12 @@ export const put = <B, BI>(
       )
     )
 
-    let baseRequest = HttpClientRequest.put(path)
+    // Use POST with X-HTTP-Method header when tunneling is enabled
+    let baseRequest = config.useTunneling
+      ? HttpClientRequest.post(path).pipe(
+        HttpClientRequest.setHeader("X-HTTP-Method", "PUT")
+      )
+      : HttpClientRequest.put(path)
     baseRequest = applyRequestOptions(baseRequest, requestOptions)
     const request = yield* HttpClientRequest.schemaBodyJson(bodySchema)(baseRequest, body)
     yield* client.execute(request)
@@ -589,7 +599,12 @@ export const del = (
       )
     )
 
-    let request = HttpClientRequest.del(path)
+    // Use POST with X-HTTP-Method header when tunneling is enabled
+    let request = config.useTunneling
+      ? HttpClientRequest.post(path).pipe(
+        HttpClientRequest.setHeader("X-HTTP-Method", "DELETE")
+      )
+      : HttpClientRequest.del(path)
     request = applyRequestOptions(request, requestOptions)
     yield* client.execute(request)
   }).pipe(Effect.scoped, handleError)

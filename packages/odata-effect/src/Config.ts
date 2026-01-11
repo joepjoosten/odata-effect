@@ -37,6 +37,14 @@ export interface ODataClientConfigService {
   readonly baseUrl: string
   /** The service path (e.g., "/sap/opu/odata/sap/MY_SERVICE/") */
   readonly servicePath: string
+  /**
+   * When true, PUT, PATCH, and DELETE requests are tunneled via POST
+   * using the X-HTTP-Method header. This is useful when firewalls or
+   * proxies block these HTTP methods.
+   *
+   * @default false
+   */
+  readonly useTunneling?: boolean
 }
 
 /**

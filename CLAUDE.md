@@ -111,6 +111,18 @@ import { HttpClient } from "@effect/platform"
 const mockClient = Layer.succeed(HttpClient.HttpClient, mockHttpClient)
 ```
 
+## Before Committing
+
+**ALWAYS run these commands before creating a commit:**
+
+```bash
+pnpm codegen      # Regenerate index files and other generated code
+pnpm lint-fix     # Fix linting issues
+pnpm test         # Ensure all tests pass
+```
+
+This ensures generated files are up-to-date and code style is consistent. CI will fail if these are not run.
+
 ## Releasing
 
 Uses Changesets for versioning and publishing:

@@ -144,7 +144,12 @@ export * as OData from "./OData.js"
  * OData-specific Effect Schema types for proper encoding/decoding of OData wire formats.
  *
  * OData V2 and V4 have different wire formats for dates, times, and numbers.
- * These schemas handle the transformation between wire format and JavaScript types.
+ * These schemas handle the transformation between wire format and Effect types.
+ *
+ * Uses Effect's built-in types for proper handling:
+ * - DateTime.Utc / DateTime.Zoned for date/time values
+ * - BigDecimal for precise decimal numbers (Int64, Decimal)
+ * - Duration for time durations
  *
  * @since 1.0.0
  * @see https://odata2ts.github.io/docs/odata/odata-types

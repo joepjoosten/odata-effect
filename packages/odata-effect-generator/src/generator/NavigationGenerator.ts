@@ -242,7 +242,7 @@ const generatePathBuildersFile = (dataModel: DataModel, esmExtensions: boolean):
   // Imports
   lines.push(`import { ${versionConfig.odataNamespace} } from "@odata-effect/odata-effect"`)
   lines.push(`import { toPromise } from "@odata-effect/odata-effect-promise"`)
-  lines.push(`import type { Effect, Schema } from "effect"`)
+  lines.push(`import type { Schema } from "effect"`)
   lines.push(``)
 
   // Import model types with Model suffix to avoid collision with entity set names

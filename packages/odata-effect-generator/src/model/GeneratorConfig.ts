@@ -5,6 +5,28 @@
  */
 
 /**
+ * Generator options for code generation.
+ *
+ * @since 1.0.0
+ * @category config
+ */
+export interface GeneratorOptions {
+  /**
+   * Add .js extensions to relative imports for ESM compatibility.
+   * Required for moduleResolution: node16/nodenext.
+   * Default: true (recommended for ESM projects)
+   *
+   * @default true
+   */
+  readonly esmExtensions?: boolean
+
+  /**
+   * Naming overrides for customizing generated type and property names.
+   */
+  readonly overrides?: NamingOverrides
+}
+
+/**
  * Override configuration for property names.
  * Maps OData property names to TypeScript property names.
  *

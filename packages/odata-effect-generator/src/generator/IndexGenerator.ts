@@ -5,6 +5,7 @@
  */
 import type { DataModel } from "../model/DataModel.js"
 import {
+  formatRelativeImport,
   getEditableTypeName,
   getIdTypeName,
   getQueryFactoryName,
@@ -16,12 +17,30 @@ import { getPathBuildersModuleName } from "./NavigationGenerator.js"
 import { getOperationsModuleName } from "./OperationsGenerator.js"
 
 /**
+ * Options for index generation.
+ *
+ * @since 1.0.0
+ * @category types
+ */
+export interface IndexGeneratorOptions {
+  /**
+   * Add .js extensions to relative imports for ESM compatibility.
+   * @default true
+   */
+  readonly esmExtensions?: boolean
+}
+
+/**
  * Generate the index.ts file content.
  *
  * @since 1.0.0
  * @category generation
  */
-export const generateIndex = (dataModel: DataModel): string => {
+export const generateIndex = (
+  dataModel: DataModel,
+  options?: IndexGeneratorOptions
+): string => {
+  const esmExtensions = options?.esmExtensions ?? true
   const lines: Array<string> = []
 
   // Header
@@ -64,7 +83,7 @@ export const generateIndex = (dataModel: DataModel): string => {
     lines.push(`  ${modelExports[i]}${isLast ? "" : ","}`)
   }
 
-  lines.push(`} from "./Models"`)
+  lines.push(`} from "${formatRelativeImport("Models", esmExtensions)}"`)
   lines.push(``)
 
   // Entity Services (all in one file using crud factory)
@@ -83,7 +102,7 @@ export const generateIndex = (dataModel: DataModel): string => {
     const isLast = i === serviceExports.length - 1
     lines.push(`  ${serviceExports[i]}${isLast ? "" : ","}`)
   }
-  lines.push(`} from "./Services"`)
+  lines.push(`} from "${formatRelativeImport("Services", esmExtensions)}"`)
   lines.push(``)
 
   // Operations (FunctionImports, Functions, Actions) - only if there are unbound operations
@@ -91,14 +110,16 @@ export const generateIndex = (dataModel: DataModel): string => {
   if (hasUnboundOperations) {
     lines.push(`// Operations (FunctionImports, Functions, Actions)`)
     const operationsModuleName = getOperationsModuleName()
-    lines.push(`export * as ${operationsModuleName} from "./${operationsModuleName}"`)
+    lines.push(
+      `export * as ${operationsModuleName} from "${formatRelativeImport(operationsModuleName, esmExtensions)}"`
+    )
     lines.push(``)
   }
 
   // Path Builders (tree-shakable navigation)
   lines.push(`// Path Builders (tree-shakable navigation)`)
   const pathBuildersModuleName = getPathBuildersModuleName()
-  lines.push(`export * from "./${pathBuildersModuleName}"`)
+  lines.push(`export * from "${formatRelativeImport(pathBuildersModuleName, esmExtensions)}"`)
   lines.push(``)
 
   // Query Models
@@ -132,7 +153,7 @@ export const generateIndex = (dataModel: DataModel): string => {
     lines.push(`  ${queryExports[i]}${isLast ? "" : ","}`)
   }
 
-  lines.push(`} from "./QueryModels"`)
+  lines.push(`} from "${formatRelativeImport("QueryModels", esmExtensions)}"`)
 
   return lines.join("\n")
 }

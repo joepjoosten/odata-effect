@@ -279,3 +279,29 @@ export const getOperationParameterNameWithOverrides = (
   // Fall back to default camelCase conversion
   return getPropertyName(odataParamName)
 }
+
+// ============================================================================
+// Import path utilities
+// ============================================================================
+
+/**
+ * Format a relative import path, optionally adding .js extension for ESM compatibility.
+ *
+ * @param moduleName - The module name (e.g., "Models", "Services")
+ * @param esmExtensions - Whether to add .js extension (default: true)
+ * @returns The formatted import path (e.g., "./Models.js" or "./Models")
+ *
+ * @example
+ * formatRelativeImport("Models", true)   // "./Models.js"
+ * formatRelativeImport("Models", false)  // "./Models"
+ *
+ * @since 1.0.0
+ * @category imports
+ */
+export const formatRelativeImport = (
+  moduleName: string,
+  esmExtensions: boolean = true
+): string => {
+  const ext = esmExtensions ? ".js" : ""
+  return `./${moduleName}${ext}`
+}

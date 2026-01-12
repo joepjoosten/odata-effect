@@ -8,7 +8,7 @@
  */
 import type { DataModel, EntitySetModel, EntityTypeModel } from "../model/DataModel.js"
 import type { ODataVersion } from "../parser/EdmxSchema.js"
-import { getEditableTypeName, getIdTypeName, getServiceClassName } from "./NamingHelper.js"
+import { formatRelativeImport, getEditableTypeName, getIdTypeName, getServiceClassName } from "./NamingHelper.js"
 
 /**
  * Generated service file.
@@ -32,13 +32,31 @@ export interface ServiceGenerationResult {
 }
 
 /**
+ * Options for service generation.
+ *
+ * @since 1.0.0
+ * @category types
+ */
+export interface ServiceGeneratorOptions {
+  /**
+   * Add .js extensions to relative imports for ESM compatibility.
+   * @default true
+   */
+  readonly esmExtensions?: boolean
+}
+
+/**
  * Generate the Services.ts file using crud factory.
  *
  * @since 1.0.0
  * @category generation
  */
-export const generateServiceFns = (dataModel: DataModel): ServiceGenerationResult => {
-  const content = generateServicesFile(dataModel)
+export const generateServiceFns = (
+  dataModel: DataModel,
+  options?: ServiceGeneratorOptions
+): ServiceGenerationResult => {
+  const esmExtensions = options?.esmExtensions ?? true
+  const content = generateServicesFile(dataModel, esmExtensions)
   return {
     servicesFile: {
       fileName: "Services.ts",
@@ -50,7 +68,7 @@ export const generateServiceFns = (dataModel: DataModel): ServiceGenerationResul
 /**
  * Generate the Services.ts file content.
  */
-const generateServicesFile = (dataModel: DataModel): string => {
+const generateServicesFile = (dataModel: DataModel, esmExtensions: boolean): string => {
   const lines: Array<string> = []
   const isV4 = dataModel.version === "V4"
   const crudImportPath = isV4
@@ -97,7 +115,7 @@ const generateServicesFile = (dataModel: DataModel): string => {
     const isLast = i === modelImports.length - 1
     lines.push(`  ${modelImports[i]}${isLast ? "" : ","}`)
   }
-  lines.push(`} from "./Models"`)
+  lines.push(`} from "${formatRelativeImport("Models", esmExtensions)}"`)
   lines.push(``)
 
   // Re-export types from the crud module

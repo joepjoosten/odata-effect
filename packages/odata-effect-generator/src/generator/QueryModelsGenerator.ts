@@ -10,7 +10,27 @@ import type {
   NavigationPropertyModel,
   PropertyModel
 } from "../model/DataModel.js"
-import { getClassName, getQueryFactoryName, getQueryInstanceName, getQueryInterfaceName } from "./NamingHelper.js"
+import {
+  formatRelativeImport,
+  getClassName,
+  getQueryFactoryName,
+  getQueryInstanceName,
+  getQueryInterfaceName
+} from "./NamingHelper.js"
+
+/**
+ * Options for query models generation.
+ *
+ * @since 1.0.0
+ * @category types
+ */
+export interface QueryModelsGeneratorOptions {
+  /**
+   * Add .js extensions to relative imports for ESM compatibility.
+   * @default true
+   */
+  readonly esmExtensions?: boolean
+}
 
 /**
  * Generate the QueryModels.ts file content.
@@ -18,7 +38,11 @@ import { getClassName, getQueryFactoryName, getQueryInstanceName, getQueryInterf
  * @since 1.0.0
  * @category generation
  */
-export const generateQueryModels = (dataModel: DataModel): string => {
+export const generateQueryModels = (
+  dataModel: DataModel,
+  options?: QueryModelsGeneratorOptions
+): string => {
+  const esmExtensions = options?.esmExtensions ?? true
   const lines: Array<string> = []
 
   // Collect all query path types needed
@@ -48,7 +72,7 @@ export const generateQueryModels = (dataModel: DataModel): string => {
   if (usedEntityNames.length > 0) {
     lines.push(`import type {`)
     lines.push(`  ${usedEntityNames.join(",\n  ")}`)
-    lines.push(`} from "./Models"`)
+    lines.push(`} from "${formatRelativeImport("Models", esmExtensions)}"`)
   }
   lines.push(``)
 

@@ -40,6 +40,12 @@ export interface GeneratorConfig {
   readonly filesOnly?: boolean | undefined
   /** Optional naming overrides for properties and types */
   readonly overrides?: NamingOverrides | undefined
+  /**
+   * Add .js extensions to relative imports for ESM compatibility.
+   * Required for moduleResolution: node16/nodenext.
+   * @default true
+   */
+  readonly esmExtensions?: boolean | undefined
 }
 
 /**
@@ -82,6 +88,7 @@ export const generate = (
     const serviceName = config.serviceName ?? dataModel.serviceName
     const packageName = config.packageName ?? `@template/${serviceName.toLowerCase()}-effect`
     const filesOnly = config.filesOnly ?? false
+    const esmExtensions = config.esmExtensions ?? true
 
     // When filesOnly is true, output directly to outputDir; otherwise use outputDir/src
     const sourceDir = filesOnly ? outputDir : path.join(outputDir, "src")
@@ -91,14 +98,17 @@ export const generate = (
       serviceName
     }
 
+    // Generator options for ESM extensions
+    const generatorOptions = { esmExtensions }
+
     // Generate tree-shakable service function files
-    const serviceResult = generateServiceFns(dataModel)
+    const serviceResult = generateServiceFns(dataModel, generatorOptions)
 
     // Generate operations file (FunctionImports, Functions, Actions)
-    const operationsResult = generateOperations(dataModel)
+    const operationsResult = generateOperations(dataModel, generatorOptions)
 
     // Generate navigation builders
-    const navigationResult = generateNavigations(dataModel)
+    const navigationResult = generateNavigations(dataModel, generatorOptions)
 
     // Generate source files
     const sourceFiles: Array<GeneratedFile> = [
@@ -108,7 +118,7 @@ export const generate = (
       },
       {
         path: path.join(sourceDir, "QueryModels.ts"),
-        content: generateQueryModels(dataModel)
+        content: generateQueryModels(dataModel, generatorOptions)
       },
       // Services file (all entity CRUD services in one file)
       {
@@ -129,7 +139,7 @@ export const generate = (
       })),
       {
         path: path.join(sourceDir, "index.ts"),
-        content: generateIndex(dataModel)
+        content: generateIndex(dataModel, generatorOptions)
       }
     ]
 

@@ -23,7 +23,7 @@
  */
 import type { DataModel, EntityTypeModel } from "../model/DataModel.js"
 import type { ODataVersion } from "../parser/EdmxSchema.js"
-import { getClassName, toCamelCase } from "./NamingHelper.js"
+import { formatRelativeImport, getClassName, toCamelCase } from "./NamingHelper.js"
 
 /**
  * Version-specific configuration.
@@ -167,14 +167,32 @@ const getDerivedTypes = (
 }
 
 /**
+ * Options for navigation generation.
+ *
+ * @since 1.0.0
+ * @category types
+ */
+export interface NavigationGeneratorOptions {
+  /**
+   * Add .js extensions to relative imports for ESM compatibility.
+   * @default true
+   */
+  readonly esmExtensions?: boolean
+}
+
+/**
  * Generate navigation builders.
  *
  * @since 1.0.0
  * @category generation
  */
-export const generateNavigations = (dataModel: DataModel): NavigationGenerationResult => {
+export const generateNavigations = (
+  dataModel: DataModel,
+  options?: NavigationGeneratorOptions
+): NavigationGenerationResult => {
+  const esmExtensions = options?.esmExtensions ?? true
   const moduleName = getPathBuildersModuleName()
-  const content = generatePathBuildersFile(dataModel)
+  const content = generatePathBuildersFile(dataModel, esmExtensions)
 
   return {
     navigationFiles: [{
@@ -187,7 +205,7 @@ export const generateNavigations = (dataModel: DataModel): NavigationGenerationR
 /**
  * Generate the PathBuilders.ts file.
  */
-const generatePathBuildersFile = (dataModel: DataModel): string => {
+const generatePathBuildersFile = (dataModel: DataModel, esmExtensions: boolean): string => {
   const lines: Array<string> = []
   const versionConfig = getVersionConfig(dataModel.version)
 
@@ -235,7 +253,7 @@ const generatePathBuildersFile = (dataModel: DataModel): string => {
       const isLast = i === typesList.length - 1
       lines.push(`  ${typesList[i]} as ${typesList[i]}Model${isLast ? "" : ","}`)
     }
-    lines.push(`} from "./Models"`)
+    lines.push(`} from "${formatRelativeImport("Models", esmExtensions)}"`)
     lines.push(``)
   }
 

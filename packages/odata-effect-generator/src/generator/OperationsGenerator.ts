@@ -8,7 +8,7 @@
  */
 import type { DataModel, OperationModel, OperationParameterModel } from "../model/DataModel.js"
 import type { ODataVersion } from "../parser/EdmxSchema.js"
-import { toPascalCase } from "./NamingHelper.js"
+import { formatRelativeImport, toPascalCase } from "./NamingHelper.js"
 
 /**
  * Version-specific imports and identifiers.
@@ -74,12 +74,31 @@ export interface OperationsGenerationResult {
 }
 
 /**
+ * Options for operations generation.
+ *
+ * @since 1.0.0
+ * @category types
+ */
+export interface OperationsGeneratorOptions {
+  /**
+   * Add .js extensions to relative imports for ESM compatibility.
+   * @default true
+   */
+  readonly esmExtensions?: boolean
+}
+
+/**
  * Generate the operations file.
  *
  * @since 1.0.0
  * @category generation
  */
-export const generateOperations = (dataModel: DataModel): OperationsGenerationResult => {
+export const generateOperations = (
+  dataModel: DataModel,
+  options?: OperationsGeneratorOptions
+): OperationsGenerationResult => {
+  const esmExtensions = options?.esmExtensions ?? true
+
   // Get unbound operations only (bound operations are attached to entity services)
   const unboundOperations = Array.from(dataModel.operations.values()).filter((op) => !op.isBound)
 
@@ -87,7 +106,7 @@ export const generateOperations = (dataModel: DataModel): OperationsGenerationRe
     return { operationsFile: null }
   }
 
-  const content = generateOperationsFile(unboundOperations, dataModel)
+  const content = generateOperationsFile(unboundOperations, dataModel, esmExtensions)
 
   return {
     operationsFile: {
@@ -174,7 +193,8 @@ const collectModelImports = (operations: ReadonlyArray<OperationModel>, dataMode
  */
 const generateOperationsFile = (
   operations: ReadonlyArray<OperationModel>,
-  dataModel: DataModel
+  dataModel: DataModel,
+  esmExtensions: boolean
 ): string => {
   const lines: Array<string> = []
   const versionConfig = getVersionConfig(dataModel.version)
@@ -215,7 +235,7 @@ const generateOperationsFile = (
       const isLast = i === importsList.length - 1
       lines.push(`  ${importsList[i]}${isLast ? "" : ","}`)
     }
-    lines.push(`} from "./Models"`)
+    lines.push(`} from "${formatRelativeImport("Models", esmExtensions)}"`)
     lines.push(``)
   }
 

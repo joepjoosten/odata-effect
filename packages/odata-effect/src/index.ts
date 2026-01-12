@@ -18,10 +18,10 @@ export * as Batch from "./Batch.js"
  *
  * @example
  * ```ts
- * import { Config } from "@odata-effect/odata-effect"
+ * import { ODataClientConfig } from "@odata-effect/odata-effect/Config"
  * import * as Layer from "effect/Layer"
  *
- * const configLayer = Layer.succeed(Config.ODataClientConfig, {
+ * const configLayer = Layer.succeed(ODataClientConfig, {
  *   baseUrl: "https://server.com",
  *   servicePath: "/sap/opu/odata/sap/MY_SERVICE/"
  * })

@@ -1,5 +1,11 @@
 # @odata-effect/odata-effect
 
+## 0.5.1
+
+### Patch Changes
+
+- [`ce2be6a`](https://github.com/joepjoosten/odata-effect/commit/ce2be6a77afe32ac915949e4a622386fe7caca3d) Thanks [@joepjoosten](https://github.com/joepjoosten)! - Fix lint formatting issues (import ordering and quote styles)
+
 ## 0.5.0
 
 ### Minor Changes

@@ -178,6 +178,16 @@ const generateIdToKeyFunction = (
     const keyProp = entityType.keys[0]
     const keyTsType = keyProp.typeMapping.tsType
 
+    // Check if key is a branded type that needs string conversion
+    const isBrandedType = keyTsType.startsWith("BigDecimal.") ||
+      keyTsType.startsWith("DateTime.") ||
+      keyTsType.startsWith("Duration.")
+
+    if (isBrandedType) {
+      // Branded types are converted to string for EntityKey compatibility
+      return `(id: ${idTypeName}) => typeof id === "string" ? { ${keyProp.odataName}: id } : { ${keyProp.odataName}: String(id.${keyProp.name}) }`
+    }
+
     if (isV4) {
       // V4 can use number keys directly
       if (keyTsType === "number") {
@@ -194,8 +204,15 @@ const generateIdToKeyFunction = (
       }
     }
   } else {
-    // Composite key - both V2 and V4 can use native types
-    const keyMapping = entityType.keys.map((k) => `${k.odataName}: id.${k.name}`).join(", ")
+    // Composite key - convert branded types (BigDecimal, DateTime, Duration) to string
+    const keyMapping = entityType.keys.map((k) => {
+      const tsType = k.typeMapping.tsType
+      // Branded types need to be converted to string for EntityKey compatibility
+      if (tsType.startsWith("BigDecimal.") || tsType.startsWith("DateTime.") || tsType.startsWith("Duration.")) {
+        return `${k.odataName}: String(id.${k.name})`
+      }
+      return `${k.odataName}: id.${k.name}`
+    }).join(", ")
     return `(id: ${idTypeName}) => ({ ${keyMapping} })`
   }
 }

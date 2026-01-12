@@ -177,7 +177,6 @@ const generateIdToKeyFunction = (
   if (entityType.keys.length === 1) {
     const keyProp = entityType.keys[0]
     const keyTsType = keyProp.typeMapping.tsType
-    const primitiveCheck = keyTsType === "number" ? "number" : "string"
 
     if (isV4) {
       // V4 can use number keys directly
@@ -187,19 +186,16 @@ const generateIdToKeyFunction = (
         return `(id: ${idTypeName}) => typeof id === "string" ? { ${keyProp.odataName}: id } : { ${keyProp.odataName}: id.${keyProp.name} }`
       }
     } else {
-      // V2 needs string keys
-      return `(id: ${idTypeName}) => typeof id === "${primitiveCheck}" ? { ${keyProp.odataName}: String(id) } : { ${keyProp.odataName}: String(id.${keyProp.name}) }`
+      // V2 supports both numeric and string keys
+      if (keyTsType === "number") {
+        return `(id: ${idTypeName}) => typeof id === "number" ? { ${keyProp.odataName}: id } : { ${keyProp.odataName}: id.${keyProp.name} }`
+      } else {
+        return `(id: ${idTypeName}) => typeof id === "string" ? { ${keyProp.odataName}: id } : { ${keyProp.odataName}: id.${keyProp.name} }`
+      }
     }
   } else {
-    // Composite key
-    const keyMapping = entityType.keys.map((k) => {
-      if (isV4) {
-        return `${k.odataName}: id.${k.name}`
-      } else {
-        return `${k.odataName}: String(id.${k.name})`
-      }
-    }).join(", ")
-
+    // Composite key - both V2 and V4 can use native types
+    const keyMapping = entityType.keys.map((k) => `${k.odataName}: id.${k.name}`).join(", ")
     return `(id: ${idTypeName}) => ({ ${keyMapping} })`
   }
 }

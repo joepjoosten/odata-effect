@@ -68,10 +68,11 @@ describe("ModelsGenerator", () => {
       const dataModel = createDataModel(properties)
       const output = generateModels(dataModel)
 
-      // Should use propertySignature with fromKey
+      // Required fields (keys) use propertySignature wrapper
       expect(output).toContain("id: Schema.propertySignature(Schema.String).pipe(Schema.fromKey(\"ID\"))")
+      // Optional fields already return PropertySignature from optionalWith, so no wrapper needed
       expect(output).toContain(
-        "productName: Schema.propertySignature(Schema.optionalWith(Schema.String, { nullable: true })).pipe(Schema.fromKey(\"ProductName\"))"
+        "productName: Schema.optionalWith(Schema.String, { nullable: true }).pipe(Schema.fromKey(\"ProductName\"))"
       )
     })
 
@@ -84,14 +85,15 @@ describe("ModelsGenerator", () => {
       const dataModel = createDataModel(properties)
       const output = generateModels(dataModel)
 
-      // ID should use fromKey
+      // ID (required key) should use propertySignature with fromKey
       expect(output).toContain("id: Schema.propertySignature(Schema.String).pipe(Schema.fromKey(\"ID\"))")
-      // name should use simple format
+      // name should use simple format (same OData and TS names)
       expect(output).toContain("name: Schema.optionalWith(Schema.String, { nullable: true })")
       expect(output).not.toContain("Schema.fromKey(\"name\")")
-      // ReleaseDate should use fromKey
-      expect(output).toContain("releaseDate: Schema.propertySignature")
-      expect(output).toContain("Schema.fromKey(\"ReleaseDate\")")
+      // ReleaseDate (optional) should use optionalWith directly with fromKey (no propertySignature wrapper)
+      expect(output).toContain(
+        "releaseDate: Schema.optionalWith(Schema.String, { nullable: true }).pipe(Schema.fromKey(\"ReleaseDate\"))"
+      )
     })
 
     it("generates editable types with fromKey", () => {
@@ -104,9 +106,9 @@ describe("ModelsGenerator", () => {
 
       // Editable type should not include key field
       expect(output).toContain("export const EditableProduct = Schema.Struct({")
-      // But should use fromKey for non-key properties with different names
+      // Optional fields use optionalWith directly with fromKey (no propertySignature wrapper)
       expect(output).toContain(
-        "productName: Schema.propertySignature(Schema.optionalWith(Schema.String, { nullable: true })).pipe(Schema.fromKey(\"ProductName\"))"
+        "productName: Schema.optionalWith(Schema.String, { nullable: true }).pipe(Schema.fromKey(\"ProductName\"))"
       )
     })
   })

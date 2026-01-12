@@ -80,7 +80,7 @@ describe("ODataClient", () => {
   })
 
   describe("ODataCollectionResponse", () => {
-    it("wraps schema in OData V2 collection response format", () =>
+    it("wraps schema in OData V2 collection response format (standard)", () =>
       Effect.gen(function*() {
         const responseSchema = ODataCollectionResponse(TestEntity)
         const data = {
@@ -92,9 +92,33 @@ describe("ODataClient", () => {
           }
         }
         const result = yield* Schema.decodeUnknown(responseSchema)(data)
-        expect(result.d.results).toHaveLength(2)
-        expect(result.d.results[0].id).toBe("1")
-        expect(result.d.results[1].id).toBe("2")
+        // Handle union type - extract results from standard format
+        const results = Array.isArray(result.d)
+          ? result.d
+          : (result.d as { readonly results: ReadonlyArray<TestEntity> }).results
+        expect(results).toHaveLength(2)
+        expect(results[0].id).toBe("1")
+        expect(results[1].id).toBe("2")
+      }).pipe(Effect.runPromise))
+
+    it("wraps schema in OData V2 collection response format (legacy)", () =>
+      Effect.gen(function*() {
+        const responseSchema = ODataCollectionResponse(TestEntity)
+        // Legacy format: { d: [...] } directly
+        const data = {
+          d: [
+            { id: "1", name: "Test1", value: 10 },
+            { id: "2", name: "Test2", value: 20 }
+          ]
+        }
+        const result = yield* Schema.decodeUnknown(responseSchema)(data)
+        // Handle union type - extract results from legacy format
+        const results = Array.isArray(result.d)
+          ? result.d
+          : (result.d as { readonly results: ReadonlyArray<TestEntity> }).results
+        expect(results).toHaveLength(2)
+        expect(results[0].id).toBe("1")
+        expect(results[1].id).toBe("2")
       }).pipe(Effect.runPromise))
   })
 

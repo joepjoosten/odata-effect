@@ -7,6 +7,7 @@
  *
  * @since 1.0.0
  */
+import type * as DateTime from "effect/DateTime"
 
 // ============================================================================
 // Filter Expressions
@@ -357,6 +358,7 @@ export type FieldToPath<T> = T extends string ? StringPath
   : T extends number ? NumberPath
   : T extends boolean ? BooleanPath
   : T extends Date ? DateTimePath
+  : T extends DateTime.DateTime ? DateTimePath // Effect DateTime branded types
   : T extends ReadonlyArray<infer U> ? U extends object ? CollectionPath<QueryPaths<U>>
     : StringPath // Arrays of primitives use StringPath for filter operations
   : T extends object ? EntityPath<QueryPaths<T>>

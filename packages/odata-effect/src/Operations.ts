@@ -196,7 +196,9 @@ export const executeFunctionImportCollection = <A, I, R>(
       (c) => c.execute(configuredRequest)
     )
     const data = yield* HttpClientResponse.schemaBodyJson(responseSchema)(response)
-    return data.d.results
+    // Handle both standard { d: { results: [...] } } and legacy { d: [...] } formats
+    const results = Array.isArray(data.d) ? data.d : (data.d as { readonly results: ReadonlyArray<A> }).results
+    return results
   }).pipe(
     Effect.scoped,
     Effect.catchAll((error) => Effect.fail(new ODataError({ message: "Function import failed", cause: error })))

@@ -102,32 +102,6 @@ const needsODataSchemaImport = (dataModel: DataModel): boolean => {
 }
 
 /**
- * Check which Effect type imports are needed based on tsType usage.
- */
-const getNeededEffectTypeImports = (dataModel: DataModel): Set<string> => {
-  const needed = new Set<string>()
-
-  const checkTsType = (tsType: string): void => {
-    if (tsType.startsWith("DateTime.")) needed.add("DateTime")
-    if (tsType.startsWith("BigDecimal.")) needed.add("BigDecimal")
-    if (tsType.startsWith("Duration.")) needed.add("Duration")
-  }
-
-  for (const type of dataModel.entityTypes.values()) {
-    for (const prop of type.properties) {
-      checkTsType(prop.typeMapping.tsType)
-    }
-  }
-  for (const type of dataModel.complexTypes.values()) {
-    for (const prop of type.properties) {
-      checkTsType(prop.typeMapping.tsType)
-    }
-  }
-
-  return needed
-}
-
-/**
  * Generate the Models.ts file content.
  *
  * @since 1.0.0
@@ -148,12 +122,6 @@ export const generateModels = (dataModel: DataModel): string => {
   lines.push(` * @since 1.0.0`)
   lines.push(` */`)
   lines.push(`import * as Schema from "effect/Schema"`)
-
-  // Add Effect type imports if needed (for DateTime, BigDecimal, Duration)
-  const effectTypeImports = getNeededEffectTypeImports(dataModel)
-  for (const effectType of effectTypeImports) {
-    lines.push(`import type * as ${effectType} from "effect/${effectType}"`)
-  }
 
   // Add ODataSchema import if needed
   if (needsODataSchemaImport(dataModel)) {
@@ -343,9 +311,10 @@ const generateSchemaFields = (
 
   for (let i = 0; i < properties.length; i++) {
     const prop = properties[i]
-    const schemaType = getPropertySchemaType(prop, prop.isNullable && !prop.isKey)
+    const isOptional = prop.isNullable && !prop.isKey
+    const schemaType = getPropertySchemaType(prop, isOptional)
     const isLast = i === properties.length - 1
-    const fieldDef = getPropertyFieldDefinition(prop, schemaType)
+    const fieldDef = getPropertyFieldDefinition(prop, schemaType, isOptional)
     fields.push(`${fieldDef}${isLast ? "" : ","}`)
   }
 
@@ -365,9 +334,10 @@ const generateEditableSchemaFields = (
 
   for (let i = 0; i < properties.length; i++) {
     const prop = properties[i]
-    const schemaType = getPropertySchemaType(prop, prop.isNullable)
+    const isOptional = prop.isNullable
+    const schemaType = getPropertySchemaType(prop, isOptional)
     const isLast = i === properties.length - 1
-    const fieldDef = getPropertyFieldDefinition(prop, schemaType)
+    const fieldDef = getPropertyFieldDefinition(prop, schemaType, isOptional)
     fields.push(`${fieldDef}${isLast ? "" : ","}`)
   }
 
@@ -378,26 +348,39 @@ const generateEditableSchemaFields = (
  * Get a complete property field definition including fromKey mapping if needed.
  *
  * When the OData property name differs from the TypeScript property name,
- * we use Schema.propertySignature with Schema.fromKey to map between them.
- * This is essential for OData V2 responses which use PascalCase property names.
+ * we use Schema.fromKey to map between them.
+ *
+ * For optional fields (using Schema.optionalWith), we pipe fromKey directly
+ * since optionalWith already returns a PropertySignature.
+ *
+ * For required fields, we wrap in Schema.propertySignature first.
  *
  * @example
  * // When odataName == name:
  * name: Schema.String
  *
- * // When odataName ("ID") != name ("id"):
+ * // When odataName ("ID") != name ("id") - required field:
  * id: Schema.propertySignature(Schema.Number).pipe(Schema.fromKey("ID"))
+ *
+ * // When odataName ("Name") != name ("name") - optional field:
+ * name: Schema.optionalWith(Schema.String, { nullable: true }).pipe(Schema.fromKey("Name"))
  */
 const getPropertyFieldDefinition = (
   prop: PropertyModel,
-  schemaType: string
+  schemaType: string,
+  isOptional: boolean
 ): string => {
   // If OData name matches TypeScript name, use simple format
   if (prop.odataName === prop.name) {
     return `${prop.name}: ${schemaType}`
   }
 
-  // Use propertySignature with fromKey to map between encoded (OData) and decoded (TypeScript) names
+  // If optional, Schema.optionalWith already returns a PropertySignature, so just pipe fromKey
+  if (isOptional) {
+    return `${prop.name}: ${schemaType}.pipe(Schema.fromKey("${prop.odataName}"))`
+  }
+
+  // For required fields, wrap in propertySignature first, then pipe fromKey
   return `${prop.name}: Schema.propertySignature(${schemaType}).pipe(Schema.fromKey("${prop.odataName}"))`
 }
 

@@ -55,31 +55,47 @@ export const ODataSingleResponse = <A, I, R>(schema: Schema.Schema<A, I, R>) =>
 
 /**
  * OData response wrapper for collections.
+ * Handles both standard `{ d: { results: [...] } }` and legacy `{ d: [...] }` formats.
  *
  * @since 1.0.0
  * @category schemas
  */
 export const ODataCollectionResponse = <A, I, R>(schema: Schema.Schema<A, I, R>) =>
-  Schema.Struct({
-    d: Schema.Struct({
-      results: Schema.Array(schema)
+  Schema.Union(
+    // Standard format: { d: { results: [...] } }
+    Schema.Struct({
+      d: Schema.Struct({
+        results: Schema.Array(schema)
+      })
+    }),
+    // Legacy format: { d: [...] }
+    Schema.Struct({
+      d: Schema.Array(schema)
     })
-  })
+  )
 
 /**
  * OData V2 collection response with pagination metadata.
+ * Handles both standard `{ d: { results: [...] } }` and legacy `{ d: [...] }` formats.
  *
  * @since 1.0.0
  * @category schemas
  */
 export const ODataCollectionResponseWithMeta = <A, I, R>(schema: Schema.Schema<A, I, R>) =>
-  Schema.Struct({
-    d: Schema.Struct({
-      results: Schema.Array(schema),
-      __count: Schema.optionalWith(Schema.String, { nullable: true }),
-      __next: Schema.optionalWith(Schema.String, { nullable: true })
+  Schema.Union(
+    // Standard format: { d: { results: [...], __count?, __next? } }
+    Schema.Struct({
+      d: Schema.Struct({
+        results: Schema.Array(schema),
+        __count: Schema.optionalWith(Schema.String, { nullable: true }),
+        __next: Schema.optionalWith(Schema.String, { nullable: true })
+      })
+    }),
+    // Legacy format: { d: [...] } (no pagination support in legacy format)
+    Schema.Struct({
+      d: Schema.Array(schema)
     })
-  })
+  )
 
 /**
  * OData V2 entity metadata embedded in responses.
@@ -243,17 +259,19 @@ export const MERGE_HEADERS = {
  */
 export const buildEntityPath = (
   entitySet: string,
-  id: string | { [key: string]: string }
+  id: string | number | { [key: string]: string | number }
 ): string => {
-  const extractIdFromPath = (id: string | { [key: string]: string }): string => {
-    if (typeof id === "string") {
-      return `'${id}'`
+  const formatValue = (value: string | number): string => typeof value === "number" ? String(value) : `'${value}'`
+
+  const extractIdFromPath = (id: string | number | { [key: string]: string | number }): string => {
+    if (typeof id === "string" || typeof id === "number") {
+      return formatValue(id)
     }
     const entries = Object.entries(id)
     if (entries.length === 1) {
-      return `'${entries[0][1]}'`
+      return formatValue(entries[0][1])
     }
-    return entries.map(([key, value]) => `${key}='${value}'`).join(",")
+    return entries.map(([key, value]) => `${key}=${formatValue(value)}`).join(",")
   }
   return `${entitySet}(${extractIdFromPath(id)})`
 }
@@ -394,7 +412,9 @@ export const getCollection = <A, I, R>(
     const request = HttpClientRequest.get(url)
     const response = yield* client.execute(request)
     const data = yield* HttpClientResponse.schemaBodyJson(responseSchema)(response)
-    return data.d.results
+    // Handle both standard { d: { results: [...] } } and legacy { d: [...] } formats
+    const results = Array.isArray(data.d) ? data.d : (data.d as { readonly results: ReadonlyArray<A> }).results
+    return results
   }).pipe(Effect.scoped, handleError)
 }
 
@@ -433,10 +453,24 @@ export const getCollectionPaged = <A, I, R>(
     const request = HttpClientRequest.get(url)
     const response = yield* client.execute(request)
     const data = yield* HttpClientResponse.schemaBodyJson(responseSchema)(response)
+    // Handle both standard { d: { results: [...], __count?, __next? } } and legacy { d: [...] } formats
+    if (Array.isArray(data.d)) {
+      // Legacy format - no pagination metadata available
+      return {
+        results: data.d,
+        count: undefined,
+        nextLink: undefined
+      }
+    }
+    const d = data.d as {
+      readonly results: ReadonlyArray<A>
+      readonly __count?: string
+      readonly __next?: string
+    }
     return {
-      results: data.d.results,
-      count: data.d.__count !== undefined ? parseInt(data.d.__count, 10) : undefined,
-      nextLink: data.d.__next ?? undefined
+      results: d.results,
+      count: d.__count !== undefined ? parseInt(d.__count, 10) : undefined,
+      nextLink: d.__next ?? undefined
     }
   }).pipe(Effect.scoped, handleError)
 }
@@ -590,7 +624,9 @@ export const expandDeferredCollection = <A, I, R>(
     const request = HttpClientRequest.get(relativePath)
     const response = yield* client.execute(request)
     const data = yield* HttpClientResponse.schemaBodyJson(responseSchema)(response)
-    return data.d.results
+    // Handle both standard { d: { results: [...] } } and legacy { d: [...] } formats
+    const results = Array.isArray(data.d) ? data.d : (data.d as { readonly results: ReadonlyArray<A> }).results
+    return results
   }).pipe(Effect.scoped, handleError)
 }
 

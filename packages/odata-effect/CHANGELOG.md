@@ -1,5 +1,11 @@
 # @odata-effect/odata-effect
 
+## 0.6.1
+
+### Patch Changes
+
+- [`a4bf44c`](https://github.com/joepjoosten/odata-effect/commit/a4bf44ca095d61ba40c093c152e17486b29eee51) Thanks [@joepjoosten](https://github.com/joepjoosten)! - Update ODataSchema documentation to reflect Effect types usage
+
 ## 0.6.0
 
 ### Minor Changes

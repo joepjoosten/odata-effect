@@ -6,7 +6,13 @@
  */
 import * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"
-import { getClassName, getPropertyName } from "../generator/NamingHelper.js"
+import {
+  getClassName,
+  getClassNameWithOverrides,
+  getPropertyName,
+  getPropertyNameWithOverrides
+} from "../generator/NamingHelper.js"
+import type { NamingOverrides } from "../model/GeneratorConfig.js"
 import {
   type ComplexTypeModel,
   createDataModel,
@@ -69,6 +75,7 @@ interface DigestContext {
   readonly enumTypes: Set<string>
   readonly complexTypes: Set<string>
   readonly entityTypes: Set<string>
+  readonly overrides?: NamingOverrides | undefined
 }
 
 /**
@@ -78,7 +85,8 @@ interface DigestContext {
  * @category digestion
  */
 export const digestMetadata = (
-  edmx: ODataEdmxModel
+  edmx: ODataEdmxModel,
+  overrides?: NamingOverrides
 ): Effect.Effect<DataModel, DigestError> =>
   Effect.try({
     try: () => {
@@ -107,7 +115,7 @@ export const digestMetadata = (
       const dataModel = createDataModel(version, namespace, serviceName)
 
       // Build context for type resolution
-      const context = buildContext(version, namespace, schemas)
+      const context = buildContext(version, namespace, schemas, overrides)
 
       // First pass: collect all type names
       for (const schema of schemas) {
@@ -139,7 +147,8 @@ export const digestMetadata = (
 const buildContext = (
   version: ODataVersion,
   namespace: string,
-  schemas: ReadonlyArray<EdmxSchema>
+  schemas: ReadonlyArray<EdmxSchema>,
+  overrides?: NamingOverrides
 ): DigestContext => {
   const associations = new Map<string, Association>()
 
@@ -159,7 +168,8 @@ const buildContext = (
     associations,
     enumTypes: new Set(),
     complexTypes: new Set(),
-    entityTypes: new Set()
+    entityTypes: new Set(),
+    overrides
   }
 }
 
@@ -265,14 +275,18 @@ const digestComplexType = (
   namespace: string,
   context: DigestContext
 ): ComplexTypeModel => {
-  const name = complexType.$.Name
-  const properties = (complexType.Property ?? []).map((p) => digestProperty(p, [], context))
-  const navigationProperties = (complexType.NavigationProperty ?? []).map((np) => digestNavigationProperty(np, context))
+  const odataTypeName = complexType.$.Name
+  const properties = (complexType.Property ?? []).map((p) =>
+    digestProperty(p, [], odataTypeName, "complex", context)
+  )
+  const navigationProperties = (complexType.NavigationProperty ?? []).map((np) =>
+    digestNavigationProperty(np, odataTypeName, "complex", context)
+  )
 
   const result: ComplexTypeModel = {
-    fqName: `${namespace}.${name}`,
-    odataName: name,
-    name: getClassName(name),
+    fqName: `${namespace}.${odataTypeName}`,
+    odataName: odataTypeName,
+    name: getClassNameWithOverrides(odataTypeName, "complex", context.overrides),
     properties,
     navigationProperties,
     isAbstract: complexType.$.Abstract === "true",
@@ -294,7 +308,7 @@ const digestEntityType = (
   namespace: string,
   context: DigestContext
 ): EntityTypeModel => {
-  const name = entityType.$.Name
+  const odataTypeName = entityType.$.Name
   const keyNames = new Set<string>()
 
   // Collect key property names
@@ -304,15 +318,19 @@ const digestEntityType = (
     }
   }
 
-  const properties = (entityType.Property ?? []).map((p) => digestProperty(p, Array.from(keyNames), context))
+  const properties = (entityType.Property ?? []).map((p) =>
+    digestProperty(p, Array.from(keyNames), odataTypeName, "entity", context)
+  )
 
   const keys = properties.filter((p) => p.isKey)
-  const navigationProperties = (entityType.NavigationProperty ?? []).map((np) => digestNavigationProperty(np, context))
+  const navigationProperties = (entityType.NavigationProperty ?? []).map((np) =>
+    digestNavigationProperty(np, odataTypeName, "entity", context)
+  )
 
   const result: EntityTypeModel = {
-    fqName: `${namespace}.${name}`,
-    odataName: name,
-    name: getClassName(name),
+    fqName: `${namespace}.${odataTypeName}`,
+    odataName: odataTypeName,
+    name: getClassNameWithOverrides(odataTypeName, "entity", context.overrides),
     keys,
     properties,
     navigationProperties,
@@ -333,6 +351,8 @@ const digestEntityType = (
 const digestProperty = (
   property: Property,
   keyNames: ReadonlyArray<string>,
+  ownerTypeName: string,
+  ownerTypeKind: "entity" | "complex",
   context: DigestContext
 ): PropertyModel => {
   const odataName = property.$.Name
@@ -345,7 +365,7 @@ const digestProperty = (
 
   const result: PropertyModel = {
     odataName,
-    name: getPropertyName(odataName),
+    name: getPropertyNameWithOverrides(odataName, ownerTypeName, ownerTypeKind, context.overrides),
     odataType,
     typeMapping,
     isCollection,
@@ -380,6 +400,8 @@ const isV4NavigationProperty = (
  */
 const digestNavigationProperty = (
   navProp: NavigationProperty,
+  ownerTypeName: string,
+  ownerTypeKind: "entity" | "complex",
   context: DigestContext
 ): NavigationPropertyModel => {
   const odataName = navProp.$.Name
@@ -391,7 +413,7 @@ const digestNavigationProperty = (
 
     const result: NavigationPropertyModel = {
       odataName,
-      name: getPropertyName(odataName),
+      name: getPropertyNameWithOverrides(odataName, ownerTypeName, ownerTypeKind, context.overrides),
       targetType: targetTypeName,
       isCollection,
       isNullable: navProp.$.Nullable !== "false"
@@ -423,7 +445,7 @@ const digestNavigationProperty = (
 
   return {
     odataName,
-    name: getPropertyName(odataName),
+    name: getPropertyNameWithOverrides(odataName, ownerTypeName, ownerTypeKind, context.overrides),
     targetType,
     isCollection,
     isNullable: true

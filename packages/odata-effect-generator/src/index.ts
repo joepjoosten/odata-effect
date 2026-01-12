@@ -123,6 +123,13 @@ export * as ServiceFnGenerator from "./generator/ServiceFnGenerator.js"
 export * as DataModel from "./model/DataModel.js"
 
 /**
+ * Configuration for code generation including name overrides.
+ *
+ * @since 1.0.0
+ */
+export * as GeneratorConfig from "./model/GeneratorConfig.js"
+
+/**
  * Common EDMX schema interfaces for OData metadata parsing.
  * These interfaces represent the parsed XML structure from xml2js.
  *

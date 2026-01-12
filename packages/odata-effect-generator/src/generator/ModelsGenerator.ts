@@ -291,7 +291,8 @@ const generateSchemaFields = (
     const prop = properties[i]
     const schemaType = getPropertySchemaType(prop, prop.isNullable && !prop.isKey)
     const isLast = i === properties.length - 1
-    fields.push(`${prop.name}: ${schemaType}${isLast ? "" : ","}`)
+    const fieldDef = getPropertyFieldDefinition(prop, schemaType)
+    fields.push(`${fieldDef}${isLast ? "" : ","}`)
   }
 
   // Navigation properties are intentionally excluded from Schema.Class
@@ -312,10 +313,38 @@ const generateEditableSchemaFields = (
     const prop = properties[i]
     const schemaType = getPropertySchemaType(prop, prop.isNullable)
     const isLast = i === properties.length - 1
-    fields.push(`${prop.name}: ${schemaType}${isLast ? "" : ","}`)
+    const fieldDef = getPropertyFieldDefinition(prop, schemaType)
+    fields.push(`${fieldDef}${isLast ? "" : ","}`)
   }
 
   return fields
+}
+
+/**
+ * Get a complete property field definition including fromKey mapping if needed.
+ *
+ * When the OData property name differs from the TypeScript property name,
+ * we use Schema.propertySignature with Schema.fromKey to map between them.
+ * This is essential for OData V2 responses which use PascalCase property names.
+ *
+ * @example
+ * // When odataName == name:
+ * name: Schema.String
+ *
+ * // When odataName ("ID") != name ("id"):
+ * id: Schema.propertySignature(Schema.Number).pipe(Schema.fromKey("ID"))
+ */
+const getPropertyFieldDefinition = (
+  prop: PropertyModel,
+  schemaType: string
+): string => {
+  // If OData name matches TypeScript name, use simple format
+  if (prop.odataName === prop.name) {
+    return `${prop.name}: ${schemaType}`
+  }
+
+  // Use propertySignature with fromKey to map between encoded (OData) and decoded (TypeScript) names
+  return `${prop.name}: Schema.propertySignature(${schemaType}).pipe(Schema.fromKey("${prop.odataName}"))`
 }
 
 /**

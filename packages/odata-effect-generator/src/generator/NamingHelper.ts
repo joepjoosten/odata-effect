@@ -3,6 +3,11 @@
  *
  * @since 1.0.0
  */
+import {
+  getPropertyOverride,
+  getTypeOverride,
+  type NamingOverrides
+} from "../model/GeneratorConfig.js"
 
 /**
  * Convert a string to PascalCase.
@@ -163,4 +168,62 @@ export const getEditableTypeName = (typeName: string): string => {
  */
 export const getIdTypeName = (typeName: string): string => {
   return `${toPascalCase(typeName)}Id`
+}
+
+// ============================================================================
+// Override-aware naming functions
+// ============================================================================
+
+/**
+ * Get the TypeScript property name for an OData property, with override support.
+ *
+ * @param odataName - The original OData property name
+ * @param typeName - The OData type name this property belongs to
+ * @param typeKind - Whether the type is an entity or complex type
+ * @param overrides - Optional naming overrides configuration
+ * @returns The TypeScript property name
+ *
+ * @since 1.0.0
+ * @category naming
+ */
+export const getPropertyNameWithOverrides = (
+  odataName: string,
+  typeName: string,
+  typeKind: "entity" | "complex",
+  overrides?: NamingOverrides
+): string => {
+  // Check for override first
+  const override = getPropertyOverride(overrides, typeName, typeKind, odataName)
+  if (override) {
+    return override
+  }
+
+  // Fall back to default camelCase conversion
+  return getPropertyName(odataName)
+}
+
+/**
+ * Get the TypeScript class name for an OData type, with override support.
+ *
+ * @param odataName - The original OData type name
+ * @param typeKind - Whether the type is an entity or complex type
+ * @param overrides - Optional naming overrides configuration
+ * @returns The TypeScript class name
+ *
+ * @since 1.0.0
+ * @category naming
+ */
+export const getClassNameWithOverrides = (
+  odataName: string,
+  typeKind: "entity" | "complex",
+  overrides?: NamingOverrides
+): string => {
+  // Check for override first
+  const override = getTypeOverride(overrides, odataName, typeKind)
+  if (override) {
+    return override
+  }
+
+  // Fall back to default PascalCase conversion
+  return getClassName(odataName)
 }

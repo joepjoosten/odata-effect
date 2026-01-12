@@ -10,6 +10,7 @@ import * as Effect from "effect/Effect"
 
 import { digestMetadata } from "./digester/Digester.js"
 import { generate } from "./generator/Generator.js"
+import type { NamingOverrides } from "./model/GeneratorConfig.js"
 import { parseODataMetadata } from "./parser/XmlParser.js"
 
 // ============================================================================
@@ -44,17 +45,23 @@ const filesOnly = Options.boolean("files-only").pipe(
   Options.withDescription("Generate only source files (no package.json, tsconfig, etc.) directly in output-dir")
 )
 
+const configFile = Options.file("config").pipe(
+  Options.optional,
+  Options.withDescription("Path to JSON config file with naming overrides")
+)
+
 // ============================================================================
 // Generate Command
 // ============================================================================
 
 const generateCommand = Command.make(
   "generate",
-  { metadataPath, outputDir, serviceName, packageName, force, filesOnly }
+  { metadataPath, outputDir, serviceName, packageName, force, filesOnly, configFile }
 ).pipe(
   Command.withDescription("Generate Effect OData client from metadata"),
   Command.withHandler((
     {
+      configFile: cfgFile,
       filesOnly: onlyFiles,
       force: forceOverwrite,
       metadataPath: metaPath,
@@ -65,6 +72,21 @@ const generateCommand = Command.make(
   ) =>
     Effect.gen(function*() {
       const fs = yield* FileSystem.FileSystem
+
+      // Load config file if provided
+      let overrides: NamingOverrides | undefined
+      if (cfgFile._tag === "Some") {
+        yield* Console.log(`Loading config from: ${cfgFile.value}`)
+        const configContent = yield* fs.readFileString(cfgFile.value).pipe(
+          Effect.mapError((error) => new Error(`Failed to read config file: ${cfgFile.value}. ${error}`))
+        )
+        try {
+          const parsed = JSON.parse(configContent) as { overrides?: NamingOverrides }
+          overrides = parsed.overrides
+        } catch (e) {
+          throw new Error(`Failed to parse config file: ${cfgFile.value}. ${e}`)
+        }
+      }
 
       yield* Console.log(`Reading metadata from: ${metaPath}`)
 
@@ -80,8 +102,8 @@ const generateCommand = Command.make(
 
       yield* Console.log("Digesting metadata...")
 
-      // Digest metadata
-      const dataModel = yield* digestMetadata(edmx)
+      // Digest metadata with optional overrides
+      const dataModel = yield* digestMetadata(edmx, overrides)
 
       yield* Console.log(`Detected OData ${dataModel.version}`)
       yield* Console.log(`Namespace: ${dataModel.namespace}`)
@@ -98,6 +120,7 @@ const generateCommand = Command.make(
         outputDir: outDir,
         force: forceOverwrite,
         filesOnly: onlyFiles,
+        overrides,
         ...(svcName._tag === "Some" ? { serviceName: svcName.value } : {}),
         ...(pkgName._tag === "Some" ? { packageName: pkgName.value } : {})
       }

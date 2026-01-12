@@ -8,6 +8,7 @@ import * as Path from "@effect/platform/Path"
 import * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"
 import type { DataModel } from "../model/DataModel.js"
+import type { NamingOverrides } from "../model/GeneratorConfig.js"
 import { generateIndex } from "./IndexGenerator.js"
 import { generateModels } from "./ModelsGenerator.js"
 import { generateNavigations } from "./NavigationGenerator.js"
@@ -32,11 +33,13 @@ import { generateServiceFns } from "./ServiceFnGenerator.js"
  */
 export interface GeneratorConfig {
   readonly outputDir: string
-  readonly packageName?: string
-  readonly serviceName?: string
-  readonly force?: boolean
+  readonly packageName?: string | undefined
+  readonly serviceName?: string | undefined
+  readonly force?: boolean | undefined
   /** Generate only source files directly in outputDir (no package.json, tsconfig, src/ subdirectory) */
-  readonly filesOnly?: boolean
+  readonly filesOnly?: boolean | undefined
+  /** Optional naming overrides for properties and types */
+  readonly overrides?: NamingOverrides | undefined
 }
 
 /**

@@ -102,6 +102,32 @@ const needsODataSchemaImport = (dataModel: DataModel): boolean => {
 }
 
 /**
+ * Check which Effect type imports are needed based on tsType usage.
+ */
+const getNeededEffectTypeImports = (dataModel: DataModel): Set<string> => {
+  const needed = new Set<string>()
+
+  const checkTsType = (tsType: string): void => {
+    if (tsType.startsWith("DateTime.")) needed.add("DateTime")
+    if (tsType.startsWith("BigDecimal.")) needed.add("BigDecimal")
+    if (tsType.startsWith("Duration.")) needed.add("Duration")
+  }
+
+  for (const type of dataModel.entityTypes.values()) {
+    for (const prop of type.properties) {
+      checkTsType(prop.typeMapping.tsType)
+    }
+  }
+  for (const type of dataModel.complexTypes.values()) {
+    for (const prop of type.properties) {
+      checkTsType(prop.typeMapping.tsType)
+    }
+  }
+
+  return needed
+}
+
+/**
  * Generate the Models.ts file content.
  *
  * @since 1.0.0
@@ -122,6 +148,12 @@ export const generateModels = (dataModel: DataModel): string => {
   lines.push(` * @since 1.0.0`)
   lines.push(` */`)
   lines.push(`import * as Schema from "effect/Schema"`)
+
+  // Add Effect type imports if needed (for DateTime, BigDecimal, Duration)
+  const effectTypeImports = getNeededEffectTypeImports(dataModel)
+  for (const effectType of effectTypeImports) {
+    lines.push(`import type * as ${effectType} from "effect/${effectType}"`)
+  }
 
   // Add ODataSchema import if needed
   if (needsODataSchemaImport(dataModel)) {

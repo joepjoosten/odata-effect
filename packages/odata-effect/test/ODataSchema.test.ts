@@ -1,9 +1,13 @@
 import { describe, expect, it } from "@effect/vitest"
+import * as BigDecimal from "effect/BigDecimal"
+import * as DateTime from "effect/DateTime"
+import * as Duration from "effect/Duration"
 import * as Schema from "effect/Schema"
 import {
   ODataBinary,
   ODataGuid,
   ODataV2DateTime,
+  ODataV2DateTimeOffset,
   ODataV2Decimal,
   ODataV2Int64,
   ODataV2Number,
@@ -16,60 +20,69 @@ import {
 
 describe("ODataSchema", () => {
   describe("V2 DateTime", () => {
-    it("decodes /Date(millis)/ format to Date", () => {
+    it("decodes /Date(millis)/ format to DateTime.Utc", () => {
       const result = Schema.decodeSync(ODataV2DateTime)("/Date(1672531199000)/")
-      expect(result).toBeInstanceOf(Date)
-      expect(result.getTime()).toBe(1672531199000)
+      expect(DateTime.isDateTime(result)).toBe(true)
+      expect(DateTime.toEpochMillis(result)).toBe(1672531199000)
     })
 
     it("decodes /Date(millis+offset)/ format with timezone", () => {
       const result = Schema.decodeSync(ODataV2DateTime)("/Date(1672531199000+0100)/")
-      expect(result).toBeInstanceOf(Date)
-      expect(result.getTime()).toBe(1672531199000)
+      expect(DateTime.isDateTime(result)).toBe(true)
+      expect(DateTime.toEpochMillis(result)).toBe(1672531199000)
     })
 
-    it("encodes Date to /Date(millis)/ format", () => {
-      const date = new Date(1672531199000)
-      const result = Schema.encodeSync(ODataV2DateTime)(date)
+    it("encodes DateTime.Utc to /Date(millis)/ format", () => {
+      const dt = DateTime.unsafeMake(1672531199000)
+      const result = Schema.encodeSync(ODataV2DateTime)(dt)
       expect(result).toBe("/Date(1672531199000)/")
     })
 
     it("handles negative timestamps (dates before 1970)", () => {
       const result = Schema.decodeSync(ODataV2DateTime)("/Date(-86400000)/")
-      expect(result).toBeInstanceOf(Date)
-      expect(result.getTime()).toBe(-86400000)
+      expect(DateTime.isDateTime(result)).toBe(true)
+      expect(DateTime.toEpochMillis(result)).toBe(-86400000)
+    })
+  })
+
+  describe("V2 DateTimeOffset", () => {
+    it("decodes /Date(millis+offset)/ format to DateTime.Zoned", () => {
+      const result = Schema.decodeSync(ODataV2DateTimeOffset)("/Date(1672531199000+0530)/")
+      expect(DateTime.isDateTime(result)).toBe(true)
+      expect(DateTime.isZoned(result)).toBe(true)
+    })
+
+    it("encodes DateTime.Zoned to /Date(millis+offset)/ format", () => {
+      const utc = DateTime.unsafeMake(1672531199000)
+      const zoned = DateTime.setZone(utc, DateTime.zoneMakeOffset(5.5 * 60 * 60 * 1000))
+      const result = Schema.encodeSync(ODataV2DateTimeOffset)(zoned)
+      expect(result).toBe("/Date(1672531199000+0530)/")
     })
   })
 
   describe("V2 Time", () => {
-    it("decodes PT12H30M15S format to HH:MM:SS", () => {
+    it("decodes PT12H30M15S format to Duration", () => {
       const result = Schema.decodeSync(ODataV2Time)("PT12H30M15S")
-      expect(result).toBe("12:30:15")
+      expect(Duration.isDuration(result)).toBe(true)
+      expect(Duration.toMillis(result)).toBe((12 * 60 + 30) * 60 * 1000 + 15 * 1000)
     })
 
     it("decodes PT0S format", () => {
       const result = Schema.decodeSync(ODataV2Time)("PT0S")
-      expect(result).toBe("00:00:00")
+      expect(Duration.isDuration(result)).toBe(true)
+      expect(Duration.toMillis(result)).toBe(0)
     })
 
     it("decodes partial duration (hours only)", () => {
       const result = Schema.decodeSync(ODataV2Time)("PT5H")
-      expect(result).toBe("05:00:00")
+      expect(Duration.isDuration(result)).toBe(true)
+      expect(Duration.toMillis(result)).toBe(5 * 60 * 60 * 1000)
     })
 
-    it("decodes partial duration (minutes only)", () => {
-      const result = Schema.decodeSync(ODataV2Time)("PT30M")
-      expect(result).toBe("00:30:00")
-    })
-
-    it("encodes HH:MM:SS to duration format", () => {
-      const result = Schema.encodeSync(ODataV2Time)("12:30:15")
-      expect(result).toBe("PT12H30M15S")
-    })
-
-    it("passes through already formatted strings", () => {
-      const result = Schema.decodeSync(ODataV2Time)("12:30:15")
-      expect(result).toBe("12:30:15")
+    it("encodes Duration to ISO format", () => {
+      const duration = Duration.hours(12)
+      const result = Schema.encodeSync(ODataV2Time)(duration)
+      expect(result).toBe("PT12H")
     })
   })
 
@@ -96,50 +109,65 @@ describe("ODataSchema", () => {
   })
 
   describe("V2 Int64", () => {
-    it("keeps large integers as strings", () => {
+    it("decodes to BigDecimal for precision", () => {
       const largeInt = "9007199254740993" // Larger than Number.MAX_SAFE_INTEGER
       const result = Schema.decodeSync(ODataV2Int64)(largeInt)
-      expect(result).toBe(largeInt)
+      expect(BigDecimal.isBigDecimal(result)).toBe(true)
+      expect(BigDecimal.format(result)).toBe("9007199254740993")
+    })
+
+    it("encodes BigDecimal to string", () => {
+      const bd = BigDecimal.unsafeFromString("9007199254740993")
+      const result = Schema.encodeSync(ODataV2Int64)(bd)
+      expect(result).toBe("9007199254740993")
     })
   })
 
   describe("V2 Decimal", () => {
-    it("keeps decimal strings as-is", () => {
+    it("decodes to BigDecimal for precision", () => {
       const decimal = "123456789.123456789"
       const result = Schema.decodeSync(ODataV2Decimal)(decimal)
-      expect(result).toBe(decimal)
+      expect(BigDecimal.isBigDecimal(result)).toBe(true)
+    })
+
+    it("encodes BigDecimal to string", () => {
+      const bd = BigDecimal.unsafeFromString("123.456")
+      const result = Schema.encodeSync(ODataV2Decimal)(bd)
+      expect(result).toBe("123.456")
     })
   })
 
   describe("V4 DateTimeOffset", () => {
-    it("decodes ISO 8601 format to Date", () => {
+    it("decodes ISO 8601 format to DateTime.Zoned", () => {
       const result = Schema.decodeSync(ODataV4DateTimeOffset)("2022-12-31T23:59:59Z")
-      expect(result).toBeInstanceOf(Date)
-      expect(result.toISOString()).toBe("2022-12-31T23:59:59.000Z")
+      expect(DateTime.isDateTime(result)).toBe(true)
+      expect(DateTime.isZoned(result)).toBe(true)
     })
 
     it("decodes ISO 8601 with timezone offset", () => {
       const result = Schema.decodeSync(ODataV4DateTimeOffset)("2022-12-31T23:59:59+01:00")
-      expect(result).toBeInstanceOf(Date)
+      expect(DateTime.isDateTime(result)).toBe(true)
+      expect(DateTime.isZoned(result)).toBe(true)
     })
 
-    it("encodes Date to ISO 8601 format", () => {
-      const date = new Date("2022-12-31T23:59:59.000Z")
-      const result = Schema.encodeSync(ODataV4DateTimeOffset)(date)
-      expect(result).toBe("2022-12-31T23:59:59.000Z")
+    it("encodes DateTime.Zoned to ISO 8601 format", () => {
+      const utc = DateTime.unsafeMake("2022-12-31T23:59:59Z")
+      const zoned = DateTime.setZone(utc, DateTime.zoneMakeOffset(0))
+      const result = Schema.encodeSync(ODataV4DateTimeOffset)(zoned)
+      expect(result).toContain("2022-12-31")
     })
   })
 
   describe("V4 Date", () => {
-    it("decodes date-only format to Date", () => {
+    it("decodes date-only format to DateTime.Utc", () => {
       const result = Schema.decodeSync(ODataV4Date)("2022-12-31")
-      expect(result).toBeInstanceOf(Date)
-      expect(result.toISOString()).toBe("2022-12-31T00:00:00.000Z")
+      expect(DateTime.isDateTime(result)).toBe(true)
+      expect(DateTime.formatIsoDate(result)).toBe("2022-12-31")
     })
 
-    it("encodes Date to date-only format", () => {
-      const date = new Date("2022-12-31T12:00:00.000Z")
-      const result = Schema.encodeSync(ODataV4Date)(date)
+    it("encodes DateTime.Utc to date-only format", () => {
+      const dt = DateTime.unsafeMake("2022-12-31T12:00:00Z")
+      const result = Schema.encodeSync(ODataV4Date)(dt)
       expect(result).toBe("2022-12-31")
     })
   })
@@ -152,9 +180,17 @@ describe("ODataSchema", () => {
   })
 
   describe("V4 Duration", () => {
-    it("preserves duration format", () => {
+    it("decodes ISO duration to Effect Duration", () => {
       const result = Schema.decodeSync(ODataV4Duration)("PT12H30M15S")
-      expect(result).toBe("PT12H30M15S")
+      expect(Duration.isDuration(result)).toBe(true)
+      expect(Duration.toMillis(result)).toBe((12 * 60 + 30) * 60 * 1000 + 15 * 1000)
+    })
+
+    it("encodes Duration to ISO format", () => {
+      const duration = Duration.minutes(90)
+      const result = Schema.encodeSync(ODataV4Duration)(duration)
+      // Duration.formatIso returns "PT1H30M" for 90 minutes (T is time designator)
+      expect(result).toBe("PT1H30M")
     })
   })
 

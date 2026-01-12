@@ -44,7 +44,7 @@ const V2_TYPE_MAP: Record<string, TypeMapping> = {
   "Edm.Double": { effectSchema: "ODataSchema.ODataV2Number", queryPath: "NumberPath", tsType: "number" },
   "Edm.Decimal": {
     effectSchema: "ODataSchema.ODataV2Decimal",
-    queryPath: "StringPath",
+    queryPath: "NumberPath",
     tsType: "BigDecimal.BigDecimal"
   },
   "Edm.Guid": { effectSchema: "ODataSchema.ODataGuid", queryPath: "StringPath", tsType: "string" },

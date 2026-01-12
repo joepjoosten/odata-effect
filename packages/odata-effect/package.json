@@ -1,6 +1,6 @@
 {
   "name": "@odata-effect/odata-effect",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "type": "module",
   "license": "MIT",
   "description": "Effect-based OData client infrastructure for SAP OData V2/V4 services",

@@ -141,6 +141,17 @@ export * as Media from "./Media.js"
 export * as OData from "./OData.js"
 
 /**
+ * OData-specific Effect Schema types for proper encoding/decoding of OData wire formats.
+ *
+ * OData V2 and V4 have different wire formats for dates, times, and numbers.
+ * These schemas handle the transformation between wire format and JavaScript types.
+ *
+ * @since 1.0.0
+ * @see https://odata2ts.github.io/docs/odata/odata-types
+ */
+export * as ODataSchema from "./ODataSchema.js"
+
+/**
  * OData V4 client module.
  *
  * This module provides everything needed for OData V4 operations:

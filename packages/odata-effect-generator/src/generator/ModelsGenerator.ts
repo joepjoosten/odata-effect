@@ -86,6 +86,22 @@ const sortTypesByDependency = <T extends ComplexTypeModel | EntityTypeModel>(
 }
 
 /**
+ * Check if any property uses ODataSchema types.
+ */
+const needsODataSchemaImport = (dataModel: DataModel): boolean => {
+  const checkProperties = (properties: ReadonlyArray<PropertyModel>): boolean =>
+    properties.some((p) => p.typeMapping.effectSchema.startsWith("ODataSchema."))
+
+  for (const type of dataModel.entityTypes.values()) {
+    if (checkProperties(type.properties)) return true
+  }
+  for (const type of dataModel.complexTypes.values()) {
+    if (checkProperties(type.properties)) return true
+  }
+  return false
+}
+
+/**
  * Generate the Models.ts file content.
  *
  * @since 1.0.0
@@ -106,6 +122,12 @@ export const generateModels = (dataModel: DataModel): string => {
   lines.push(` * @since 1.0.0`)
   lines.push(` */`)
   lines.push(`import * as Schema from "effect/Schema"`)
+
+  // Add ODataSchema import if needed
+  if (needsODataSchemaImport(dataModel)) {
+    lines.push(`import { ODataSchema } from "@odata-effect/odata-effect"`)
+  }
+
   lines.push(``)
 
   // Generate enum types (no dependencies, always first)

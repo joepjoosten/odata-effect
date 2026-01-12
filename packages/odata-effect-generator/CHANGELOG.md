@@ -1,5 +1,22 @@
 # @odata-effect/odata-effect-generator
 
+## 0.6.1
+
+### Patch Changes
+
+- [`715de50`](https://github.com/joepjoosten/odata-effect/commit/715de505b7fc1fa9d95ff07e090a938e39acc59b) Thanks [@joepjoosten](https://github.com/joepjoosten)! - Fix 6 bugs from demo feedback:
+
+  **@odata-effect/odata-effect:**
+
+  - Add support for V2 legacy response format `{ d: [...] }` in addition to standard `{ d: { results: [...] } }`
+  - Fix numeric key handling in V2 URLs (no longer quoted as strings)
+  - Add DateTime.DateTime type support in QueryBuilder FieldToPath mapping
+
+  **@odata-effect/odata-effect-generator:**
+
+  - Fix Schema.propertySignature usage for optional fields with fromKey (optionalWith already returns PropertySignature)
+  - Remove unused DateTime/BigDecimal/Duration imports from generated Models.ts
+
 ## 0.6.0
 
 ### Minor Changes

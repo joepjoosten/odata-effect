@@ -32,18 +32,24 @@ interface VersionConfig {
   readonly odataNamespace: string
   readonly clientModule: string
   readonly queryOptionsType: string
+  readonly errorType: string
+  readonly dependenciesType: string
 }
 
 const V2_CONFIG: VersionConfig = {
   odataNamespace: "OData",
   clientModule: "OData",
-  queryOptionsType: "ODataQueryOptions"
+  queryOptionsType: "ODataQueryOptions",
+  errorType: "ODataClientError",
+  dependenciesType: "ODataClientDependencies"
 }
 
 const V4_CONFIG: VersionConfig = {
   odataNamespace: "ODataV4",
   clientModule: "ODataV4",
-  queryOptionsType: "ODataV4QueryOptions"
+  queryOptionsType: "ODataV4QueryOptions",
+  errorType: "ODataV4ClientError",
+  dependenciesType: "ODataV4ClientDependencies"
 }
 
 const getVersionConfig = (version: ODataVersion): VersionConfig => version === "V4" ? V4_CONFIG : V2_CONFIG
@@ -242,7 +248,7 @@ const generatePathBuildersFile = (dataModel: DataModel, esmExtensions: boolean):
   // Imports
   lines.push(`import { ${versionConfig.odataNamespace} } from "@odata-effect/odata-effect"`)
   lines.push(`import { toPromise } from "@odata-effect/odata-effect-promise"`)
-  lines.push(`import type { Schema } from "effect"`)
+  lines.push(`import type { Effect, Schema } from "effect"`)
   lines.push(``)
 
   // Import model types with Model suffix to avoid collision with entity set names
@@ -384,7 +390,9 @@ const generatePathBuildersFile = (dataModel: DataModel, esmExtensions: boolean):
   lines.push(` * @category operations`)
   lines.push(` */`)
   lines.push(`export const fetchCollection = <T, I>(schema: Schema.Schema<T, I>) =>`)
-  lines.push(`  (path: Path<T, true>, options?: ${versionConfig.clientModule}.${versionConfig.queryOptionsType}) =>`)
+  lines.push(
+    `  (path: Path<T, true>, options?: ${versionConfig.clientModule}.${versionConfig.queryOptionsType}): Effect.Effect<ReadonlyArray<T>, ${versionConfig.odataNamespace}.${versionConfig.errorType}, ${versionConfig.odataNamespace}.${versionConfig.dependenciesType}> =>`
+  )
   lines.push(`    ${versionConfig.odataNamespace}.getCollection(path, schema, options)`)
   lines.push(``)
   lines.push(`/**`)
@@ -399,7 +407,9 @@ const generatePathBuildersFile = (dataModel: DataModel, esmExtensions: boolean):
   lines.push(` * @category operations`)
   lines.push(` */`)
   lines.push(`export const fetchOne = <T, I>(schema: Schema.Schema<T, I>) =>`)
-  lines.push(`  (path: Path<T, false>, options?: ${versionConfig.clientModule}.${versionConfig.queryOptionsType}) =>`)
+  lines.push(
+    `  (path: Path<T, false>, options?: ${versionConfig.clientModule}.${versionConfig.queryOptionsType}): Effect.Effect<T, ${versionConfig.odataNamespace}.${versionConfig.errorType}, ${versionConfig.odataNamespace}.${versionConfig.dependenciesType}> =>`
+  )
   lines.push(`    ${versionConfig.odataNamespace}.get(path, schema, options)`)
   lines.push(``)
 

@@ -610,3 +610,25 @@ export const del = (
 
 // Alias for nice naming
 export { del as delete }
+
+// ============================================================================
+// Type Aliases for Declaration Portability
+// ============================================================================
+
+/**
+ * Combined error type for OData V4 read operations.
+ * Use this in explicit return types to avoid exposing @effect/platform types.
+ *
+ * @since 1.0.0
+ * @category types
+ */
+export type ODataV4ClientError = HttpClientError.HttpClientError | ParseError | ODataError
+
+/**
+ * Combined dependencies for OData V4 operations.
+ * Use this in explicit return types to avoid exposing @effect/platform types.
+ *
+ * @since 1.0.0
+ * @category types
+ */
+export type ODataV4ClientDependencies = ODataClientConfig | HttpClient.HttpClient

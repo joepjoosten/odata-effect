@@ -139,3 +139,4 @@ pnpm changeset-publish
 ```
 
 GitHub Actions automatically creates a "Version Packages" PR when changesets are merged to main. Merging that PR publishes to npm.
+Write a changeset for any user-facing changes (new features, bug fixes, breaking changes) before merging to main.

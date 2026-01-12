@@ -44,14 +44,20 @@ export { ODataClientConfig, type ODataClientConfigService } from "./Config.js"
 
 /**
  * OData response wrapper for single entities.
+ * Handles V2 format (`{ d: Entity }`) and V3/V4 format (entity at root with odata.metadata).
  *
  * @since 1.0.0
  * @category schemas
  */
 export const ODataSingleResponse = <A, I, R>(schema: Schema.Schema<A, I, R>) =>
-  Schema.Struct({
-    d: schema
-  })
+  Schema.Union(
+    // V2: { d: Entity }
+    Schema.Struct({
+      d: schema
+    }),
+    // V3/V4: Entity at root - extra fields like odata.metadata are allowed by default
+    schema
+  )
 
 /**
  * OData response wrapper for collections.
@@ -388,7 +394,12 @@ export const get = <A, I, R>(
     const request = HttpClientRequest.get(url)
     const response = yield* client.execute(request)
     const data = yield* HttpClientResponse.schemaBodyJson(responseSchema)(response)
-    return data.d
+    // Handle V2 ({ d: Entity }) and V3/V4 (Entity at root) formats
+    if (data !== null && typeof data === "object" && "d" in data) {
+      return (data as { readonly d: A }).d
+    }
+    // V3/V4 format - entity is already parsed by schema
+    return data as A
   }).pipe(Effect.scoped, handleError)
 }
 
@@ -579,7 +590,11 @@ export const getComplex = <A, I, R>(
     const request = HttpClientRequest.get(path)
     const response = yield* client.execute(request)
     const data = yield* HttpClientResponse.schemaBodyJson(responseSchema)(response)
-    return data.d
+    // Handle V2 ({ d: Entity }) and V3/V4 (Entity at root) formats
+    if (data !== null && typeof data === "object" && "d" in data) {
+      return (data as { readonly d: A }).d
+    }
+    return data as A
   }).pipe(Effect.scoped, handleError)
 }
 
@@ -618,7 +633,11 @@ export const expandDeferred = <A, I, R>(
     const request = HttpClientRequest.get(relativePath)
     const response = yield* client.execute(request)
     const data = yield* HttpClientResponse.schemaBodyJson(responseSchema)(response)
-    return data.d
+    // Handle V2 ({ d: Entity }) and V3/V4 (Entity at root) formats
+    if (data !== null && typeof data === "object" && "d" in data) {
+      return (data as { readonly d: A }).d
+    }
+    return data as A
   }).pipe(Effect.scoped, handleError)
 }
 
@@ -705,7 +724,11 @@ export const post = <A, I, R, B, BI>(
     const request = yield* HttpClientRequest.schemaBodyJson(bodySchema)(baseRequest, body)
     const response = yield* client.execute(request)
     const data = yield* HttpClientResponse.schemaBodyJson(wrappedResponseSchema)(response)
-    return data.d
+    // Handle V2 ({ d: Entity }) and V3/V4 (Entity at root) formats
+    if (data !== null && typeof data === "object" && "d" in data) {
+      return (data as { readonly d: A }).d
+    }
+    return data as A
   }).pipe(Effect.scoped, handleError)
 }
 

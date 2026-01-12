@@ -62,6 +62,14 @@ describe("ODataClient", () => {
   })
 
   describe("ODataSingleResponse", () => {
+    // Helper to extract entity from any format (V2 or V3/V4)
+    const extractEntity = <A>(result: { d?: A } | A): A => {
+      if (result !== null && typeof result === "object" && "d" in result) {
+        return (result as { d: A }).d
+      }
+      return result as A
+    }
+
     it("wraps schema in OData V2 single response format", () =>
       Effect.gen(function*() {
         const responseSchema = ODataSingleResponse(TestEntity)
@@ -73,9 +81,27 @@ describe("ODataClient", () => {
           }
         }
         const result = yield* Schema.decodeUnknown(responseSchema)(data)
-        expect(result.d.id).toBe("1")
-        expect(result.d.name).toBe("Test")
-        expect(result.d.value).toBe(42)
+        const entity = extractEntity(result)
+        expect(entity.id).toBe("1")
+        expect(entity.name).toBe("Test")
+        expect(entity.value).toBe(42)
+      }).pipe(Effect.runPromise))
+
+    it("wraps schema in OData V3/V4 single response format", () =>
+      Effect.gen(function*() {
+        const responseSchema = ODataSingleResponse(TestEntity)
+        // V3/V4 format: entity at root with odata.metadata
+        const data = {
+          "odata.metadata": "https://example.com/$metadata#Products/$entity",
+          id: "1",
+          name: "Test",
+          value: 42
+        }
+        const result = yield* Schema.decodeUnknown(responseSchema)(data)
+        const entity = extractEntity(result)
+        expect(entity.id).toBe("1")
+        expect(entity.name).toBe("Test")
+        expect(entity.value).toBe(42)
       }).pipe(Effect.runPromise))
   })
 

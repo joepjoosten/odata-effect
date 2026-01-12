@@ -156,7 +156,11 @@ export const executeFunctionImportEntity = <A, I, R>(
       (c) => c.execute(configuredRequest)
     )
     const data = yield* HttpClientResponse.schemaBodyJson(responseSchema)(response)
-    return data.d
+    // Handle V2 ({ d: Entity }) and V3/V4 (Entity at root) formats
+    if (data !== null && typeof data === "object" && "d" in data) {
+      return (data as { readonly d: A }).d
+    }
+    return data as A
   }).pipe(
     Effect.scoped,
     Effect.catchAll((error) => Effect.fail(new ODataError({ message: "Function import failed", cause: error })))

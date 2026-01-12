@@ -1,6 +1,6 @@
 {
   "name": "@odata-effect/odata-effect-generator",
-  "version": "0.6.4",
+  "version": "0.6.5",
   "type": "module",
   "license": "MIT",
   "description": "Effect-based OData service code generator",

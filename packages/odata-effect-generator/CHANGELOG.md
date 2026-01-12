@@ -1,5 +1,11 @@
 # @odata-effect/odata-effect-generator
 
+## 0.6.5
+
+### Patch Changes
+
+- [`1b687d9`](https://github.com/joepjoosten/odata-effect/commit/1b687d9b7907156200e5c2fb6bdb5cdea048e9e2) Thanks [@joepjoosten](https://github.com/joepjoosten)! - Convert branded types (BigDecimal, DateTime, Duration) to string in generated idToKey functions for EntityKey compatibility
+
 ## 0.6.4
 
 ### Patch Changes

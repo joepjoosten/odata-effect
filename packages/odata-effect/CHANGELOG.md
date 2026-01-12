@@ -1,5 +1,18 @@
 # @odata-effect/odata-effect
 
+## 0.6.6
+
+### Patch Changes
+
+- [`b774df8`](https://github.com/joepjoosten/odata-effect/commit/b774df8e095ddf7d413a0f80a805eb604303476f) Thanks [@joepjoosten](https://github.com/joepjoosten)! - **@odata-effect/odata-effect-generator:**
+
+  - Add explicit return type annotations to generated fetchCollection and fetchOne functions for TypeScript declaration portability
+
+  **@odata-effect/odata-effect:**
+
+  - Add ODataClientError and ODataClientDependencies type aliases for declaration portability
+  - Add ODataV4ClientError and ODataV4ClientDependencies type aliases for declaration portability
+
 ## 0.6.5
 
 ### Patch Changes

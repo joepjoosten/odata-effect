@@ -197,6 +197,7 @@ export interface SingletonModel {
  * @category model
  */
 export interface OperationParameterModel {
+  readonly odataName: string
   readonly name: string
   readonly odataType: string
   readonly typeMapping: TypeMapping

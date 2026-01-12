@@ -54,6 +54,14 @@ Config file format:
           "ZIPCode": "zipCode"
         }
       }
+    },
+    "operations": {
+      "GetProductsByRating": {
+        "name": "fetchProductsByRating",
+        "parameters": {
+          "rating": "minRating"
+        }
+      }
     }
   }
 }
@@ -64,3 +72,47 @@ This allows:
 - Entity-specific property overrides
 - Complex type-specific property overrides
 - Type name overrides
+- Operation name overrides (function imports, functions, actions)
+- Operation parameter name overrides
+
+**QueryModels Integration:**
+
+The NamingOverrides also flow through to QueryModels generation. Query interfaces use TypeScript names while path constructors use OData names:
+
+```typescript
+// Generated QueryModels.ts
+export interface QProduct {
+  readonly id: NumberPath           // TypeScript name from override
+  readonly productName: StringPath  // TypeScript name from override
+}
+
+export const qProduct: QProduct = {
+  id: new NumberPath("ID"),                // OData name for queries
+  productName: new StringPath("ProductName")  // OData name for queries
+}
+```
+
+This ensures type-safe query building with proper OData protocol compatibility.
+
+**Operations Integration:**
+
+Operations (function imports, functions, actions) also support naming overrides and proper name mapping:
+
+```typescript
+// Generated Operations.ts
+export interface GetProductsByRatingParams {
+  readonly minRating: number  // TypeScript name from override
+}
+
+export const fetchProductsByRating = (
+  params: GetProductsByRatingParams
+): Effect.Effect<...> =>
+  Effect.gen(function*() {
+    const parameters: ODataOps.OperationParameters = {
+      "rating": params.minRating,  // Maps to OData parameter name
+    }
+    // ...
+  })
+```
+
+This ensures TypeScript code uses friendly names while OData API calls use the correct protocol names.

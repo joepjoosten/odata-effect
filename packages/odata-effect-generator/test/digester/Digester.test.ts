@@ -3,6 +3,7 @@ import * as Effect from "effect/Effect"
 import * as fs from "node:fs"
 import * as path from "node:path"
 import { digestMetadata } from "../../src/digester/Digester.js"
+import type { NamingOverrides } from "../../src/model/GeneratorConfig.js"
 import { parseODataMetadata } from "../../src/parser/XmlParser.js"
 
 const resourceDir = path.resolve(__dirname, "../resource")
@@ -156,6 +157,199 @@ describe("Digester", () => {
         )
         expect(resetDataSource).toBeDefined()
         expect(resetDataSource!.type).toBe("Action")
+      }))
+  })
+
+  describe("NamingOverrides", () => {
+    it("applies global property overrides", () =>
+      Effect.gen(function*() {
+        const xmlContent = fs.readFileSync(
+          path.join(resourceDir, "odata-v2.xml"),
+          "utf-8"
+        )
+        const overrides: NamingOverrides = {
+          properties: {
+            ID: "id" // Override ID -> id instead of default iD
+          }
+        }
+        const edmx = yield* parseODataMetadata(xmlContent)
+        const dataModel = yield* digestMetadata(edmx, overrides)
+
+        const product = dataModel.entityTypes.get("ODataDemo.Product")!
+        const idProp = product.properties.find((p) => p.odataName === "ID")
+
+        expect(idProp).toBeDefined()
+        expect(idProp!.odataName).toBe("ID") // Original OData name preserved
+        expect(idProp!.name).toBe("id") // TypeScript name is overridden
+      }))
+
+    it("applies entity-specific property overrides", () =>
+      Effect.gen(function*() {
+        const xmlContent = fs.readFileSync(
+          path.join(resourceDir, "odata-v2.xml"),
+          "utf-8"
+        )
+        const overrides: NamingOverrides = {
+          entities: {
+            Product: {
+              properties: {
+                Name: "productName" // Override for Product.Name only
+              }
+            }
+          }
+        }
+        const edmx = yield* parseODataMetadata(xmlContent)
+        const dataModel = yield* digestMetadata(edmx, overrides)
+
+        const product = dataModel.entityTypes.get("ODataDemo.Product")!
+        const nameProp = product.properties.find((p) => p.odataName === "Name")
+
+        expect(nameProp).toBeDefined()
+        expect(nameProp!.odataName).toBe("Name")
+        expect(nameProp!.name).toBe("productName")
+
+        // Category.Name should NOT be affected
+        const category = dataModel.entityTypes.get("ODataDemo.Category")!
+        const categoryNameProp = category.properties.find((p) => p.odataName === "Name")
+        expect(categoryNameProp!.name).toBe("name") // Default camelCase
+      }))
+
+    it("entity-specific overrides take precedence over global", () =>
+      Effect.gen(function*() {
+        const xmlContent = fs.readFileSync(
+          path.join(resourceDir, "odata-v2.xml"),
+          "utf-8"
+        )
+        const overrides: NamingOverrides = {
+          properties: {
+            ID: "globalId" // Global override
+          },
+          entities: {
+            Product: {
+              properties: {
+                ID: "productId" // Entity-specific override
+              }
+            }
+          }
+        }
+        const edmx = yield* parseODataMetadata(xmlContent)
+        const dataModel = yield* digestMetadata(edmx, overrides)
+
+        // Product should use entity-specific override
+        const product = dataModel.entityTypes.get("ODataDemo.Product")!
+        const productIdProp = product.properties.find((p) => p.odataName === "ID")
+        expect(productIdProp!.name).toBe("productId")
+
+        // Category should use global override
+        const category = dataModel.entityTypes.get("ODataDemo.Category")!
+        const categoryIdProp = category.properties.find((p) => p.odataName === "ID")
+        expect(categoryIdProp!.name).toBe("globalId")
+      }))
+
+    it("applies complex type property overrides", () =>
+      Effect.gen(function*() {
+        const xmlContent = fs.readFileSync(
+          path.join(resourceDir, "odata-v2.xml"),
+          "utf-8"
+        )
+        const overrides: NamingOverrides = {
+          complexTypes: {
+            Address: {
+              properties: {
+                City: "cityName"
+              }
+            }
+          }
+        }
+        const edmx = yield* parseODataMetadata(xmlContent)
+        const dataModel = yield* digestMetadata(edmx, overrides)
+
+        const address = dataModel.complexTypes.get("ODataDemo.Address")!
+        const cityProp = address.properties.find((p) => p.odataName === "City")
+
+        expect(cityProp).toBeDefined()
+        expect(cityProp!.odataName).toBe("City")
+        expect(cityProp!.name).toBe("cityName")
+      }))
+
+    it("applies operation name overrides", () =>
+      Effect.gen(function*() {
+        const xmlContent = fs.readFileSync(
+          path.join(resourceDir, "odata-v2.xml"),
+          "utf-8"
+        )
+        const overrides: NamingOverrides = {
+          operations: {
+            GetProductsByRating: {
+              name: "fetchProductsByRating"
+            }
+          }
+        }
+        const edmx = yield* parseODataMetadata(xmlContent)
+        const dataModel = yield* digestMetadata(edmx, overrides)
+
+        const operation = dataModel.operations.get("ODataDemo.GetProductsByRating")!
+
+        expect(operation.odataName).toBe("GetProductsByRating")
+        expect(operation.name).toBe("fetchProductsByRating")
+      }))
+
+    it("applies operation parameter overrides", () =>
+      Effect.gen(function*() {
+        const xmlContent = fs.readFileSync(
+          path.join(resourceDir, "odata-v2.xml"),
+          "utf-8"
+        )
+        const overrides: NamingOverrides = {
+          operations: {
+            GetProductsByRating: {
+              parameters: {
+                rating: "minRating" // Override parameter name
+              }
+            }
+          }
+        }
+        const edmx = yield* parseODataMetadata(xmlContent)
+        const dataModel = yield* digestMetadata(edmx, overrides)
+
+        const operation = dataModel.operations.get("ODataDemo.GetProductsByRating")!
+        const ratingParam = operation.parameters.find((p) => p.odataName === "rating")
+
+        expect(ratingParam).toBeDefined()
+        expect(ratingParam!.odataName).toBe("rating")
+        expect(ratingParam!.name).toBe("minRating")
+      }))
+
+    it("applies V4 operation overrides", () =>
+      Effect.gen(function*() {
+        const xmlContent = fs.readFileSync(
+          path.join(resourceDir, "trippin.xml"),
+          "utf-8"
+        )
+        const overrides: NamingOverrides = {
+          operations: {
+            GetNearestAirport: {
+              name: "findNearestAirport",
+              parameters: {
+                lat: "latitude",
+                lon: "longitude"
+              }
+            }
+          }
+        }
+        const edmx = yield* parseODataMetadata(xmlContent)
+        const dataModel = yield* digestMetadata(edmx, overrides)
+
+        const operation = dataModel.operations.get("Trippin.GetNearestAirport")!
+
+        expect(operation.odataName).toBe("GetNearestAirport")
+        expect(operation.name).toBe("findNearestAirport")
+
+        const latParam = operation.parameters.find((p) => p.odataName === "lat")
+        expect(latParam!.name).toBe("latitude")
+
+        const lonParam = operation.parameters.find((p) => p.odataName === "lon")
+        expect(lonParam!.name).toBe("longitude")
       }))
   })
 })

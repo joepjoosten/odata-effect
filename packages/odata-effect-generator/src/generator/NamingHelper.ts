@@ -4,6 +4,8 @@
  * @since 1.0.0
  */
 import {
+  getOperationOverride,
+  getOperationParameterOverride,
   getPropertyOverride,
   getTypeOverride,
   type NamingOverrides
@@ -226,4 +228,54 @@ export const getClassNameWithOverrides = (
 
   // Fall back to default PascalCase conversion
   return getClassName(odataName)
+}
+
+/**
+ * Get the TypeScript function name for an OData operation, with override support.
+ *
+ * @param odataName - The original OData operation name
+ * @param overrides - Optional naming overrides configuration
+ * @returns The TypeScript function name (camelCase)
+ *
+ * @since 1.0.0
+ * @category naming
+ */
+export const getOperationNameWithOverrides = (
+  odataName: string,
+  overrides?: NamingOverrides
+): string => {
+  // Check for override first
+  const override = getOperationOverride(overrides, odataName)
+  if (override) {
+    return override
+  }
+
+  // Fall back to default camelCase conversion
+  return getPropertyName(odataName)
+}
+
+/**
+ * Get the TypeScript parameter name for an OData operation parameter, with override support.
+ *
+ * @param odataParamName - The original OData parameter name
+ * @param odataOperationName - The OData operation this parameter belongs to
+ * @param overrides - Optional naming overrides configuration
+ * @returns The TypeScript parameter name (camelCase)
+ *
+ * @since 1.0.0
+ * @category naming
+ */
+export const getOperationParameterNameWithOverrides = (
+  odataParamName: string,
+  odataOperationName: string,
+  overrides?: NamingOverrides
+): string => {
+  // Check for override first
+  const override = getOperationParameterOverride(overrides, odataOperationName, odataParamName)
+  if (override) {
+    return override
+  }
+
+  // Fall back to default camelCase conversion
+  return getPropertyName(odataParamName)
 }

@@ -6,9 +6,9 @@
  *
  * @since 1.0.0
  */
-import type { DataModel, OperationModel } from "../model/DataModel.js"
+import type { DataModel, OperationModel, OperationParameterModel } from "../model/DataModel.js"
 import type { ODataVersion } from "../parser/EdmxSchema.js"
-import { toCamelCase, toPascalCase } from "./NamingHelper.js"
+import { toPascalCase } from "./NamingHelper.js"
 
 /**
  * Version-specific imports and identifiers.
@@ -35,12 +35,13 @@ const getVersionConfig = (version: ODataVersion): VersionConfig => version === "
 
 /**
  * Get the function name for an operation.
+ * Note: operation.name is already properly cased by the Digester.
  *
  * @since 1.0.0
  * @category naming
  */
 export const getOperationFunctionName = (operation: OperationModel): string => {
-  return toCamelCase(operation.name)
+  return operation.name
 }
 
 /**
@@ -274,7 +275,7 @@ const generateParameterType = (
 ): string | null => {
   if (operation.parameters.length === 0) return null
 
-  const typeName = `${toPascalCase(operation.name)}Params`
+  const typeName = `${toPascalCase(operation.odataName)}Params`
   return typeName
 }
 
@@ -287,7 +288,7 @@ const generateParameterInterface = (
 ): void => {
   if (operation.parameters.length === 0) return
 
-  const typeName = `${toPascalCase(operation.name)}Params`
+  const typeName = `${toPascalCase(operation.odataName)}Params`
 
   lines.push(`/**`)
   lines.push(` * Parameters for ${operation.odataName} operation.`)
@@ -307,6 +308,26 @@ const generateParameterInterface = (
 
   lines.push(`}`)
   lines.push(``)
+}
+
+/**
+ * Build the parameters object mapping TypeScript names to OData names.
+ */
+const generateParametersObject = (
+  lines: Array<string>,
+  params: ReadonlyArray<OperationParameterModel>,
+  indent: string
+): void => {
+  lines.push(`${indent}const parameters: ODataOps.OperationParameters = {`)
+  for (const param of params) {
+    // Map TypeScript param name to OData param name
+    if (param.name === param.odataName) {
+      lines.push(`${indent}  ${param.name}: params.${param.name},`)
+    } else {
+      lines.push(`${indent}  "${param.odataName}": params.${param.name},`)
+    }
+  }
+  lines.push(`${indent}}`)
 }
 
 /**
@@ -352,11 +373,7 @@ const generateV2FunctionImport = (
 
   // Build parameters object for the function import URL
   if (paramsType) {
-    lines.push(`    const parameters: ODataOps.OperationParameters = {`)
-    for (const param of operation.parameters) {
-      lines.push(`      ${param.name}: params.${param.name},`)
-    }
-    lines.push(`    }`)
+    generateParametersObject(lines, operation.parameters, "    ")
     lines.push(``)
   }
 
@@ -438,11 +455,7 @@ const generateV4Operation = (
   if (!isAction) {
     // V4 Functions use GET with parameters in URL
     if (paramsType) {
-      lines.push(`    const parameters: ODataOps.OperationParameters = {`)
-      for (const param of operation.parameters) {
-        lines.push(`      ${param.name}: params.${param.name},`)
-      }
-      lines.push(`    }`)
+      generateParametersObject(lines, operation.parameters, "    ")
       lines.push(`    const url = ODataOps.buildV4FunctionUrl("${operation.odataName}", parameters)`)
     } else {
       lines.push(`    const url = ODataOps.buildV4FunctionUrl("${operation.odataName}")`)
@@ -477,7 +490,27 @@ const generateV4Operation = (
     lines.push(`    const url = "${operation.odataName}"`)
     lines.push(``)
 
-    const bodyArg = paramsType ? "params" : "undefined"
+    // Build body with OData parameter names
+    let bodyArg = "undefined"
+    if (paramsType) {
+      // Check if any parameter names differ
+      const hasDifferentNames = operation.parameters.some((p) => p.name !== p.odataName)
+      if (hasDifferentNames) {
+        lines.push(`    const body = {`)
+        for (const param of operation.parameters) {
+          if (param.name === param.odataName) {
+            lines.push(`      ${param.name}: params.${param.name},`)
+          } else {
+            lines.push(`      "${param.odataName}": params.${param.name},`)
+          }
+        }
+        lines.push(`    }`)
+        lines.push(``)
+        bodyArg = "body"
+      } else {
+        bodyArg = "params"
+      }
+    }
 
     if (!operation.returnType) {
       lines.push(`    return yield* ODataOps.executeV4ActionVoid(client, config, url, ${bodyArg})`)

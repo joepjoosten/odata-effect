@@ -9,7 +9,8 @@ import * as Schema from "effect/Schema"
 import {
   getClassName,
   getClassNameWithOverrides,
-  getPropertyName,
+  getOperationNameWithOverrides,
+  getOperationParameterNameWithOverrides,
   getPropertyNameWithOverrides
 } from "../generator/NamingHelper.js"
 import type { NamingOverrides } from "../model/GeneratorConfig.js"
@@ -489,10 +490,12 @@ const digestEntityContainer = (
     for (const funcImport of container.FunctionImport) {
       // Only process V2 function imports (no Function reference)
       if (!funcImport.$.Function) {
+        const odataOpName = funcImport.$.Name
         const params: Array<OperationParameterModel> = (funcImport.Parameter ?? []).map((p) => {
           const { baseType, isCollection } = parseODataType(p.$.Type)
           return {
-            name: getPropertyName(p.$.Name),
+            name: getOperationParameterNameWithOverrides(p.$.Name, odataOpName, context.overrides),
+            odataName: p.$.Name,
             odataType: p.$.Type,
             typeMapping: resolveTypeMapping(baseType, context),
             isNullable: p.$.Nullable !== "false",
@@ -501,9 +504,9 @@ const digestEntityContainer = (
         })
 
         let model: OperationModel = {
-          fqName: `${context.namespace}.${funcImport.$.Name}`,
-          odataName: funcImport.$.Name,
-          name: getPropertyName(funcImport.$.Name),
+          fqName: `${context.namespace}.${odataOpName}`,
+          odataName: odataOpName,
+          name: getOperationNameWithOverrides(odataOpName, context.overrides),
           type: "Function",
           isBound: false,
           parameters: params
@@ -541,13 +544,14 @@ const digestOperation = (
   type: "Function" | "Action",
   context: DigestContext
 ): OperationModel => {
-  const name = operation.$.Name
+  const odataName = operation.$.Name
   const isBound = operation.$.IsBound === "true"
 
   const allParams = (operation.Parameter ?? []).map((p) => {
     const { baseType, isCollection } = parseODataType(p.$.Type)
     return {
-      name: getPropertyName(p.$.Name),
+      name: getOperationParameterNameWithOverrides(p.$.Name, odataName, context.overrides),
+      odataName: p.$.Name,
       odataType: p.$.Type,
       typeMapping: resolveTypeMapping(baseType, context),
       isNullable: p.$.Nullable !== "false",
@@ -560,9 +564,9 @@ const digestOperation = (
   const parameters = isBound ? allParams.slice(1) : allParams
 
   let model: OperationModel = {
-    fqName: `${namespace}.${name}`,
-    odataName: name,
-    name: getPropertyName(name),
+    fqName: `${namespace}.${odataName}`,
+    odataName,
+    name: getOperationNameWithOverrides(odataName, context.overrides),
     type,
     isBound,
     parameters

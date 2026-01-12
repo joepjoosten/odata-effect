@@ -55,35 +55,40 @@ export const ODataSingleResponse = <A, I, R>(schema: Schema.Schema<A, I, R>) =>
 
 /**
  * OData response wrapper for collections.
- * Handles both standard `{ d: { results: [...] } }` and legacy `{ d: [...] }` formats.
+ * Handles V2 formats (`{ d: { results: [...] } }`, `{ d: [...] }`) and V3/V4 format (`{ value: [...] }`).
  *
  * @since 1.0.0
  * @category schemas
  */
 export const ODataCollectionResponse = <A, I, R>(schema: Schema.Schema<A, I, R>) =>
   Schema.Union(
-    // Standard format: { d: { results: [...] } }
+    // V2 Standard: { d: { results: [...] } }
     Schema.Struct({
       d: Schema.Struct({
         results: Schema.Array(schema)
       })
     }),
-    // Legacy format: { d: [...] }
+    // V2 Legacy: { d: [...] }
     Schema.Struct({
       d: Schema.Array(schema)
+    }),
+    // V3/V4: { value: [...] }
+    Schema.Struct({
+      value: Schema.Array(schema),
+      "odata.metadata": Schema.optionalWith(Schema.String, { nullable: true })
     })
   )
 
 /**
- * OData V2 collection response with pagination metadata.
- * Handles both standard `{ d: { results: [...] } }` and legacy `{ d: [...] }` formats.
+ * OData collection response with pagination metadata.
+ * Handles V2 formats and V3/V4 format with pagination.
  *
  * @since 1.0.0
  * @category schemas
  */
 export const ODataCollectionResponseWithMeta = <A, I, R>(schema: Schema.Schema<A, I, R>) =>
   Schema.Union(
-    // Standard format: { d: { results: [...], __count?, __next? } }
+    // V2 Standard: { d: { results: [...], __count?, __next? } }
     Schema.Struct({
       d: Schema.Struct({
         results: Schema.Array(schema),
@@ -91,9 +96,16 @@ export const ODataCollectionResponseWithMeta = <A, I, R>(schema: Schema.Schema<A
         __next: Schema.optionalWith(Schema.String, { nullable: true })
       })
     }),
-    // Legacy format: { d: [...] } (no pagination support in legacy format)
+    // V2 Legacy: { d: [...] }
     Schema.Struct({
       d: Schema.Array(schema)
+    }),
+    // V3/V4: { value: [...], odata.count?, odata.nextLink? }
+    Schema.Struct({
+      value: Schema.Array(schema),
+      "odata.metadata": Schema.optionalWith(Schema.String, { nullable: true }),
+      "odata.count": Schema.optionalWith(Schema.Union(Schema.String, Schema.Number), { nullable: true }),
+      "odata.nextLink": Schema.optionalWith(Schema.String, { nullable: true })
     })
   )
 
@@ -259,12 +271,15 @@ export const MERGE_HEADERS = {
  */
 export const buildEntityPath = (
   entitySet: string,
-  id: string | number | { [key: string]: string | number }
+  id: string | number | boolean | { [key: string]: string | number | boolean }
 ): string => {
-  const formatValue = (value: string | number): string => typeof value === "number" ? String(value) : `'${value}'`
+  const formatValue = (value: string | number | boolean): string => {
+    if (typeof value === "number" || typeof value === "boolean") return String(value)
+    return `'${value}'`
+  }
 
-  const extractIdFromPath = (id: string | number | { [key: string]: string | number }): string => {
-    if (typeof id === "string" || typeof id === "number") {
+  const extractIdFromPath = (id: string | number | boolean | { [key: string]: string | number | boolean }): string => {
+    if (typeof id === "string" || typeof id === "number" || typeof id === "boolean") {
       return formatValue(id)
     }
     const entries = Object.entries(id)
@@ -412,7 +427,10 @@ export const getCollection = <A, I, R>(
     const request = HttpClientRequest.get(url)
     const response = yield* client.execute(request)
     const data = yield* HttpClientResponse.schemaBodyJson(responseSchema)(response)
-    // Handle both standard { d: { results: [...] } } and legacy { d: [...] } formats
+    // Handle V2 ({ d: { results: [...] } }, { d: [...] }) and V3/V4 ({ value: [...] }) formats
+    if ("value" in data) {
+      return data.value // V3/V4 format
+    }
     const results = Array.isArray(data.d) ? data.d : (data.d as { readonly results: ReadonlyArray<A> }).results
     return results
   }).pipe(Effect.scoped, handleError)
@@ -453,7 +471,22 @@ export const getCollectionPaged = <A, I, R>(
     const request = HttpClientRequest.get(url)
     const response = yield* client.execute(request)
     const data = yield* HttpClientResponse.schemaBodyJson(responseSchema)(response)
-    // Handle both standard { d: { results: [...], __count?, __next? } } and legacy { d: [...] } formats
+    // Handle V2 and V3/V4 formats
+    if ("value" in data) {
+      // V3/V4 format: { value: [...], odata.count?, odata.nextLink? }
+      const v3Data = data as {
+        readonly value: ReadonlyArray<A>
+        readonly "odata.count"?: string | number
+        readonly "odata.nextLink"?: string
+      }
+      const count = v3Data["odata.count"]
+      return {
+        results: v3Data.value,
+        count: count !== undefined ? (typeof count === "number" ? count : parseInt(count, 10)) : undefined,
+        nextLink: v3Data["odata.nextLink"] ?? undefined
+      }
+    }
+    // V2 formats
     if (Array.isArray(data.d)) {
       // Legacy format - no pagination metadata available
       return {
@@ -624,7 +657,10 @@ export const expandDeferredCollection = <A, I, R>(
     const request = HttpClientRequest.get(relativePath)
     const response = yield* client.execute(request)
     const data = yield* HttpClientResponse.schemaBodyJson(responseSchema)(response)
-    // Handle both standard { d: { results: [...] } } and legacy { d: [...] } formats
+    // Handle V2 ({ d: { results: [...] } }, { d: [...] }) and V3/V4 ({ value: [...] }) formats
+    if ("value" in data) {
+      return data.value // V3/V4 format
+    }
     const results = Array.isArray(data.d) ? data.d : (data.d as { readonly results: ReadonlyArray<A> }).results
     return results
   }).pipe(Effect.scoped, handleError)

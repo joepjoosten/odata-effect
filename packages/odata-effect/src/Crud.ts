@@ -44,12 +44,12 @@ import { buildEntityPath, type ODataClientConfig, type ODataQueryOptions } from 
 
 /**
  * Key type for entity path building.
- * V2 supports both string and numeric key values.
+ * Supports string, number, and boolean key values.
  *
  * @since 1.0.0
  * @category models
  */
-export type EntityKey = string | number | { [key: string]: string | number }
+export type EntityKey = string | number | boolean | { [key: string]: string | number | boolean }
 
 /**
  * Configuration for creating a CRUD service.

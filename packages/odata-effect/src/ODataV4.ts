@@ -172,22 +172,21 @@ export interface ODataV4RequestOptions {
  */
 export const buildEntityPathV4 = (
   entitySet: string,
-  id: string | number | { [key: string]: string | number }
+  id: string | number | boolean | { [key: string]: string | number | boolean }
 ): string => {
-  if (typeof id === "string") {
-    return `${entitySet}('${id}')`
+  const formatValue = (value: string | number | boolean): string => {
+    if (typeof value === "string") return `'${value}'`
+    return String(value) // number or boolean
   }
-  if (typeof id === "number") {
-    return `${entitySet}(${id})`
+
+  if (typeof id === "string" || typeof id === "number" || typeof id === "boolean") {
+    return `${entitySet}(${formatValue(id)})`
   }
   const entries = Object.entries(id)
   if (entries.length === 1) {
-    const [, value] = entries[0]
-    return typeof value === "string"
-      ? `${entitySet}('${value}')`
-      : `${entitySet}(${value})`
+    return `${entitySet}(${formatValue(entries[0][1])})`
   }
-  const keyParts = entries.map(([key, value]) => typeof value === "string" ? `${key}='${value}'` : `${key}=${value}`)
+  const keyParts = entries.map(([key, value]) => `${key}=${formatValue(value)}`)
   return `${entitySet}(${keyParts.join(",")})`
 }
 

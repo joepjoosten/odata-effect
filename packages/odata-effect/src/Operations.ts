@@ -196,7 +196,10 @@ export const executeFunctionImportCollection = <A, I, R>(
       (c) => c.execute(configuredRequest)
     )
     const data = yield* HttpClientResponse.schemaBodyJson(responseSchema)(response)
-    // Handle both standard { d: { results: [...] } } and legacy { d: [...] } formats
+    // Handle V2 ({ d: { results: [...] } }, { d: [...] }) and V3/V4 ({ value: [...] }) formats
+    if ("value" in data) {
+      return data.value // V3/V4 format
+    }
     const results = Array.isArray(data.d) ? data.d : (data.d as { readonly results: ReadonlyArray<A> }).results
     return results
   }).pipe(

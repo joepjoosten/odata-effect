@@ -45,12 +45,12 @@ import { buildEntityPathV4, type ODataV4QueryOptions } from "./ODataV4.js"
 
 /**
  * Key type for entity path building.
- * Can be a simple string/number or an object with key-value pairs.
+ * Supports string, number, and boolean key values.
  *
  * @since 1.0.0
  * @category models
  */
-export type EntityKey = string | number | { [key: string]: string | number }
+export type EntityKey = string | number | boolean | { [key: string]: string | number | boolean }
 
 /**
  * Configuration for creating a CRUD service.

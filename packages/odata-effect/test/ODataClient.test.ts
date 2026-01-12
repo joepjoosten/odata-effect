@@ -80,6 +80,19 @@ describe("ODataClient", () => {
   })
 
   describe("ODataCollectionResponse", () => {
+    // Helper to extract results from any format (V2 or V3/V4)
+    const extractResults = <A>(result: { d?: unknown; value?: ReadonlyArray<A> }): ReadonlyArray<A> => {
+      if ("value" in result && Array.isArray(result.value)) {
+        return result.value
+      }
+      if ("d" in result) {
+        return Array.isArray(result.d)
+          ? result.d
+          : (result.d as { readonly results: ReadonlyArray<A> }).results
+      }
+      return []
+    }
+
     it("wraps schema in OData V2 collection response format (standard)", () =>
       Effect.gen(function*() {
         const responseSchema = ODataCollectionResponse(TestEntity)
@@ -92,10 +105,7 @@ describe("ODataClient", () => {
           }
         }
         const result = yield* Schema.decodeUnknown(responseSchema)(data)
-        // Handle union type - extract results from standard format
-        const results = Array.isArray(result.d)
-          ? result.d
-          : (result.d as { readonly results: ReadonlyArray<TestEntity> }).results
+        const results = extractResults(result)
         expect(results).toHaveLength(2)
         expect(results[0].id).toBe("1")
         expect(results[1].id).toBe("2")
@@ -112,10 +122,25 @@ describe("ODataClient", () => {
           ]
         }
         const result = yield* Schema.decodeUnknown(responseSchema)(data)
-        // Handle union type - extract results from legacy format
-        const results = Array.isArray(result.d)
-          ? result.d
-          : (result.d as { readonly results: ReadonlyArray<TestEntity> }).results
+        const results = extractResults(result)
+        expect(results).toHaveLength(2)
+        expect(results[0].id).toBe("1")
+        expect(results[1].id).toBe("2")
+      }).pipe(Effect.runPromise))
+
+    it("wraps schema in OData V3/V4 collection response format", () =>
+      Effect.gen(function*() {
+        const responseSchema = ODataCollectionResponse(TestEntity)
+        // V3/V4 format: { value: [...] }
+        const data = {
+          "odata.metadata": "https://example.com/$metadata#Products",
+          value: [
+            { id: "1", name: "Test1", value: 10 },
+            { id: "2", name: "Test2", value: 20 }
+          ]
+        }
+        const result = yield* Schema.decodeUnknown(responseSchema)(data)
+        const results = extractResults(result)
         expect(results).toHaveLength(2)
         expect(results[0].id).toBe("1")
         expect(results[1].id).toBe("2")

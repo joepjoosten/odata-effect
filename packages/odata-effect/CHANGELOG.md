@@ -1,5 +1,19 @@
 # @odata-effect/odata-effect
 
+## 0.6.7
+
+### Patch Changes
+
+- [`2fc9d9b`](https://github.com/joepjoosten/odata-effect/commit/2fc9d9b535f5c45d8546bcba266430b47c20f60d) Thanks [@joepjoosten](https://github.com/joepjoosten)! - **@odata-effect/odata-effect-generator:**
+
+  - Add explicit return type annotations to generated fetchCollection and fetchOne functions for TypeScript declaration portability
+
+  **@odata-effect/odata-effect:**
+
+  - Add ODataClientError and ODataClientDependencies type aliases for declaration portability
+  - Add ODataV4ClientError and ODataV4ClientDependencies type aliases for declaration portability
+  - Add support for OData V3 single entity response format (entity at root with odata.metadata) in get, getComplex, expandDeferred, post, and executeFunctionImportEntity
+
 ## 0.6.6
 
 ### Patch Changes

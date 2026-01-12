@@ -53,12 +53,14 @@ const formatTimezoneOffset = (offsetMs: number): string => {
 /**
  * OData V2 DateTime schema.
  *
- * Decodes the OData V2 `/Date(milliseconds)/` format to a DateTime.Utc.
- * Encodes DateTime.Utc back to the `/Date(milliseconds)/` format.
+ * Decodes both OData V2 `/Date(milliseconds)/` format and ISO 8601 format (V3/V4)
+ * to a DateTime.Utc. This allows the same generated code to work with V2 and V3 services.
+ * Encodes DateTime.Utc back to the `/Date(milliseconds)/` format for V2 compatibility.
  *
  * @example
  * ```typescript
- * // Wire format: "/Date(1672531199000)/"
+ * // V2 wire format: "/Date(1672531199000)/"
+ * // V3 wire format: "2022-12-31T23:59:59"
  * // Decoded: DateTime.Utc representing 2022-12-31T23:59:59.000Z
  * ```
  *
@@ -71,12 +73,20 @@ export const ODataV2DateTime = Schema.transformOrFail(
   {
     strict: true,
     decode: (s, _, ast) => {
+      // Try V2 format first: /Date(millis)/
       const match = s.match(V2_DATE_PATTERN)
-      if (!match) {
-        return ParseResult.fail(new ParseResult.Type(ast, s, `Invalid OData V2 DateTime format: ${s}`))
+      if (match) {
+        const millis = parseInt(match[1], 10)
+        return ParseResult.succeed(DateTime.unsafeMake(millis))
       }
-      const millis = parseInt(match[1], 10)
-      return ParseResult.succeed(DateTime.unsafeMake(millis))
+
+      // Try ISO 8601 format (V3/V4): 2022-12-31T23:59:59 or 2022-12-31T23:59:59Z
+      const isoDate = DateTime.make(s.endsWith("Z") ? s : `${s}Z`)
+      if (Option.isSome(isoDate)) {
+        return ParseResult.succeed(isoDate.value)
+      }
+
+      return ParseResult.fail(new ParseResult.Type(ast, s, `Invalid OData DateTime format: ${s}`))
     },
     encode: (dt) => ParseResult.succeed(`/Date(${DateTime.toEpochMillis(dt)})/`)
   }
@@ -85,7 +95,8 @@ export const ODataV2DateTime = Schema.transformOrFail(
 /**
  * OData V2 DateTimeOffset schema.
  *
- * Decodes `/Date(milliseconds+offset)/` format to a DateTime.Zoned.
+ * Decodes both `/Date(milliseconds+offset)/` format (V2) and ISO 8601 format (V3/V4)
+ * to a DateTime.Zoned. This allows the same generated code to work with V2 and V3 services.
  * The offset represents the timezone offset from UTC.
  *
  * @since 1.0.0
@@ -97,15 +108,30 @@ export const ODataV2DateTimeOffset = Schema.transformOrFail(
   {
     strict: true,
     decode: (s, _, ast) => {
+      // Try V2 format first: /Date(millis+offset)/
       const match = s.match(V2_DATE_PATTERN)
-      if (!match) {
-        return ParseResult.fail(new ParseResult.Type(ast, s, `Invalid OData V2 DateTimeOffset format: ${s}`))
+      if (match) {
+        const millis = parseInt(match[1], 10)
+        const offsetMs = match[2] ? parseTimezoneOffset(match[2]) : 0
+        const utc = DateTime.unsafeMake(millis)
+        const zoned = DateTime.setZone(utc, DateTime.zoneMakeOffset(offsetMs))
+        return ParseResult.succeed(zoned)
       }
-      const millis = parseInt(match[1], 10)
-      const offsetMs = match[2] ? parseTimezoneOffset(match[2]) : 0
-      const utc = DateTime.unsafeMake(millis)
-      const zoned = DateTime.setZone(utc, DateTime.zoneMakeOffset(offsetMs))
-      return ParseResult.succeed(zoned)
+
+      // Try ISO 8601 format (V3/V4): 2022-12-31T23:59:59+01:00 or 2022-12-31T23:59:59Z
+      const zoned = DateTime.makeZonedFromString(s)
+      if (Option.isSome(zoned)) {
+        return ParseResult.succeed(zoned.value)
+      }
+
+      // Try as UTC if no timezone specified
+      const utc = DateTime.make(s.endsWith("Z") ? s : `${s}Z`)
+      if (Option.isSome(utc)) {
+        const zonedUtc = DateTime.setZone(utc.value, DateTime.zoneMakeOffset(0))
+        return ParseResult.succeed(zonedUtc)
+      }
+
+      return ParseResult.fail(new ParseResult.Type(ast, s, `Invalid OData DateTimeOffset format: ${s}`))
     },
     encode: (dt) => {
       const millis = DateTime.toEpochMillis(dt)

@@ -1,6 +1,6 @@
 {
   "name": "@odata-effect/odata-effect-promise",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "type": "module",
   "license": "MIT",
   "description": "Promise-based OData client for non-Effect environments",

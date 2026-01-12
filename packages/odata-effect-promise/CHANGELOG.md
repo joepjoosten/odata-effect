@@ -1,5 +1,12 @@
 # @odata-effect/odata-effect-promise
 
+## 3.0.5
+
+### Patch Changes
+
+- Updated dependencies [[`3aff504`](https://github.com/joepjoosten/odata-effect/commit/3aff50455a919035113c810e439595addffc31fc)]:
+  - @odata-effect/odata-effect@0.6.3
+
 ## 3.0.4
 
 ### Patch Changes

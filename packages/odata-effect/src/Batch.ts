@@ -10,8 +10,8 @@
 import { HttpClient, type HttpClientError, HttpClientRequest, HttpClientResponse } from "@effect/platform"
 import * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"
-import { ODataError, ParseError } from "./Errors.js"
 import type { ODataClientConfigService } from "./Config.js"
+import { ODataError, ParseError } from "./Errors.js"
 
 // ============================================================================
 // Batch Request Types

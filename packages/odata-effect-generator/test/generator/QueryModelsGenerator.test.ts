@@ -22,7 +22,7 @@ describe("QueryModelsGenerator", () => {
       isKey
     })
 
-    const createDataModel = (properties: PropertyModel[]): DataModel => ({
+    const createDataModel = (properties: Array<PropertyModel>): DataModel => ({
       version: "V4",
       namespace: "Test",
       serviceName: "TestService",
@@ -72,8 +72,8 @@ describe("QueryModelsGenerator", () => {
 
       // Instance should use TypeScript names as keys but OData names in path constructors
       expect(output).toContain("export const qProduct: QProduct = {")
-      expect(output).toContain('id: new StringPath("ID")')
-      expect(output).toContain('productName: new StringPath("ProductName")')
+      expect(output).toContain("id: new StringPath(\"ID\")")
+      expect(output).toContain("productName: new StringPath(\"ProductName\")")
     })
 
     it("handles properties where OData name equals TypeScript name", () => {
@@ -85,7 +85,7 @@ describe("QueryModelsGenerator", () => {
 
       // When names are the same, both should use that name
       expect(output).toContain("readonly name: StringPath")
-      expect(output).toContain('name: new StringPath("name")')
+      expect(output).toContain("name: new StringPath(\"name\")")
     })
 
     it("generates correct query factory", () => {

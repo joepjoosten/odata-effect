@@ -64,9 +64,4 @@
 export * as Runtime from "./Runtime.js"
 
 // Direct exports for convenience
-export {
-  createODataRuntime,
-  type ODataRuntime,
-  type ODataRuntimeConfig,
-  toPromise
-} from "./Runtime.js"
+export { createODataRuntime, type ODataRuntime, type ODataRuntimeConfig, toPromise } from "./Runtime.js"

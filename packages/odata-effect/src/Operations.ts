@@ -9,9 +9,9 @@
 import { HttpClient, type HttpClientError, HttpClientRequest, HttpClientResponse } from "@effect/platform"
 import * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"
+import type { ODataClientConfigService } from "./Config.js"
 import type { ParseError } from "./Errors.js"
 import { ODataError } from "./Errors.js"
-import type { ODataClientConfigService } from "./Config.js"
 import { ODataCollectionResponse, ODataSingleResponse } from "./OData.js"
 import { ODataV4CollectionResponse, ODataV4ValueResponse } from "./ODataV4.js"
 

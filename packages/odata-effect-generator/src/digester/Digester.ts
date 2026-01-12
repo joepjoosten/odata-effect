@@ -13,7 +13,6 @@ import {
   getOperationParameterNameWithOverrides,
   getPropertyNameWithOverrides
 } from "../generator/NamingHelper.js"
-import type { NamingOverrides } from "../model/GeneratorConfig.js"
 import {
   type ComplexTypeModel,
   createDataModel,
@@ -27,6 +26,7 @@ import {
   type PropertyModel,
   type SingletonModel
 } from "../model/DataModel.js"
+import type { NamingOverrides } from "../model/GeneratorConfig.js"
 import { detectODataVersion } from "../parser/EdmxSchema.js"
 import type {
   Association,
@@ -277,9 +277,7 @@ const digestComplexType = (
   context: DigestContext
 ): ComplexTypeModel => {
   const odataTypeName = complexType.$.Name
-  const properties = (complexType.Property ?? []).map((p) =>
-    digestProperty(p, [], odataTypeName, "complex", context)
-  )
+  const properties = (complexType.Property ?? []).map((p) => digestProperty(p, [], odataTypeName, "complex", context))
   const navigationProperties = (complexType.NavigationProperty ?? []).map((np) =>
     digestNavigationProperty(np, odataTypeName, "complex", context)
   )

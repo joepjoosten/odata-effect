@@ -22,7 +22,7 @@ describe("ModelsGenerator", () => {
       isKey
     })
 
-    const createDataModel = (properties: PropertyModel[]): DataModel => ({
+    const createDataModel = (properties: Array<PropertyModel>): DataModel => ({
       version: "V4",
       namespace: "Test",
       serviceName: "TestService",
@@ -57,7 +57,7 @@ describe("ModelsGenerator", () => {
 
       // Should use simple format: name: Schema.optionalWith(...)
       expect(output).toContain("name: Schema.optionalWith(Schema.String, { nullable: true })")
-      expect(output).not.toContain('Schema.fromKey("name")')
+      expect(output).not.toContain("Schema.fromKey(\"name\")")
     })
 
     it("generates fromKey when OData name differs from TypeScript name", () => {
@@ -69,9 +69,9 @@ describe("ModelsGenerator", () => {
       const output = generateModels(dataModel)
 
       // Should use propertySignature with fromKey
-      expect(output).toContain('id: Schema.propertySignature(Schema.String).pipe(Schema.fromKey("ID"))')
+      expect(output).toContain("id: Schema.propertySignature(Schema.String).pipe(Schema.fromKey(\"ID\"))")
       expect(output).toContain(
-        'productName: Schema.propertySignature(Schema.optionalWith(Schema.String, { nullable: true })).pipe(Schema.fromKey("ProductName"))'
+        "productName: Schema.propertySignature(Schema.optionalWith(Schema.String, { nullable: true })).pipe(Schema.fromKey(\"ProductName\"))"
       )
     })
 
@@ -85,13 +85,13 @@ describe("ModelsGenerator", () => {
       const output = generateModels(dataModel)
 
       // ID should use fromKey
-      expect(output).toContain('id: Schema.propertySignature(Schema.String).pipe(Schema.fromKey("ID"))')
+      expect(output).toContain("id: Schema.propertySignature(Schema.String).pipe(Schema.fromKey(\"ID\"))")
       // name should use simple format
       expect(output).toContain("name: Schema.optionalWith(Schema.String, { nullable: true })")
-      expect(output).not.toContain('Schema.fromKey("name")')
+      expect(output).not.toContain("Schema.fromKey(\"name\")")
       // ReleaseDate should use fromKey
-      expect(output).toContain('releaseDate: Schema.propertySignature')
-      expect(output).toContain('Schema.fromKey("ReleaseDate")')
+      expect(output).toContain("releaseDate: Schema.propertySignature")
+      expect(output).toContain("Schema.fromKey(\"ReleaseDate\")")
     })
 
     it("generates editable types with fromKey", () => {
@@ -106,7 +106,7 @@ describe("ModelsGenerator", () => {
       expect(output).toContain("export const EditableProduct = Schema.Struct({")
       // But should use fromKey for non-key properties with different names
       expect(output).toContain(
-        'productName: Schema.propertySignature(Schema.optionalWith(Schema.String, { nullable: true })).pipe(Schema.fromKey("ProductName"))'
+        "productName: Schema.propertySignature(Schema.optionalWith(Schema.String, { nullable: true })).pipe(Schema.fromKey(\"ProductName\"))"
       )
     })
   })

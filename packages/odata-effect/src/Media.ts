@@ -10,9 +10,9 @@ import { HttpClient, type HttpClientError, HttpClientRequest, HttpClientResponse
 import * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"
 import type * as Stream from "effect/Stream"
+import type { ODataClientConfigService } from "./Config.js"
 import type { ParseError } from "./Errors.js"
 import { ODataError } from "./Errors.js"
-import type { ODataClientConfigService } from "./Config.js"
 
 // ============================================================================
 // Media Types

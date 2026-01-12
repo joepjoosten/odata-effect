@@ -226,6 +226,6 @@ export const toPromise = (runtime: ODataRuntime) => <A, E>(effect: Effect.Effect
   runtime.runPromise(effect as any)
 
 // Re-export commonly used types from the core package
+export type { ODataClientConfig, ODataClientConfigService } from "@odata-effect/odata-effect/Config"
 export type { ODataQueryOptions, ODataRequestOptions, PagedResult } from "@odata-effect/odata-effect/OData"
 export type { ODataV4QueryOptions, ODataV4RequestOptions, PagedResultV4 } from "@odata-effect/odata-effect/ODataV4"
-export type { ODataClientConfig, ODataClientConfigService } from "@odata-effect/odata-effect/Config"

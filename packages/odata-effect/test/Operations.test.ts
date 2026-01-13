@@ -70,9 +70,10 @@ describe("Operations", () => {
     })
 
     it("builds URL with Date parameter", () => {
+      // V2 datetime URL format: datetime'2022-12-31T23:59:59' (no Z suffix)
       const date = new Date("2024-01-15T10:30:00.000Z")
       const url = buildFunctionImportUrl("GetOrders", { FromDate: date })
-      expect(url).toBe("GetOrders?FromDate=datetime'2024-01-15T10:30:00.000Z'")
+      expect(url).toBe("GetOrders?FromDate=datetime'2024-01-15T10:30:00.000'")
     })
 
     it("builds URL with multiple parameters", () => {

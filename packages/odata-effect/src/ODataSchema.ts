@@ -211,18 +211,84 @@ export const ODataV2Number = Schema.transformOrFail(
   }
 )
 
+// ============================================================================
+// Int64 Branded Type
+// ============================================================================
+
+/**
+ * Branded Int64 type that wraps BigDecimal.
+ *
+ * This allows distinguishing Int64 from Decimal at runtime for proper
+ * URL serialization (Int64 uses 'L' suffix, Decimal uses 'M' suffix in V2).
+ *
+ * @since 1.0.0
+ * @category models
+ */
+export interface Int64 {
+  readonly _tag: "Int64"
+  readonly value: BigDecimal.BigDecimal
+}
+
+/**
+ * Int64 module for creating and checking Int64 values.
+ *
+ * @since 1.0.0
+ * @category constructors
+ */
+export const Int64 = {
+  /**
+   * Create an Int64 from a BigDecimal value.
+   */
+  make: (value: BigDecimal.BigDecimal): Int64 => ({ _tag: "Int64", value }),
+
+  /**
+   * Check if a value is an Int64.
+   */
+  isInt64: (u: unknown): u is Int64 =>
+    typeof u === "object" && u !== null && "_tag" in u && (u as { _tag: unknown })._tag === "Int64",
+
+  /**
+   * Create an Int64 from a number.
+   */
+  fromNumber: (n: number): Int64 => Int64.make(BigDecimal.fromNumber(n)),
+
+  /**
+   * Create an Int64 from a string.
+   */
+  fromString: (s: string): Option.Option<Int64> => Option.map(BigDecimal.fromString(s), Int64.make),
+
+  /**
+   * Create an Int64 from a bigint.
+   */
+  fromBigInt: (n: bigint): Int64 => Int64.make(BigDecimal.fromBigInt(n)),
+
+  /**
+   * Format an Int64 as a string.
+   */
+  format: (i: Int64): string => BigDecimal.format(i.value)
+}
+
+/**
+ * Schema for Int64 branded type.
+ *
+ * @since 1.0.0
+ * @category schemas
+ */
+const Int64Schema: Schema.Schema<Int64, Int64> = Schema.declare(Int64.isInt64)
+
 /**
  * OData V2 Int64 schema.
  *
  * Int64 values are sent as strings in OData V2 JSON to preserve precision.
- * This schema decodes to Effect's BigDecimal for precise arithmetic.
+ * This schema decodes to a branded Int64 type (wrapping BigDecimal) to allow
+ * proper URL serialization with the 'L' suffix.
  *
  * @since 1.0.0
  * @category V2 schemas
  */
 export const ODataV2Int64 = Schema.transformOrFail(
   Schema.String,
-  Schema.BigDecimalFromSelf,
+  Int64Schema,
   {
     strict: true,
     decode: (s, _, ast) => {
@@ -230,9 +296,9 @@ export const ODataV2Int64 = Schema.transformOrFail(
       if (Option.isNone(bd)) {
         return ParseResult.fail(new ParseResult.Type(ast, s, `Invalid Int64 format: ${s}`))
       }
-      return ParseResult.succeed(bd.value)
+      return ParseResult.succeed(Int64.make(bd.value))
     },
-    encode: (bd) => ParseResult.succeed(BigDecimal.format(bd))
+    encode: (i) => ParseResult.succeed(BigDecimal.format(i.value))
   }
 )
 

@@ -35,7 +35,7 @@ describe("NamingOverrides Integration", () => {
       const modelsOutput = generateModels(dataModel)
 
       // Should use fromKey for ID -> id mapping
-      expect(modelsOutput).toContain("id: Schema.Number.pipe(Schema.fromKey(\"ID\"))")
+      expect(modelsOutput).toContain("id: Schema.propertySignature(Schema.Number).pipe(Schema.fromKey(\"ID\"))")
 
       // Should use fromKey for ReleaseDate -> releaseDate mapping
       expect(modelsOutput).toContain("Schema.fromKey(\"ReleaseDate\")")

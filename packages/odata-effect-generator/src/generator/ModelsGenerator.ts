@@ -350,28 +350,46 @@ const generateEditableSchemaFields = (
  * When the OData property name differs from the TypeScript property name,
  * we use Schema.fromKey to map between them.
  *
+ * For optional fields (using Schema.optionalWith), we pipe fromKey directly
+ * since optionalWith already returns a PropertySignature.
+ *
+ * For required fields, we wrap in Schema.propertySignature first.
+ * Note: ODataSchema types need Schema.asSchema() to satisfy Schema.All constraint.
+ *
  * @example
  * // When odataName == name:
  * name: Schema.String
  *
- * // When odataName ("ID") != name ("id"):
- * id: Schema.Number.pipe(Schema.fromKey("ID"))
+ * // When odataName ("ID") != name ("id") - required field:
+ * id: Schema.propertySignature(Schema.Number).pipe(Schema.fromKey("ID"))
  *
  * // When odataName ("Name") != name ("name") - optional field:
- * name: Schema.NullishOr(Schema.String).pipe(Schema.fromKey("Name"))
+ * name: Schema.optionalWith(Schema.String, { nullable: true }).pipe(Schema.fromKey("Name"))
+ *
+ * // ODataSchema types need asSchema wrapper:
+ * price: Schema.propertySignature(Schema.asSchema(ODataSchema.ODataV2Decimal)).pipe(Schema.fromKey("Price"))
  */
 const getPropertyFieldDefinition = (
   prop: PropertyModel,
   schemaType: string,
-  _isOptional: boolean
+  isOptional: boolean
 ): string => {
   // If OData name matches TypeScript name, use simple format
   if (prop.odataName === prop.name) {
     return `${prop.name}: ${schemaType}`
   }
 
-  // Schema.fromKey works directly on schemas - no need for propertySignature wrapper
-  return `${prop.name}: ${schemaType}.pipe(Schema.fromKey("${prop.odataName}"))`
+  // If optional, Schema.optionalWith already returns a PropertySignature, so just pipe fromKey
+  if (isOptional) {
+    return `${prop.name}: ${schemaType}.pipe(Schema.fromKey("${prop.odataName}"))`
+  }
+
+  // For required fields, wrap in propertySignature first, then pipe fromKey
+  // ODataSchema types (transformOrFail) need Schema.asSchema() to satisfy Schema.All constraint
+  const wrappedSchema = schemaType.startsWith("ODataSchema.")
+    ? `Schema.asSchema(${schemaType})`
+    : schemaType
+  return `${prop.name}: Schema.propertySignature(${wrappedSchema}).pipe(Schema.fromKey("${prop.odataName}"))`
 }
 
 /**
@@ -390,7 +408,7 @@ const getPropertySchemaType = (
 
   // Handle nullable/optional
   if (makeOptional) {
-    return `Schema.NullishOr(${baseType})`
+    return `Schema.optionalWith(${baseType}, { nullable: true })`
   }
 
   return baseType

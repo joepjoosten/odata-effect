@@ -7,12 +7,17 @@
  * @since 1.0.0
  */
 import { HttpClient, type HttpClientError, HttpClientRequest, HttpClientResponse } from "@effect/platform"
+import type * as BigDecimal from "effect/BigDecimal"
+import type * as DateTime from "effect/DateTime"
+import type * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"
 import type { ODataClientConfigService } from "./Config.js"
 import type { ParseError } from "./Errors.js"
 import { ODataError } from "./Errors.js"
 import { ODataCollectionResponse, ODataSingleResponse } from "./OData.js"
+import type { Int64 } from "./ODataSchema.js"
+import { encodeUrlValue, formatV2UrlValue, formatV4UrlValue } from "./ODataUrlFormat.js"
 import { ODataV4CollectionResponse, ODataV4ValueResponse } from "./ODataV4.js"
 
 // ============================================================================
@@ -22,10 +27,31 @@ import { ODataV4CollectionResponse, ODataV4ValueResponse } from "./ODataV4.js"
 /**
  * Parameters for an OData operation.
  *
+ * Supports primitive types, Effect types, and JavaScript Date:
+ * - `string`, `number`, `boolean` - Basic primitives
+ * - `Date` - JavaScript Date (serialized as ISO datetime)
+ * - `DateTime.Utc`, `DateTime.Zoned` - Effect DateTime types
+ * - `Duration.Duration` - Effect Duration type (serialized as ISO 8601 duration)
+ * - `Int64` - OData Int64 type (V2: serialized with 'L' suffix)
+ * - `BigDecimal.BigDecimal` - Effect BigDecimal type (V2: serialized with 'M' suffix)
+ *
  * @since 1.0.0
  * @category models
  */
-export type OperationParameters = Record<string, string | number | boolean | Date | null | undefined>
+export type OperationParameters = Record<
+  string,
+  | string
+  | number
+  | boolean
+  | Date
+  | DateTime.Utc
+  | DateTime.Zoned
+  | Duration.Duration
+  | Int64
+  | BigDecimal.BigDecimal
+  | null
+  | undefined
+>
 
 /**
  * Return type specification for operations.
@@ -51,6 +77,21 @@ export interface FunctionImportOptions {
 }
 
 /**
+ * Format a V2 parameter for URL query string.
+ * Strings are URL-encoded for safe transmission.
+ *
+ * @since 1.0.0
+ * @category utils
+ */
+const formatV2Parameter = (key: string, value: NonNullable<OperationParameters[string]>): string => {
+  if (typeof value === "string") {
+    // URL-encode string values for query parameters
+    return `${key}='${encodeUrlValue(value)}'`
+  }
+  return `${key}=${formatV2UrlValue(value)}`
+}
+
+/**
  * Build a function import URL with parameters.
  *
  * @since 1.0.0
@@ -70,13 +111,7 @@ export const buildFunctionImportUrl = (
       if (value === null) {
         return `${key}=null`
       }
-      if (typeof value === "string") {
-        return `${key}='${encodeURIComponent(value)}'`
-      }
-      if (value instanceof Date) {
-        return `${key}=datetime'${value.toISOString()}'`
-      }
-      return `${key}=${value}`
+      return formatV2Parameter(key, value!)
     })
     .join(",")
 
@@ -262,6 +297,21 @@ export const executeFunctionImportPrimitive = <A, I, R>(
 // ============================================================================
 
 /**
+ * Format a V4 parameter for URL.
+ * Strings are URL-encoded for safe transmission.
+ *
+ * @since 1.0.0
+ * @category utils
+ */
+const formatV4Parameter = (key: string, value: NonNullable<OperationParameters[string]>): string => {
+  if (typeof value === "string") {
+    // URL-encode string values for query parameters
+    return `${key}='${encodeUrlValue(value)}'`
+  }
+  return `${key}=${formatV4UrlValue(value)}`
+}
+
+/**
  * Build a V4 function URL with parameters.
  * V4 functions use parentheses for parameters: Function(param1=value1,param2=value2)
  *
@@ -282,13 +332,7 @@ export const buildV4FunctionUrl = (
       if (value === null) {
         return `${key}=null`
       }
-      if (typeof value === "string") {
-        return `${key}='${encodeURIComponent(value)}'`
-      }
-      if (value instanceof Date) {
-        return `${key}=${value.toISOString()}`
-      }
-      return `${key}=${value}`
+      return formatV4Parameter(key, value!)
     })
     .join(",")
 
@@ -318,13 +362,7 @@ export const buildV4BoundOperationUrl = (
       if (value === null) {
         return `${key}=null`
       }
-      if (typeof value === "string") {
-        return `${key}='${encodeURIComponent(value)}'`
-      }
-      if (value instanceof Date) {
-        return `${key}=${value.toISOString()}`
-      }
-      return `${key}=${value}`
+      return formatV4Parameter(key, value!)
     })
     .join(",")
 

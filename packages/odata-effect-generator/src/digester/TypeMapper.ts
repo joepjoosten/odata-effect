@@ -37,31 +37,31 @@ const V2_TYPE_MAP: Record<string, TypeMapping> = {
   "Edm.Int32": { effectSchema: "Schema.Number", queryPath: "NumberPath", tsType: "number" },
   "Edm.Int64": {
     effectSchema: "ODataSchema.ODataV2Int64",
-    queryPath: "StringPath",
-    tsType: "BigDecimal.BigDecimal"
+    queryPath: "Int64Path",
+    tsType: "ODataSchema.Int64"
   },
   "Edm.Single": { effectSchema: "ODataSchema.ODataV2Number", queryPath: "NumberPath", tsType: "number" },
   "Edm.Double": { effectSchema: "ODataSchema.ODataV2Number", queryPath: "NumberPath", tsType: "number" },
   "Edm.Decimal": {
     effectSchema: "ODataSchema.ODataV2Decimal",
-    queryPath: "NumberPath",
+    queryPath: "BigDecimalPath",
     tsType: "BigDecimal.BigDecimal"
   },
   "Edm.Guid": { effectSchema: "ODataSchema.ODataGuid", queryPath: "StringPath", tsType: "string" },
   "Edm.Time": {
     effectSchema: "ODataSchema.ODataV2Time",
-    queryPath: "StringPath",
+    queryPath: "DurationPath",
     tsType: "Duration.Duration"
   },
   "Edm.DateTime": {
     effectSchema: "ODataSchema.ODataV2DateTime",
     queryPath: "DateTimePath",
-    tsType: "DateTime.DateTime.Utc"
+    tsType: "DateTime.Utc"
   },
   "Edm.DateTimeOffset": {
     effectSchema: "ODataSchema.ODataV2DateTimeOffset",
     queryPath: "DateTimePath",
-    tsType: "DateTime.DateTime.Zoned"
+    tsType: "DateTime.Zoned"
   },
   "Edm.Binary": { effectSchema: "ODataSchema.ODataBinary", queryPath: "StringPath", tsType: "string" }
 }
@@ -91,17 +91,17 @@ const V4_TYPE_MAP: Record<string, TypeMapping> = {
   "Edm.DateTimeOffset": {
     effectSchema: "ODataSchema.ODataV4DateTimeOffset",
     queryPath: "DateTimePath",
-    tsType: "DateTime.DateTime.Zoned"
+    tsType: "DateTime.Zoned"
   },
   "Edm.Date": {
     effectSchema: "ODataSchema.ODataV4Date",
     queryPath: "DateTimePath",
-    tsType: "DateTime.DateTime.Utc"
+    tsType: "DateTime.Utc"
   },
   "Edm.TimeOfDay": { effectSchema: "ODataSchema.ODataV4TimeOfDay", queryPath: "StringPath", tsType: "string" },
   "Edm.Duration": {
     effectSchema: "ODataSchema.ODataV4Duration",
-    queryPath: "StringPath",
+    queryPath: "DurationPath",
     tsType: "Duration.Duration"
   },
   "Edm.Stream": { effectSchema: "Schema.String", queryPath: "StringPath", tsType: "string" },

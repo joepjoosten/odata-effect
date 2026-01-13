@@ -168,15 +168,20 @@ const needsSchemaImport = (operations: ReadonlyArray<OperationModel>, dataModel:
 }
 
 /**
- * Check if any operation uses ODataSchema.* types in return values.
- * Note: Parameters only use tsType in the interface, so they don't need ODataSchema import.
+ * Check if any operation uses ODataSchema.* types in return values or parameters.
+ * Return types use ODataSchema for effectSchema, parameters use it for tsType (e.g., ODataSchema.Int64).
  */
 const needsODataSchemaImport = (operations: ReadonlyArray<OperationModel>, dataModel: DataModel): boolean => {
   for (const operation of operations) {
     // Check return type - only if it's not a model type
-    // Parameters don't use effectSchema in generated code (only tsType for interface)
     if (operation.returnType && !returnsModelType(operation, dataModel)) {
       if (operation.returnType.typeMapping.effectSchema.startsWith("ODataSchema.")) {
+        return true
+      }
+    }
+    // Check parameters - ODataSchema.Int64 uses ODataSchema in tsType
+    for (const param of operation.parameters) {
+      if (param.typeMapping.tsType.startsWith("ODataSchema.")) {
         return true
       }
     }

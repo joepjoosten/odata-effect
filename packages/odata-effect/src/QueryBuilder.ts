@@ -9,6 +9,9 @@
  */
 import type * as BigDecimal from "effect/BigDecimal"
 import type * as DateTime from "effect/DateTime"
+import type * as Duration from "effect/Duration"
+import type { Int64 } from "./ODataSchema.js"
+import { formatV2UrlValue } from "./ODataUrlFormat.js"
 
 // ============================================================================
 // Filter Expressions
@@ -206,34 +209,44 @@ export class BooleanPath extends BasePath {
 }
 
 /**
- * Path class for Date properties.
+ * Supported date/time value types for filtering.
+ *
+ * @since 1.0.0
+ * @category types
+ */
+export type DateTimeValue = Date | DateTime.DateTime
+
+/**
+ * Path class for Date/DateTime properties.
+ *
+ * Supports both JavaScript Date and Effect DateTime types (DateTime.Utc, DateTime.Zoned).
  *
  * @since 1.0.0
  * @category paths
  */
 export class DateTimePath extends BasePath {
-  eq(value: Date): FilterExpression {
-    return new FilterExpression(`${this.path} eq datetime'${this.formatDate(value)}'`)
+  eq(value: DateTimeValue): FilterExpression {
+    return new FilterExpression(`${this.path} eq ${formatV2UrlValue(value)}`)
   }
 
-  ne(value: Date): FilterExpression {
-    return new FilterExpression(`${this.path} ne datetime'${this.formatDate(value)}'`)
+  ne(value: DateTimeValue): FilterExpression {
+    return new FilterExpression(`${this.path} ne ${formatV2UrlValue(value)}`)
   }
 
-  gt(value: Date): FilterExpression {
-    return new FilterExpression(`${this.path} gt datetime'${this.formatDate(value)}'`)
+  gt(value: DateTimeValue): FilterExpression {
+    return new FilterExpression(`${this.path} gt ${formatV2UrlValue(value)}`)
   }
 
-  ge(value: Date): FilterExpression {
-    return new FilterExpression(`${this.path} ge datetime'${this.formatDate(value)}'`)
+  ge(value: DateTimeValue): FilterExpression {
+    return new FilterExpression(`${this.path} ge ${formatV2UrlValue(value)}`)
   }
 
-  lt(value: Date): FilterExpression {
-    return new FilterExpression(`${this.path} lt datetime'${this.formatDate(value)}'`)
+  lt(value: DateTimeValue): FilterExpression {
+    return new FilterExpression(`${this.path} lt ${formatV2UrlValue(value)}`)
   }
 
-  le(value: Date): FilterExpression {
-    return new FilterExpression(`${this.path} le datetime'${this.formatDate(value)}'`)
+  le(value: DateTimeValue): FilterExpression {
+    return new FilterExpression(`${this.path} le ${formatV2UrlValue(value)}`)
   }
 
   /**
@@ -270,9 +283,149 @@ export class DateTimePath extends BasePath {
   desc(): string {
     return `${this.path} desc`
   }
+}
 
-  private formatDate(date: Date): string {
-    return date.toISOString().replace("Z", "")
+/**
+ * Path class for Duration properties.
+ *
+ * Supports Effect Duration type for OData V2 Edm.Time fields.
+ *
+ * @since 1.0.0
+ * @category paths
+ */
+export class DurationPath extends BasePath {
+  eq(value: Duration.Duration): FilterExpression {
+    return new FilterExpression(`${this.path} eq ${formatV2UrlValue(value)}`)
+  }
+
+  ne(value: Duration.Duration): FilterExpression {
+    return new FilterExpression(`${this.path} ne ${formatV2UrlValue(value)}`)
+  }
+
+  gt(value: Duration.Duration): FilterExpression {
+    return new FilterExpression(`${this.path} gt ${formatV2UrlValue(value)}`)
+  }
+
+  ge(value: Duration.Duration): FilterExpression {
+    return new FilterExpression(`${this.path} ge ${formatV2UrlValue(value)}`)
+  }
+
+  lt(value: Duration.Duration): FilterExpression {
+    return new FilterExpression(`${this.path} lt ${formatV2UrlValue(value)}`)
+  }
+
+  le(value: Duration.Duration): FilterExpression {
+    return new FilterExpression(`${this.path} le ${formatV2UrlValue(value)}`)
+  }
+
+  /**
+   * Ascending order expression.
+   */
+  asc(): string {
+    return `${this.path} asc`
+  }
+
+  /**
+   * Descending order expression.
+   */
+  desc(): string {
+    return `${this.path} desc`
+  }
+}
+
+/**
+ * Path class for Int64 properties.
+ *
+ * Supports OData Int64 type which wraps BigDecimal for precision.
+ *
+ * @since 1.0.0
+ * @category paths
+ */
+export class Int64Path extends BasePath {
+  eq(value: Int64): FilterExpression {
+    return new FilterExpression(`${this.path} eq ${formatV2UrlValue(value)}`)
+  }
+
+  ne(value: Int64): FilterExpression {
+    return new FilterExpression(`${this.path} ne ${formatV2UrlValue(value)}`)
+  }
+
+  gt(value: Int64): FilterExpression {
+    return new FilterExpression(`${this.path} gt ${formatV2UrlValue(value)}`)
+  }
+
+  ge(value: Int64): FilterExpression {
+    return new FilterExpression(`${this.path} ge ${formatV2UrlValue(value)}`)
+  }
+
+  lt(value: Int64): FilterExpression {
+    return new FilterExpression(`${this.path} lt ${formatV2UrlValue(value)}`)
+  }
+
+  le(value: Int64): FilterExpression {
+    return new FilterExpression(`${this.path} le ${formatV2UrlValue(value)}`)
+  }
+
+  /**
+   * Ascending order expression.
+   */
+  asc(): string {
+    return `${this.path} asc`
+  }
+
+  /**
+   * Descending order expression.
+   */
+  desc(): string {
+    return `${this.path} desc`
+  }
+}
+
+/**
+ * Path class for BigDecimal (Decimal) properties.
+ *
+ * Supports Effect BigDecimal type for OData Edm.Decimal fields.
+ *
+ * @since 1.0.0
+ * @category paths
+ */
+export class BigDecimalPath extends BasePath {
+  eq(value: BigDecimal.BigDecimal): FilterExpression {
+    return new FilterExpression(`${this.path} eq ${formatV2UrlValue(value)}`)
+  }
+
+  ne(value: BigDecimal.BigDecimal): FilterExpression {
+    return new FilterExpression(`${this.path} ne ${formatV2UrlValue(value)}`)
+  }
+
+  gt(value: BigDecimal.BigDecimal): FilterExpression {
+    return new FilterExpression(`${this.path} gt ${formatV2UrlValue(value)}`)
+  }
+
+  ge(value: BigDecimal.BigDecimal): FilterExpression {
+    return new FilterExpression(`${this.path} ge ${formatV2UrlValue(value)}`)
+  }
+
+  lt(value: BigDecimal.BigDecimal): FilterExpression {
+    return new FilterExpression(`${this.path} lt ${formatV2UrlValue(value)}`)
+  }
+
+  le(value: BigDecimal.BigDecimal): FilterExpression {
+    return new FilterExpression(`${this.path} le ${formatV2UrlValue(value)}`)
+  }
+
+  /**
+   * Ascending order expression.
+   */
+  asc(): string {
+    return `${this.path} asc`
+  }
+
+  /**
+   * Descending order expression.
+   */
+  desc(): string {
+    return `${this.path} desc`
   }
 }
 
@@ -339,6 +492,12 @@ export class CollectionPath<Q> extends BasePath {
         prefixed[key] = new BooleanPath(`${prefix}/${value.path}`)
       } else if (value instanceof DateTimePath) {
         prefixed[key] = new DateTimePath(`${prefix}/${value.path}`)
+      } else if (value instanceof DurationPath) {
+        prefixed[key] = new DurationPath(`${prefix}/${value.path}`)
+      } else if (value instanceof Int64Path) {
+        prefixed[key] = new Int64Path(`${prefix}/${value.path}`)
+      } else if (value instanceof BigDecimalPath) {
+        prefixed[key] = new BigDecimalPath(`${prefix}/${value.path}`)
       }
     }
     return prefixed as Q
@@ -359,8 +518,10 @@ export type FieldToPath<T> = T extends string ? StringPath
   : T extends number ? NumberPath
   : T extends boolean ? BooleanPath
   : T extends Date ? DateTimePath
-  : T extends DateTime.DateTime ? DateTimePath // Effect DateTime branded types
-  : T extends BigDecimal.BigDecimal ? NumberPath // Effect BigDecimal branded types
+  : T extends DateTime.DateTime ? DateTimePath // Effect DateTime.Utc and DateTime.Zoned
+  : T extends Duration.Duration ? DurationPath // Effect Duration
+  : T extends Int64 ? Int64Path // OData Int64
+  : T extends BigDecimal.BigDecimal ? BigDecimalPath // Effect BigDecimal (OData Decimal)
   : T extends ReadonlyArray<infer U> ? U extends object ? CollectionPath<QueryPaths<U>>
     : StringPath // Arrays of primitives use StringPath for filter operations
   : T extends object ? EntityPath<QueryPaths<T>>

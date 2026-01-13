@@ -157,6 +157,16 @@ export * as OData from "./OData.js"
 export * as ODataSchema from "./ODataSchema.js"
 
 /**
+ * Shared OData URL value formatting for V2 and V4.
+ *
+ * Used by both QueryBuilder (for $filter expressions) and Operations (for function parameters).
+ * Ensures consistent formatting of values in OData URLs.
+ *
+ * @since 1.0.0
+ */
+export * as ODataUrlFormat from "./ODataUrlFormat.js"
+
+/**
  * OData V4 client module.
  *
  * This module provides everything needed for OData V4 operations:

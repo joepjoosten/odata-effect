@@ -4,6 +4,7 @@ import * as DateTime from "effect/DateTime"
 import * as Duration from "effect/Duration"
 import * as Schema from "effect/Schema"
 import {
+  Int64,
   ODataBinary,
   ODataGuid,
   ODataV2DateTime,
@@ -109,16 +110,17 @@ describe("ODataSchema", () => {
   })
 
   describe("V2 Int64", () => {
-    it("decodes to BigDecimal for precision", () => {
+    it("decodes to Int64 (wrapping BigDecimal) for precision", () => {
       const largeInt = "9007199254740993" // Larger than Number.MAX_SAFE_INTEGER
       const result = Schema.decodeSync(ODataV2Int64)(largeInt)
-      expect(BigDecimal.isBigDecimal(result)).toBe(true)
-      expect(BigDecimal.format(result)).toBe("9007199254740993")
+      expect(Int64.isInt64(result)).toBe(true)
+      expect(Int64.format(result)).toBe("9007199254740993")
     })
 
-    it("encodes BigDecimal to string", () => {
-      const bd = BigDecimal.unsafeFromString("9007199254740993")
-      const result = Schema.encodeSync(ODataV2Int64)(bd)
+    it("encodes Int64 to string", () => {
+      // Use fromBigInt to avoid JavaScript number precision loss
+      const i64 = Int64.fromBigInt(9007199254740993n)
+      const result = Schema.encodeSync(ODataV2Int64)(i64)
       expect(result).toBe("9007199254740993")
     })
   })

@@ -55,7 +55,7 @@ describe("OperationsGenerator", () => {
           typeMapping: {
             effectSchema: "ODataSchema.ODataV2DateTime",
             queryPath: "DateTimePath",
-            tsType: "DateTime.DateTime.Utc"
+            tsType: "DateTime.Utc"
           },
           isCollection: false,
           isNullable: false
@@ -83,7 +83,7 @@ describe("OperationsGenerator", () => {
           typeMapping: {
             effectSchema: "ODataSchema.ODataV2DateTime",
             queryPath: "DateTimePath",
-            tsType: "DateTime.DateTime.Utc"
+            tsType: "DateTime.Utc"
           },
           isCollection: false,
           isNullable: false
@@ -182,7 +182,7 @@ describe("OperationsGenerator", () => {
             typeMapping: {
               effectSchema: "ODataSchema.ODataV2DateTime",
               queryPath: "DateTimePath",
-              tsType: "DateTime.DateTime.Utc"
+              tsType: "DateTime.Utc"
             },
             isCollection: false,
             isNullable: false

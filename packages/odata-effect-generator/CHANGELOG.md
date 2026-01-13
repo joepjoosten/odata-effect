@@ -1,5 +1,18 @@
 # @odata-effect/odata-effect-generator
 
+## 0.6.11
+
+### Patch Changes
+
+- [`135a237`](https://github.com/joepjoosten/odata-effect/commit/135a2375c1c5e3c3329d3fe0b7a05cba14d2649a) Thanks [@joepjoosten](https://github.com/joepjoosten)! - - Fix: Generated Operations.ts now correctly imports only required modules:
+  - `Schema` when return types use primitive schema types (not for parameters)
+  - `ODataSchema` when return types use OData-specific schemas (not for parameters)
+  - `DateTime` when parameters/returns use `DateTime.DateTime.Utc` or `DateTime.DateTime.Zoned`
+  - `Duration` when parameters/returns use `Duration.Duration`
+  - `BigDecimal` when parameters/returns use `BigDecimal.BigDecimal`
+  - Simplify generated fromKey mappings: use `Schema.String.pipe(Schema.fromKey("ID"))` instead of `Schema.propertySignature(Schema.String).pipe(Schema.fromKey("ID"))`
+  - Simplify generated optional fields: use `Schema.NullishOr(Schema.String)` instead of `Schema.optionalWith(Schema.String, { nullable: true })`
+
 ## 0.6.10
 
 ### Patch Changes

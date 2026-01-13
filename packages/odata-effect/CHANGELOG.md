@@ -1,5 +1,38 @@
 # @odata-effect/odata-effect
 
+## 0.7.0
+
+### Minor Changes
+
+- [`a4ed423`](https://github.com/joepjoosten/odata-effect/commit/a4ed4230ce6b3a884310c597e3b42c17e3f547f8) Thanks [@joepjoosten](https://github.com/joepjoosten)! - - Add new `ODataUrlFormat` module with shared V2/V4 URL value formatting:
+  - `formatV2UrlValue()` - Format values for V2 URLs (filters, function parameters)
+  - `formatV4UrlValue()` - Format values for V4 URLs
+  - `escapeString()` - Escape single quotes in strings
+  - `encodeUrlValue()` - URL encode for query parameters
+  - Add branded `Int64` type that wraps BigDecimal for proper V2 URL serialization:
+    - `Int64.make()`, `Int64.fromNumber()`, `Int64.fromString()`, `Int64.fromBigInt()`
+    - `Int64.isInt64()` type guard for runtime detection
+    - `Int64.format()` for string conversion
+  - Add support for Effect types in `OperationParameters`:
+    - `DateTime.Utc` and `DateTime.Zoned` for date/time parameters
+    - `Duration.Duration` for time/duration parameters
+    - `Int64` for Int64 parameters (V2: serialized with 'L' suffix)
+    - `BigDecimal.BigDecimal` for Decimal parameters (V2: serialized with 'M' suffix)
+  - Extend `QueryBuilder` to support Effect types:
+    - `DateTimePath` now accepts `DateTime.Utc`, `DateTime.Zoned` in addition to `Date`
+    - New `DurationPath` for `Duration.Duration` fields
+    - New `Int64Path` for `Int64` fields
+    - New `BigDecimalPath` for `BigDecimal.BigDecimal` fields
+  - Fix V2 URL serialization to match OData spec:
+    - `datetime'2022-12-31T23:59:59'` (no Z suffix)
+    - `datetimeoffset'2022-12-31T23:59:59Z'` for zoned datetime
+    - `time'PT12H30M15S'` for duration
+    - `123L` suffix for Int64
+    - `12.22M` suffix for Decimal
+  - Fix V4 URL serialization:
+    - Duration uses literal format without prefix
+  - Update `ODataV2Int64` schema to decode to `Int64` instead of `BigDecimal`
+
 ## 0.6.8
 
 ### Patch Changes

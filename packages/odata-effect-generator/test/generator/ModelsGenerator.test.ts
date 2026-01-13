@@ -55,8 +55,8 @@ describe("ModelsGenerator", () => {
       const dataModel = createDataModel(properties)
       const output = generateModels(dataModel)
 
-      // Should use simple format: name: Schema.optionalWith(...)
-      expect(output).toContain("name: Schema.optionalWith(Schema.String, { nullable: true })")
+      // Should use simple format: name: Schema.NullishOr(...)
+      expect(output).toContain("name: Schema.NullishOr(Schema.String)")
       expect(output).not.toContain("Schema.fromKey(\"name\")")
     })
 
@@ -68,11 +68,10 @@ describe("ModelsGenerator", () => {
       const dataModel = createDataModel(properties)
       const output = generateModels(dataModel)
 
-      // Required fields (keys) use propertySignature wrapper
-      expect(output).toContain("id: Schema.propertySignature(Schema.String).pipe(Schema.fromKey(\"ID\"))")
-      // Optional fields already return PropertySignature from optionalWith, so no wrapper needed
+      // Schema.fromKey works directly on schemas - no propertySignature wrapper needed
+      expect(output).toContain("id: Schema.String.pipe(Schema.fromKey(\"ID\"))")
       expect(output).toContain(
-        "productName: Schema.optionalWith(Schema.String, { nullable: true }).pipe(Schema.fromKey(\"ProductName\"))"
+        "productName: Schema.NullishOr(Schema.String).pipe(Schema.fromKey(\"ProductName\"))"
       )
     })
 
@@ -85,14 +84,14 @@ describe("ModelsGenerator", () => {
       const dataModel = createDataModel(properties)
       const output = generateModels(dataModel)
 
-      // ID (required key) should use propertySignature with fromKey
-      expect(output).toContain("id: Schema.propertySignature(Schema.String).pipe(Schema.fromKey(\"ID\"))")
+      // ID (required key) should use fromKey directly
+      expect(output).toContain("id: Schema.String.pipe(Schema.fromKey(\"ID\"))")
       // name should use simple format (same OData and TS names)
-      expect(output).toContain("name: Schema.optionalWith(Schema.String, { nullable: true })")
+      expect(output).toContain("name: Schema.NullishOr(Schema.String)")
       expect(output).not.toContain("Schema.fromKey(\"name\")")
-      // ReleaseDate (optional) should use optionalWith directly with fromKey (no propertySignature wrapper)
+      // ReleaseDate (optional) should use NullishOr with fromKey
       expect(output).toContain(
-        "releaseDate: Schema.optionalWith(Schema.String, { nullable: true }).pipe(Schema.fromKey(\"ReleaseDate\"))"
+        "releaseDate: Schema.NullishOr(Schema.String).pipe(Schema.fromKey(\"ReleaseDate\"))"
       )
     })
 
@@ -106,9 +105,9 @@ describe("ModelsGenerator", () => {
 
       // Editable type should not include key field
       expect(output).toContain("export const EditableProduct = Schema.Struct({")
-      // Optional fields use optionalWith directly with fromKey (no propertySignature wrapper)
+      // Optional fields use NullishOr with fromKey
       expect(output).toContain(
-        "productName: Schema.optionalWith(Schema.String, { nullable: true }).pipe(Schema.fromKey(\"ProductName\"))"
+        "productName: Schema.NullishOr(Schema.String).pipe(Schema.fromKey(\"ProductName\"))"
       )
     })
   })

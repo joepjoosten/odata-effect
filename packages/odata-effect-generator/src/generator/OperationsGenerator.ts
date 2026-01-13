@@ -151,6 +151,65 @@ const getReturnTypeName = (operation: OperationModel): string => {
 }
 
 /**
+ * Check if any operation uses Schema.* types for primitives.
+ */
+const needsSchemaImport = (operations: ReadonlyArray<OperationModel>, dataModel: DataModel): boolean => {
+  for (const operation of operations) {
+    // Check return type - only if it's not a model type
+    if (operation.returnType && !returnsModelType(operation, dataModel)) {
+      if (operation.returnType.typeMapping.effectSchema.startsWith("Schema.")) {
+        return true
+      }
+    }
+    // Check parameters - only if they're not model types
+    for (const param of operation.parameters) {
+      if (param.typeMapping.effectSchema.startsWith("Schema.")) {
+        // Check if it's not a model type
+        const typeName = param.typeMapping.tsType
+        let isModel = false
+        for (const [fqName] of dataModel.entityTypes) {
+          if (fqName.endsWith(`.${typeName}`) || fqName === typeName) {
+            isModel = true
+            break
+          }
+        }
+        if (!isModel) {
+          for (const [fqName] of dataModel.complexTypes) {
+            if (fqName.endsWith(`.${typeName}`) || fqName === typeName) {
+              isModel = true
+              break
+            }
+          }
+        }
+        if (!isModel) return true
+      }
+    }
+  }
+  return false
+}
+
+/**
+ * Check if any operation uses ODataSchema.* types.
+ */
+const needsODataSchemaImport = (operations: ReadonlyArray<OperationModel>, dataModel: DataModel): boolean => {
+  for (const operation of operations) {
+    // Check return type - only if it's not a model type
+    if (operation.returnType && !returnsModelType(operation, dataModel)) {
+      if (operation.returnType.typeMapping.effectSchema.startsWith("ODataSchema.")) {
+        return true
+      }
+    }
+    // Check parameters
+    for (const param of operation.parameters) {
+      if (param.typeMapping.effectSchema.startsWith("ODataSchema.")) {
+        return true
+      }
+    }
+  }
+  return false
+}
+
+/**
  * Collect all model types that need to be imported.
  */
 const collectModelImports = (operations: ReadonlyArray<OperationModel>, dataModel: DataModel): Set<string> => {
@@ -199,6 +258,10 @@ const generateOperationsFile = (
   const versionConfig = getVersionConfig(dataModel.version)
   const isV4 = dataModel.version === "V4"
 
+  // Determine which imports are needed
+  const needsSchema = needsSchemaImport(operations, dataModel)
+  const needsODataSchema = needsODataSchemaImport(operations, dataModel)
+
   // Header and imports
   lines.push(`/**`)
   lines.push(` * OData operations for ${dataModel.serviceName} OData ${dataModel.version}.`)
@@ -207,6 +270,9 @@ const generateOperationsFile = (
   lines.push(` * @since 1.0.0`)
   lines.push(` */`)
   lines.push(`import * as Effect from "effect/Effect"`)
+  if (needsSchema) {
+    lines.push(`import * as Schema from "effect/Schema"`)
+  }
   lines.push(`import { HttpClient } from "@effect/platform"`)
   lines.push(`import type * as HttpClientError from "@effect/platform/HttpClientError"`)
   lines.push(``)
@@ -223,6 +289,9 @@ const generateOperationsFile = (
   lines.push(`  type ODataError,`)
   lines.push(`  type ParseError`)
   lines.push(`} from "@odata-effect/odata-effect/Errors"`)
+  if (needsODataSchema) {
+    lines.push(`import { ODataSchema } from "@odata-effect/odata-effect"`)
+  }
   lines.push(``)
 
   // Import model types if needed

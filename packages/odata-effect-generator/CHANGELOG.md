@@ -1,5 +1,14 @@
 # @odata-effect/odata-effect-generator
 
+## 0.6.9
+
+### Patch Changes
+
+- [`e5d3757`](https://github.com/joepjoosten/odata-effect/commit/e5d3757a7f6be951132dad616d66935214f7b5cf) Thanks [@joepjoosten](https://github.com/joepjoosten)! - **@odata-effect/odata-effect-generator:**
+  - Add explicit return type annotations to generated fetchCollection and fetchOne functions for TypeScript declaration portability
+  - CLI: `--config` now accepts JSON string directly (e.g., `--config '{"esmExtensions": true}'`) or a file path
+  - Change default for `esmExtensions` from `true` to `false`
+
 ## 0.6.8
 
 ### Patch Changes

@@ -42,7 +42,7 @@ describe("OperationsGenerator", () => {
       expect(result.operationsFile!.content).toContain("import * as Schema from \"effect/Schema\"")
     })
 
-    it("includes ODataSchema import when operation returns DateTime", () => {
+    it("includes ODataSchema and DateTime imports when operation returns DateTime", () => {
       const operation: OperationModel = {
         fqName: "Test.GetCurrentDate",
         odataName: "GetCurrentDate",
@@ -66,9 +66,10 @@ describe("OperationsGenerator", () => {
 
       expect(result.operationsFile).toBeDefined()
       expect(result.operationsFile!.content).toContain("import { ODataSchema } from \"@odata-effect/odata-effect\"")
+      expect(result.operationsFile!.content).toContain("import * as DateTime from \"effect/DateTime\"")
     })
 
-    it("includes ODataSchema import when parameter uses ODataSchema type", () => {
+    it("includes DateTime import (but not ODataSchema) when parameter uses DateTime type", () => {
       const operation: OperationModel = {
         fqName: "Test.GetProductsAfterDate",
         odataName: "GetProductsAfterDate",
@@ -92,7 +93,10 @@ describe("OperationsGenerator", () => {
       const result = generateOperations(createDataModel([operation]), { esmExtensions: false })
 
       expect(result.operationsFile).toBeDefined()
-      expect(result.operationsFile!.content).toContain("import { ODataSchema } from \"@odata-effect/odata-effect\"")
+      // DateTime is needed for the parameter interface (uses tsType)
+      expect(result.operationsFile!.content).toContain("import * as DateTime from \"effect/DateTime\"")
+      // ODataSchema is NOT needed - parameters only use tsType, not effectSchema
+      expect(result.operationsFile!.content).not.toContain("import { ODataSchema }")
     })
 
     it("does not include Schema import when only model types are used", () => {

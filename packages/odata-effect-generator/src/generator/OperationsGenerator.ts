@@ -151,37 +151,16 @@ const getReturnTypeName = (operation: OperationModel): string => {
 }
 
 /**
- * Check if any operation uses Schema.* types for primitives.
+ * Check if any operation uses Schema.* types for primitive return values.
+ * Note: Parameters only use tsType in the interface, so they don't need Schema import.
  */
 const needsSchemaImport = (operations: ReadonlyArray<OperationModel>, dataModel: DataModel): boolean => {
   for (const operation of operations) {
     // Check return type - only if it's not a model type
+    // Parameters don't use effectSchema in generated code (only tsType for interface)
     if (operation.returnType && !returnsModelType(operation, dataModel)) {
       if (operation.returnType.typeMapping.effectSchema.startsWith("Schema.")) {
         return true
-      }
-    }
-    // Check parameters - only if they're not model types
-    for (const param of operation.parameters) {
-      if (param.typeMapping.effectSchema.startsWith("Schema.")) {
-        // Check if it's not a model type
-        const typeName = param.typeMapping.tsType
-        let isModel = false
-        for (const [fqName] of dataModel.entityTypes) {
-          if (fqName.endsWith(`.${typeName}`) || fqName === typeName) {
-            isModel = true
-            break
-          }
-        }
-        if (!isModel) {
-          for (const [fqName] of dataModel.complexTypes) {
-            if (fqName.endsWith(`.${typeName}`) || fqName === typeName) {
-              isModel = true
-              break
-            }
-          }
-        }
-        if (!isModel) return true
       }
     }
   }
@@ -189,19 +168,66 @@ const needsSchemaImport = (operations: ReadonlyArray<OperationModel>, dataModel:
 }
 
 /**
- * Check if any operation uses ODataSchema.* types.
+ * Check if any operation uses ODataSchema.* types in return values.
+ * Note: Parameters only use tsType in the interface, so they don't need ODataSchema import.
  */
 const needsODataSchemaImport = (operations: ReadonlyArray<OperationModel>, dataModel: DataModel): boolean => {
   for (const operation of operations) {
     // Check return type - only if it's not a model type
+    // Parameters don't use effectSchema in generated code (only tsType for interface)
     if (operation.returnType && !returnsModelType(operation, dataModel)) {
       if (operation.returnType.typeMapping.effectSchema.startsWith("ODataSchema.")) {
         return true
       }
     }
-    // Check parameters
+  }
+  return false
+}
+
+/**
+ * Check if any operation uses DateTime in its TypeScript types.
+ */
+const needsDateTimeImport = (operations: ReadonlyArray<OperationModel>): boolean => {
+  for (const operation of operations) {
+    if (operation.returnType?.typeMapping.tsType.includes("DateTime.")) {
+      return true
+    }
     for (const param of operation.parameters) {
-      if (param.typeMapping.effectSchema.startsWith("ODataSchema.")) {
+      if (param.typeMapping.tsType.includes("DateTime.")) {
+        return true
+      }
+    }
+  }
+  return false
+}
+
+/**
+ * Check if any operation uses Duration in its TypeScript types.
+ */
+const needsDurationImport = (operations: ReadonlyArray<OperationModel>): boolean => {
+  for (const operation of operations) {
+    if (operation.returnType?.typeMapping.tsType.includes("Duration.")) {
+      return true
+    }
+    for (const param of operation.parameters) {
+      if (param.typeMapping.tsType.includes("Duration.")) {
+        return true
+      }
+    }
+  }
+  return false
+}
+
+/**
+ * Check if any operation uses BigDecimal in its TypeScript types.
+ */
+const needsBigDecimalImport = (operations: ReadonlyArray<OperationModel>): boolean => {
+  for (const operation of operations) {
+    if (operation.returnType?.typeMapping.tsType.includes("BigDecimal.")) {
+      return true
+    }
+    for (const param of operation.parameters) {
+      if (param.typeMapping.tsType.includes("BigDecimal.")) {
         return true
       }
     }
@@ -261,6 +287,9 @@ const generateOperationsFile = (
   // Determine which imports are needed
   const needsSchema = needsSchemaImport(operations, dataModel)
   const needsODataSchema = needsODataSchemaImport(operations, dataModel)
+  const needsDateTime = needsDateTimeImport(operations)
+  const needsDuration = needsDurationImport(operations)
+  const needsBigDecimal = needsBigDecimalImport(operations)
 
   // Header and imports
   lines.push(`/**`)
@@ -269,6 +298,15 @@ const generateOperationsFile = (
   lines.push(` *`)
   lines.push(` * @since 1.0.0`)
   lines.push(` */`)
+  if (needsBigDecimal) {
+    lines.push(`import * as BigDecimal from "effect/BigDecimal"`)
+  }
+  if (needsDateTime) {
+    lines.push(`import * as DateTime from "effect/DateTime"`)
+  }
+  if (needsDuration) {
+    lines.push(`import * as Duration from "effect/Duration"`)
+  }
   lines.push(`import * as Effect from "effect/Effect"`)
   if (needsSchema) {
     lines.push(`import * as Schema from "effect/Schema"`)

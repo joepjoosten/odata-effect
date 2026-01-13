@@ -19,7 +19,7 @@ describe("V4 Navigation Generation", () => {
       const dataModel = yield* digestMetadata(edmx)
 
       // Generate navigation builders
-      const navResult = generateNavigations(dataModel)
+      const navResult = generateNavigations(dataModel, { esmExtensions: false })
 
       // Should generate a single PathBuilders.ts file
       expect(navResult.navigationFiles.length).toBe(1)
@@ -75,7 +75,7 @@ describe("V4 Navigation Generation", () => {
       const edmx = yield* parseODataMetadata(xmlContent)
       const dataModel = yield* digestMetadata(edmx)
 
-      const navResult = generateNavigations(dataModel)
+      const navResult = generateNavigations(dataModel, { esmExtensions: false })
       const content = navResult.navigationFiles[0].content
 
       // Flight derives from PublicTransportation which derives from PlanItem
@@ -102,7 +102,7 @@ describe("V4 Navigation Generation", () => {
       const edmx = yield* parseODataMetadata(xmlContent)
       const dataModel = yield* digestMetadata(edmx)
 
-      const navResult = generateNavigations(dataModel)
+      const navResult = generateNavigations(dataModel, { esmExtensions: false })
       const content = navResult.navigationFiles[0].content
 
       // Navigation properties should be flat exports

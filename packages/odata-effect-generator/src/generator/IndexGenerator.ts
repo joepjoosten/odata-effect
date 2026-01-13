@@ -25,9 +25,8 @@ import { getOperationsModuleName } from "./OperationsGenerator.js"
 export interface IndexGeneratorOptions {
   /**
    * Add .js extensions to relative imports for ESM compatibility.
-   * @default true
    */
-  readonly esmExtensions?: boolean
+  readonly esmExtensions: boolean
 }
 
 /**
@@ -38,9 +37,9 @@ export interface IndexGeneratorOptions {
  */
 export const generateIndex = (
   dataModel: DataModel,
-  options?: IndexGeneratorOptions
+  options: IndexGeneratorOptions
 ): string => {
-  const esmExtensions = options?.esmExtensions ?? true
+  const { esmExtensions } = options
   const lines: Array<string> = []
 
   // Header

@@ -27,9 +27,8 @@ import {
 export interface QueryModelsGeneratorOptions {
   /**
    * Add .js extensions to relative imports for ESM compatibility.
-   * @default true
    */
-  readonly esmExtensions?: boolean
+  readonly esmExtensions: boolean
 }
 
 /**
@@ -40,9 +39,9 @@ export interface QueryModelsGeneratorOptions {
  */
 export const generateQueryModels = (
   dataModel: DataModel,
-  options?: QueryModelsGeneratorOptions
+  options: QueryModelsGeneratorOptions
 ): string => {
-  const esmExtensions = options?.esmExtensions ?? true
+  const { esmExtensions } = options
   const lines: Array<string> = []
 
   // Collect all query path types needed

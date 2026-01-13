@@ -55,7 +55,7 @@ describe("NamingOverrides Integration", () => {
 
       const edmx = yield* parseODataMetadata(xmlContent)
       const dataModel = yield* digestMetadata(edmx, overrides)
-      const queryModelsOutput = generateQueryModels(dataModel)
+      const queryModelsOutput = generateQueryModels(dataModel, { esmExtensions: false })
 
       // Interface should use TypeScript name (id)
       expect(queryModelsOutput).toContain("readonly id:")
@@ -83,7 +83,7 @@ describe("NamingOverrides Integration", () => {
 
       const edmx = yield* parseODataMetadata(xmlContent)
       const dataModel = yield* digestMetadata(edmx, overrides)
-      const queryModelsOutput = generateQueryModels(dataModel)
+      const queryModelsOutput = generateQueryModels(dataModel, { esmExtensions: false })
 
       // Interface should use overridden TypeScript names
       expect(queryModelsOutput).toContain("readonly productName:")

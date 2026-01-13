@@ -45,23 +45,53 @@ const filesOnly = Options.boolean("files-only").pipe(
   Options.withDescription("Generate only source files (no package.json, tsconfig, etc.) directly in output-dir")
 )
 
-const configFile = Options.file("config").pipe(
+const configOption = Options.text("config").pipe(
   Options.optional,
-  Options.withDescription("Path to JSON config file with naming overrides")
+  Options.withDescription(
+    `Config as JSON string or path to JSON file. Options: { esmExtensions?: boolean, overrides?: NamingOverrides }. Example: --config '{"esmExtensions": true}'`
+  )
 )
 
 // ============================================================================
 // Generate Command
 // ============================================================================
 
+/** Parse config from JSON string or file path */
+const parseConfig = (
+  configValue: string,
+  fs: FileSystem.FileSystem
+): Effect.Effect<{ esmExtensions?: boolean; overrides?: NamingOverrides }, Error> =>
+  Effect.gen(function*() {
+    // Try parsing as JSON first
+    const trimmed = configValue.trim()
+    if (trimmed.startsWith("{")) {
+      try {
+        return JSON.parse(trimmed) as { esmExtensions?: boolean; overrides?: NamingOverrides }
+      } catch (e) {
+        yield* Effect.fail(new Error(`Failed to parse config JSON: ${e}`))
+      }
+    }
+
+    // Otherwise treat as file path
+    yield* Console.log(`Loading config from: ${configValue}`)
+    const configContent = yield* fs.readFileString(configValue).pipe(
+      Effect.mapError((error) => new Error(`Failed to read config file: ${configValue}. ${error}`))
+    )
+    try {
+      return JSON.parse(configContent) as { esmExtensions?: boolean; overrides?: NamingOverrides }
+    } catch (e) {
+      throw new Error(`Failed to parse config file: ${configValue}. ${e}`)
+    }
+  })
+
 const generateCommand = Command.make(
   "generate",
-  { metadataPath, outputDir, serviceName, packageName, force, filesOnly, configFile }
+  { metadataPath, outputDir, serviceName, packageName, force, filesOnly, configOption }
 ).pipe(
   Command.withDescription("Generate Effect OData client from metadata"),
   Command.withHandler((
     {
-      configFile: cfgFile,
+      configOption: cfgOption,
       filesOnly: onlyFiles,
       force: forceOverwrite,
       metadataPath: metaPath,
@@ -73,19 +103,13 @@ const generateCommand = Command.make(
     Effect.gen(function*() {
       const fs = yield* FileSystem.FileSystem
 
-      // Load config file if provided
+      // Load config if provided (JSON string or file path)
+      let esmExtensions: boolean | undefined
       let overrides: NamingOverrides | undefined
-      if (cfgFile._tag === "Some") {
-        yield* Console.log(`Loading config from: ${cfgFile.value}`)
-        const configContent = yield* fs.readFileString(cfgFile.value).pipe(
-          Effect.mapError((error) => new Error(`Failed to read config file: ${cfgFile.value}. ${error}`))
-        )
-        try {
-          const parsed = JSON.parse(configContent) as { overrides?: NamingOverrides }
-          overrides = parsed.overrides
-        } catch (e) {
-          throw new Error(`Failed to parse config file: ${cfgFile.value}. ${e}`)
-        }
+      if (cfgOption._tag === "Some") {
+        const parsed = yield* parseConfig(cfgOption.value, fs)
+        esmExtensions = parsed.esmExtensions
+        overrides = parsed.overrides
       }
 
       yield* Console.log(`Reading metadata from: ${metaPath}`)
@@ -121,6 +145,7 @@ const generateCommand = Command.make(
         force: forceOverwrite,
         filesOnly: onlyFiles,
         overrides,
+        esmExtensions,
         ...(svcName._tag === "Some" ? { serviceName: svcName.value } : {}),
         ...(pkgName._tag === "Some" ? { packageName: pkgName.value } : {})
       }

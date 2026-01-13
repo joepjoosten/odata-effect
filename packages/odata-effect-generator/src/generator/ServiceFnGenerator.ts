@@ -40,9 +40,8 @@ export interface ServiceGenerationResult {
 export interface ServiceGeneratorOptions {
   /**
    * Add .js extensions to relative imports for ESM compatibility.
-   * @default true
    */
-  readonly esmExtensions?: boolean
+  readonly esmExtensions: boolean
 }
 
 /**
@@ -53,10 +52,9 @@ export interface ServiceGeneratorOptions {
  */
 export const generateServiceFns = (
   dataModel: DataModel,
-  options?: ServiceGeneratorOptions
+  options: ServiceGeneratorOptions
 ): ServiceGenerationResult => {
-  const esmExtensions = options?.esmExtensions ?? true
-  const content = generateServicesFile(dataModel, esmExtensions)
+  const content = generateServicesFile(dataModel, options.esmExtensions)
   return {
     servicesFile: {
       fileName: "Services.ts",

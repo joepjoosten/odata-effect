@@ -181,9 +181,8 @@ const getDerivedTypes = (
 export interface NavigationGeneratorOptions {
   /**
    * Add .js extensions to relative imports for ESM compatibility.
-   * @default true
    */
-  readonly esmExtensions?: boolean
+  readonly esmExtensions: boolean
 }
 
 /**
@@ -194,9 +193,9 @@ export interface NavigationGeneratorOptions {
  */
 export const generateNavigations = (
   dataModel: DataModel,
-  options?: NavigationGeneratorOptions
+  options: NavigationGeneratorOptions
 ): NavigationGenerationResult => {
-  const esmExtensions = options?.esmExtensions ?? true
+  const { esmExtensions } = options
   const moduleName = getPathBuildersModuleName()
   const content = generatePathBuildersFile(dataModel, esmExtensions)
 

@@ -38,8 +38,11 @@ describe("V2 Integration", () => {
       expect(modelsCode).toContain("price:")
       expect(modelsCode).toContain("releaseDate:")
 
+      // Generator options
+      const generatorOptions = { esmExtensions: false }
+
       // Generate QueryModels.ts
-      const queryModelsCode = generateQueryModels(dataModel)
+      const queryModelsCode = generateQueryModels(dataModel, generatorOptions)
       expect(queryModelsCode).toContain("import {")
       expect(queryModelsCode).toContain("StringPath")
       expect(queryModelsCode).toContain("NumberPath")
@@ -50,7 +53,7 @@ describe("V2 Integration", () => {
       expect(queryModelsCode).toContain("export const productQuery = ()")
 
       // Generate Services.ts (single file with crud factory)
-      const serviceResult = generateServiceFns(dataModel)
+      const serviceResult = generateServiceFns(dataModel, generatorOptions)
       expect(serviceResult.servicesFile.fileName).toBe("Services.ts")
 
       // Check Services.ts content
@@ -65,7 +68,7 @@ describe("V2 Integration", () => {
       expect(servicesContent).toContain("idToKey:")
 
       // Generate Operations.ts (FunctionImports)
-      const operationsResult = generateOperations(dataModel)
+      const operationsResult = generateOperations(dataModel, generatorOptions)
       expect(operationsResult.operationsFile).toBeDefined()
       expect(operationsResult.operationsFile!.fileName).toBe("Operations.ts")
       expect(operationsResult.operationsFile!.content).toContain("getProductsByRating")
@@ -78,7 +81,7 @@ describe("V2 Integration", () => {
       expect(operationsResult.operationsFile!.content).not.toContain("ODataClient")
 
       // Generate index.ts
-      const indexCode = generateIndex(dataModel)
+      const indexCode = generateIndex(dataModel, generatorOptions)
       expect(indexCode).toContain("export {")
       expect(indexCode).toContain("Product")
       expect(indexCode).toContain("EditableProduct")

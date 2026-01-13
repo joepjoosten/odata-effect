@@ -82,9 +82,8 @@ export interface OperationsGenerationResult {
 export interface OperationsGeneratorOptions {
   /**
    * Add .js extensions to relative imports for ESM compatibility.
-   * @default true
    */
-  readonly esmExtensions?: boolean
+  readonly esmExtensions: boolean
 }
 
 /**
@@ -95,9 +94,9 @@ export interface OperationsGeneratorOptions {
  */
 export const generateOperations = (
   dataModel: DataModel,
-  options?: OperationsGeneratorOptions
+  options: OperationsGeneratorOptions
 ): OperationsGenerationResult => {
-  const esmExtensions = options?.esmExtensions ?? true
+  const { esmExtensions } = options
 
   // Get unbound operations only (bound operations are attached to entity services)
   const unboundOperations = Array.from(dataModel.operations.values()).filter((op) => !op.isBound)

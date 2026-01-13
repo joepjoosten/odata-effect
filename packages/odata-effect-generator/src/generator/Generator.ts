@@ -43,7 +43,7 @@ export interface GeneratorConfig {
   /**
    * Add .js extensions to relative imports for ESM compatibility.
    * Required for moduleResolution: node16/nodenext.
-   * @default true
+   * @default false
    */
   readonly esmExtensions?: boolean | undefined
 }
@@ -88,7 +88,7 @@ export const generate = (
     const serviceName = config.serviceName ?? dataModel.serviceName
     const packageName = config.packageName ?? `@template/${serviceName.toLowerCase()}-effect`
     const filesOnly = config.filesOnly ?? false
-    const esmExtensions = config.esmExtensions ?? true
+    const esmExtensions = config.esmExtensions ?? false
 
     // When filesOnly is true, output directly to outputDir; otherwise use outputDir/src
     const sourceDir = filesOnly ? outputDir : path.join(outputDir, "src")

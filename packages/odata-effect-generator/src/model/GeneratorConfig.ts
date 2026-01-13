@@ -14,9 +14,7 @@ export interface GeneratorOptions {
   /**
    * Add .js extensions to relative imports for ESM compatibility.
    * Required for moduleResolution: node16/nodenext.
-   * Default: true (recommended for ESM projects)
-   *
-   * @default true
+   * @default false
    */
   readonly esmExtensions?: boolean
 

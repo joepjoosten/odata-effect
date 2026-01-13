@@ -63,7 +63,7 @@ describe("QueryModelsGenerator", () => {
         createProperty("ProductName", "productName", false)
       ]
       const dataModel = createDataModel(properties)
-      const output = generateQueryModels(dataModel)
+      const output = generateQueryModels(dataModel, { esmExtensions: false })
 
       // Interface should use TypeScript property names
       expect(output).toContain("export interface QProduct {")
@@ -81,7 +81,7 @@ describe("QueryModelsGenerator", () => {
         createProperty("name", "name", false)
       ]
       const dataModel = createDataModel(properties)
-      const output = generateQueryModels(dataModel)
+      const output = generateQueryModels(dataModel, { esmExtensions: false })
 
       // When names are the same, both should use that name
       expect(output).toContain("readonly name: StringPath")
@@ -93,7 +93,7 @@ describe("QueryModelsGenerator", () => {
         createProperty("ID", "id", true)
       ]
       const dataModel = createDataModel(properties)
-      const output = generateQueryModels(dataModel)
+      const output = generateQueryModels(dataModel, { esmExtensions: false })
 
       // Query factory should be generated
       expect(output).toContain("export const productQuery = (): QueryBuilder<Product, QProduct> =>")

@@ -10,7 +10,7 @@
  * import { ODataClientConfig } from "@odata-effect/odata-effect/Config"
  * import * as Layer from "effect/Layer"
  *
- * const configLayer = Layer.succeed(ODataClientConfig, {
+ * const configLayer = Layer.succeed(ODataClientConfig)({
  *   baseUrl: "https://server.com",
  *   servicePath: "/sap/opu/odata/sap/MY_SERVICE/"
  * })
@@ -18,7 +18,7 @@
  *
  * @since 1.0.0
  */
-import * as Context from "effect/Context"
+import * as ServiceMap from "effect/ServiceMap"
 
 // ============================================================================
 // Configuration
@@ -56,7 +56,7 @@ export interface ODataClientConfigService {
  * @since 1.0.0
  * @category context
  */
-export class ODataClientConfig extends Context.Tag("ODataClientConfig")<
+export class ODataClientConfig extends ServiceMap.Service<
   ODataClientConfig,
   ODataClientConfigService
->() {}
+>()("ODataClientConfig") {}

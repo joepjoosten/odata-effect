@@ -197,10 +197,11 @@ const generateComplexType = (
   lines.push(` */`)
 
   const fields = generateSchemaFields(complexType.properties, complexType.navigationProperties, dataModel)
+  const encodedKeys = getEncodedKeysMapping(complexType.properties)
 
-  lines.push(`export class ${complexType.name} extends Schema.Class<${complexType.name}>("${complexType.name}")({`)
+  lines.push(`export class ${complexType.name} extends Schema.Class<${complexType.name}>("${complexType.name}")(Schema.Struct({`)
   for (const f of fields) lines.push(`  ${f}`)
-  lines.push(`}) {}`)
+  lines.push(`})${encodedKeys}) {}`)
 
   // Generate editable type
   lines.push(``)
@@ -213,10 +214,11 @@ const generateComplexType = (
 
   const editableFields = generateEditableSchemaFields(complexType.properties)
   const editableName = getEditableTypeName(complexType.name)
+  const editableEncodedKeys = getEncodedKeysMapping(complexType.properties)
 
   lines.push(`export const ${editableName} = Schema.Struct({`)
   for (const f of editableFields) lines.push(`  ${f}`)
-  lines.push(`})`)
+  lines.push(`})${editableEncodedKeys}`)
   lines.push(`export type ${editableName} = Schema.Schema.Type<typeof ${editableName}>`)
 
   return lines
@@ -240,10 +242,11 @@ const generateEntityType = (
   lines.push(` */`)
 
   const fields = generateSchemaFields(entityType.properties, entityType.navigationProperties, dataModel)
+  const encodedKeys = getEncodedKeysMapping(entityType.properties)
 
-  lines.push(`export class ${entityType.name} extends Schema.Class<${entityType.name}>("${entityType.name}")({`)
+  lines.push(`export class ${entityType.name} extends Schema.Class<${entityType.name}>("${entityType.name}")(Schema.Struct({`)
   for (const f of fields) lines.push(`  ${f}`)
-  lines.push(`}) {}`)
+  lines.push(`})${encodedKeys}) {}`)
 
   // ID type
   if (entityType.keys.length > 0) {
@@ -260,10 +263,10 @@ const generateEntityType = (
     if (entityType.keys.length === 1) {
       const key = entityType.keys[0]
       const keySchema = getPropertySchemaType(key, false)
-      lines.push(`export const ${idTypeName} = Schema.Union(`)
+      lines.push(`export const ${idTypeName} = Schema.Union([`)
       lines.push(`  ${keySchema},`)
       lines.push(`  Schema.Struct({ ${key.name}: ${keySchema} })`)
-      lines.push(`)`)
+      lines.push(`])`)
     } else {
       // Composite key - only struct form makes sense
       const keyFields = entityType.keys.map((k) => {
@@ -288,10 +291,11 @@ const generateEntityType = (
     entityType.properties.filter((p) => !p.isKey)
   )
   const editableName = getEditableTypeName(entityType.name)
+  const editableEncodedKeys = getEncodedKeysMapping(entityType.properties.filter((p) => !p.isKey))
 
   lines.push(`export const ${editableName} = Schema.Struct({`)
   for (const f of editableFields) lines.push(`  ${f}`)
-  lines.push(`})`)
+  lines.push(`})${editableEncodedKeys}`)
   lines.push(`export type ${editableName} = Schema.Schema.Type<typeof ${editableName}>`)
 
   return lines
@@ -314,7 +318,7 @@ const generateSchemaFields = (
     const isOptional = prop.isNullable && !prop.isKey
     const schemaType = getPropertySchemaType(prop, isOptional)
     const isLast = i === properties.length - 1
-    const fieldDef = getPropertyFieldDefinition(prop, schemaType, isOptional)
+    const fieldDef = getPropertyFieldDefinition(prop, schemaType)
     fields.push(`${fieldDef}${isLast ? "" : ","}`)
   }
 
@@ -337,7 +341,7 @@ const generateEditableSchemaFields = (
     const isOptional = prop.isNullable
     const schemaType = getPropertySchemaType(prop, isOptional)
     const isLast = i === properties.length - 1
-    const fieldDef = getPropertyFieldDefinition(prop, schemaType, isOptional)
+    const fieldDef = getPropertyFieldDefinition(prop, schemaType)
     fields.push(`${fieldDef}${isLast ? "" : ","}`)
   }
 
@@ -345,52 +349,20 @@ const generateEditableSchemaFields = (
 }
 
 /**
- * Get a complete property field definition including fromKey mapping if needed.
- *
- * When the OData property name differs from the TypeScript property name,
- * we use Schema.fromKey to map between them.
- *
- * For optional fields (using Schema.optionalWith), we pipe fromKey directly
- * since optionalWith already returns a PropertySignature.
- *
- * For required fields, we wrap in Schema.propertySignature first.
- * Note: ODataSchema types need Schema.asSchema() to satisfy Schema.All constraint.
- *
- * @example
- * // When odataName == name:
- * name: Schema.String
- *
- * // When odataName ("ID") != name ("id") - required field:
- * id: Schema.propertySignature(Schema.Number).pipe(Schema.fromKey("ID"))
- *
- * // When odataName ("Name") != name ("name") - optional field:
- * name: Schema.optionalWith(Schema.String, { nullable: true }).pipe(Schema.fromKey("Name"))
- *
- * // ODataSchema types need asSchema wrapper:
- * price: Schema.propertySignature(Schema.asSchema(ODataSchema.ODataV2Decimal)).pipe(Schema.fromKey("Price"))
+ * Build the `Schema.encodeKeys` suffix when OData field names differ from the
+ * public TypeScript field names.
  */
-const getPropertyFieldDefinition = (
-  prop: PropertyModel,
-  schemaType: string,
-  isOptional: boolean
-): string => {
-  // If OData name matches TypeScript name, use simple format
-  if (prop.odataName === prop.name) {
-    return `${prop.name}: ${schemaType}`
+const getEncodedKeysMapping = (properties: ReadonlyArray<PropertyModel>): string => {
+  const renamed = properties.filter((prop) => prop.odataName !== prop.name)
+  if (renamed.length === 0) {
+    return ""
   }
-
-  // If optional, Schema.optionalWith already returns a PropertySignature, so just pipe fromKey
-  if (isOptional) {
-    return `${prop.name}: ${schemaType}.pipe(Schema.fromKey("${prop.odataName}"))`
-  }
-
-  // For required fields, wrap in propertySignature first, then pipe fromKey
-  // ODataSchema types (transformOrFail) need Schema.asSchema() to satisfy Schema.All constraint
-  const wrappedSchema = schemaType.startsWith("ODataSchema.")
-    ? `Schema.asSchema(${schemaType})`
-    : schemaType
-  return `${prop.name}: Schema.propertySignature(${wrappedSchema}).pipe(Schema.fromKey("${prop.odataName}"))`
+  const entries = renamed.map((prop) => `${prop.name}: "${prop.odataName}"`).join(", ")
+  return `.pipe(Schema.encodeKeys({ ${entries} }))`
 }
+
+const getPropertyFieldDefinition = (prop: PropertyModel, schemaType: string): string =>
+  `${prop.name}: ${schemaType}`
 
 /**
  * Get the Schema type for a property.
@@ -408,7 +380,7 @@ const getPropertySchemaType = (
 
   // Handle nullable/optional
   if (makeOptional) {
-    return `Schema.optionalWith(${baseType}, { nullable: true })`
+    return `Schema.NullishOr(${baseType})`
   }
 
   return baseType

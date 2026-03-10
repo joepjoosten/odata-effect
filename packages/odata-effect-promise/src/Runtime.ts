@@ -48,7 +48,7 @@
  *
  * @since 1.0.0
  */
-import { type HttpClient } from "@effect/platform"
+import { type HttpClient } from "effect/unstable/http"
 import { Config } from "@odata-effect/odata-effect"
 import type * as Effect from "effect/Effect"
 import type * as Exit from "effect/Exit"
@@ -158,7 +158,7 @@ export const createODataRuntime = (
   config: ODataRuntimeConfig,
   httpClientLayer: Layer.Layer<HttpClient.HttpClient>
 ): ODataRuntime => {
-  const configLayer = Layer.succeed(Config.ODataClientConfig, config)
+  const configLayer = Layer.succeed(Config.ODataClientConfig)(config)
   const fullLayer = Layer.merge(configLayer, httpClientLayer)
   const managedRuntime = ManagedRuntime.make(fullLayer)
 

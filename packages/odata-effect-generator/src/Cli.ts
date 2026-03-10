@@ -3,8 +3,10 @@
  *
  * @since 1.0.0
  */
-import { Args, Command, Options } from "@effect/cli"
-import * as FileSystem from "@effect/platform/FileSystem"
+import * as Argument from "effect/unstable/cli/Argument"
+import * as Command from "effect/unstable/cli/Command"
+import * as Flag from "effect/unstable/cli/Flag"
+import * as FileSystem from "effect/FileSystem"
 import * as Console from "effect/Console"
 import * as Effect from "effect/Effect"
 
@@ -17,37 +19,37 @@ import { parseODataMetadata } from "./parser/XmlParser.js"
 // Arguments and Options
 // ============================================================================
 
-const metadataPath = Args.path({ name: "metadata-path" }).pipe(
-  Args.withDescription("Path to OData metadata XML file")
+const metadataPath = Argument.path("metadata-path").pipe(
+  Argument.withDescription("Path to OData metadata XML file")
 )
 
-const outputDir = Args.path({ name: "output-dir" }).pipe(
-  Args.withDescription("Directory for generated TypeScript files")
+const outputDir = Argument.path("output-dir").pipe(
+  Argument.withDescription("Directory for generated TypeScript files")
 )
 
-const serviceName = Options.text("service-name").pipe(
-  Options.optional,
-  Options.withDescription("Override service name (defaults to EntityContainer name)")
+const serviceName = Flag.string("service-name").pipe(
+  Flag.optional,
+  Flag.withDescription("Override service name (defaults to EntityContainer name)")
 )
 
-const packageName = Options.text("package-name").pipe(
-  Options.optional,
-  Options.withDescription("NPM package name (defaults to @template/<service-name>-effect)")
+const packageName = Flag.string("package-name").pipe(
+  Flag.optional,
+  Flag.withDescription("NPM package name (defaults to @template/<service-name>-effect)")
 )
 
-const force = Options.boolean("force").pipe(
-  Options.withDefault(false),
-  Options.withDescription("Overwrite existing files")
+const force = Flag.boolean("force").pipe(
+  Flag.withDefault(false),
+  Flag.withDescription("Overwrite existing files")
 )
 
-const filesOnly = Options.boolean("files-only").pipe(
-  Options.withDefault(false),
-  Options.withDescription("Generate only source files (no package.json, tsconfig, etc.) directly in output-dir")
+const filesOnly = Flag.boolean("files-only").pipe(
+  Flag.withDefault(false),
+  Flag.withDescription("Generate only source files (no package.json, tsconfig, etc.) directly in output-dir")
 )
 
-const configOption = Options.text("config").pipe(
-  Options.optional,
-  Options.withDescription(
+const configOption = Flag.string("config").pipe(
+  Flag.optional,
+  Flag.withDescription(
     `Config as JSON string or path to JSON file. Options: { esmExtensions?: boolean, overrides?: NamingOverrides }. Example: --config '{"esmExtensions": true}'`
   )
 )
@@ -171,6 +173,5 @@ const rootCommand = Command.make("odata-effect-gen").pipe(
  * @category cli
  */
 export const cli = Command.run(rootCommand, {
-  name: "OData Effect Generator",
   version: "0.0.1"
 })

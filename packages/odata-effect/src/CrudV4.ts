@@ -29,11 +29,12 @@
  *
  * @since 1.0.0
  */
-import type { HttpClient } from "@effect/platform"
-import type * as HttpBody from "@effect/platform/HttpBody"
-import type * as HttpClientError from "@effect/platform/HttpClientError"
+import type { HttpClient } from "effect/unstable/http"
+import type * as HttpBody from "effect/unstable/http/HttpBody"
+import type * as HttpClientError from "effect/unstable/http/HttpClientError"
 import type * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"
+import * as Struct from "effect/Struct"
 import type { ODataClientConfig } from "./Config.js"
 import type { ODataError, ParseError } from "./Errors.js"
 import * as ODataV4 from "./ODataV4.js"
@@ -68,9 +69,9 @@ export interface CrudConfig<
   /** The entity set path (e.g., "People", "Products") */
   readonly path: string
   /** Schema for the entity type */
-  readonly schema: Schema.Schema<TEntity, TEntityInput>
+  readonly schema: Schema.Codec<TEntity, TEntityInput>
   /** Schema for creating/updating entities */
-  readonly editableSchema: Schema.Schema<TEditable, TEditableInput>
+  readonly editableSchema: Schema.Codec<TEditable, TEditableInput>
   /** Function to convert ID to entity key */
   readonly idToKey: (id: TId) => EntityKey
 }
@@ -130,6 +131,11 @@ export interface CrudService<TEntity, TEditable, TId> {
   ) => Effect.Effect<void, CrudError, CrudContext>
 }
 
+const toPartialUpdateSchema = <A, I>(schema: Schema.Codec<A, I>): Schema.Codec<Partial<A>, Partial<I>> =>
+  (schema as Schema.Codec<A, I> & {
+    readonly mapFields: (f: (fields: Record<string, Schema.Top>) => Record<string, Schema.Top>) => Schema.Codec<Partial<A>, Partial<I>>
+  }).mapFields(Struct.map(Schema.optional))
+
 // ============================================================================
 // Factory
 // ============================================================================
@@ -164,7 +170,7 @@ export const crud = <
     ODataV4.patch(
       buildEntityPathV4(config.path, config.idToKey(id)),
       entity,
-      Schema.partial(config.editableSchema)
+      toPartialUpdateSchema(config.editableSchema)
     ),
 
   delete: (id) => ODataV4.del(buildEntityPathV4(config.path, config.idToKey(id)))

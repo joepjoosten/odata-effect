@@ -1,9 +1,10 @@
-import { HttpClient, HttpClientResponse } from "@effect/platform"
-import type { HttpClientRequest } from "@effect/platform"
+import { HttpClient, HttpClientResponse } from "effect/unstable/http"
+import type { HttpClientRequest } from "effect/unstable/http"
 import { describe, expect, it } from "@effect/vitest"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import * as Schema from "effect/Schema"
+import * as Struct from "effect/Struct"
 import * as OData from "../src/OData.js"
 import {
   buildEntityPath,
@@ -25,9 +26,10 @@ const EditableTestEntity = Schema.Struct({
   name: Schema.String,
   value: Schema.Number
 })
+const PartialEditableTestEntity = EditableTestEntity.mapFields(Struct.map(Schema.optional))
 
 // Test configuration layer
-const testConfig = Layer.succeed(ODataClientConfig, {
+const testConfig = Layer.succeed(ODataClientConfig)({
   baseUrl: "https://test-server.com",
   servicePath: "/sap/opu/odata/sap/TEST_SRV/"
 })
@@ -80,7 +82,7 @@ describe("ODataClient", () => {
             value: 42
           }
         }
-        const result = yield* Schema.decodeUnknown(responseSchema)(data)
+        const result = yield* Schema.decodeUnknownEffect(responseSchema)(data)
         const entity = extractEntity(result)
         expect(entity.id).toBe("1")
         expect(entity.name).toBe("Test")
@@ -97,7 +99,7 @@ describe("ODataClient", () => {
           name: "Test",
           value: 42
         }
-        const result = yield* Schema.decodeUnknown(responseSchema)(data)
+        const result = yield* Schema.decodeUnknownEffect(responseSchema)(data)
         const entity = extractEntity(result)
         expect(entity.id).toBe("1")
         expect(entity.name).toBe("Test")
@@ -130,7 +132,7 @@ describe("ODataClient", () => {
             ]
           }
         }
-        const result = yield* Schema.decodeUnknown(responseSchema)(data)
+        const result = yield* Schema.decodeUnknownEffect(responseSchema)(data)
         const results = extractResults(result)
         expect(results).toHaveLength(2)
         expect(results[0].id).toBe("1")
@@ -147,7 +149,7 @@ describe("ODataClient", () => {
             { id: "2", name: "Test2", value: 20 }
           ]
         }
-        const result = yield* Schema.decodeUnknown(responseSchema)(data)
+        const result = yield* Schema.decodeUnknownEffect(responseSchema)(data)
         const results = extractResults(result)
         expect(results).toHaveLength(2)
         expect(results[0].id).toBe("1")
@@ -165,7 +167,7 @@ describe("ODataClient", () => {
             { id: "2", name: "Test2", value: 20 }
           ]
         }
-        const result = yield* Schema.decodeUnknown(responseSchema)(data)
+        const result = yield* Schema.decodeUnknownEffect(responseSchema)(data)
         const results = extractResults(result)
         expect(results).toHaveLength(2)
         expect(results[0].id).toBe("1")
@@ -331,7 +333,7 @@ describe("ODataClient", () => {
           yield* OData.patch(
             "entities('123')",
             { name: "Updated Name" },
-            Schema.partial(EditableTestEntity)
+            PartialEditableTestEntity
           )
         }).pipe(
           Effect.provide(
@@ -354,7 +356,7 @@ describe("ODataClient", () => {
           const result = yield* OData.patch(
             "entities('123')",
             { value: 999 },
-            Schema.partial(EditableTestEntity)
+            PartialEditableTestEntity
           )
 
           expect(result).toBeUndefined()
@@ -414,7 +416,7 @@ describe("ODataClient", () => {
       const createTunnelingTestLayer = (
         handler: (request: HttpClientRequest.HttpClientRequest) => Effect.Effect<HttpClientResponse.HttpClientResponse>
       ) => {
-        const tunnelingConfig = Layer.succeed(ODataClientConfig, {
+        const tunnelingConfig = Layer.succeed(ODataClientConfig)({
           baseUrl: "https://test-server.com",
           servicePath: "/sap/opu/odata/sap/TEST_SRV/",
           useTunneling: true

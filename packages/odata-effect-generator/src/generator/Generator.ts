@@ -3,8 +3,8 @@
  *
  * @since 1.0.0
  */
-import * as FileSystem from "@effect/platform/FileSystem"
-import * as Path from "@effect/platform/Path"
+import * as FileSystem from "effect/FileSystem"
+import * as Path from "effect/Path"
 import * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"
 import type { DataModel } from "../model/DataModel.js"
@@ -54,7 +54,7 @@ export interface GeneratorConfig {
  * @since 1.0.0
  * @category errors
  */
-export class GeneratorError extends Schema.TaggedError<GeneratorError>()(
+export class GeneratorError extends Schema.TaggedErrorClass<GeneratorError>()(
   "GeneratorError",
   {
     message: Schema.String,

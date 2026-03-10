@@ -1,9 +1,10 @@
-import { HttpClient, HttpClientResponse } from "@effect/platform"
-import type { HttpClientRequest } from "@effect/platform"
+import { HttpClient, HttpClientResponse } from "effect/unstable/http"
+import type { HttpClientRequest } from "effect/unstable/http"
 import { describe, expect, it } from "@effect/vitest"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import * as Schema from "effect/Schema"
+import * as Struct from "effect/Struct"
 import * as ODataV4 from "../src/ODataV4.js"
 import { ODataClientConfig } from "../src/ODataV4.js"
 
@@ -18,9 +19,10 @@ const EditableTestEntity = Schema.Struct({
   name: Schema.String,
   value: Schema.Number
 })
+const PartialEditableTestEntity = EditableTestEntity.mapFields(Struct.map(Schema.optional))
 
 // Test configuration layer
-const testConfig = Layer.succeed(ODataClientConfig, {
+const testConfig = Layer.succeed(ODataClientConfig)({
   baseUrl: "https://test-server.com",
   servicePath: "/odata/v4/"
 })
@@ -327,7 +329,7 @@ describe("ODataV4", () => {
         yield* ODataV4.patch(
           "Products(1)",
           { name: "Updated" },
-          Schema.partial(EditableTestEntity)
+          PartialEditableTestEntity
         )
       }).pipe(
         Effect.provide(
@@ -348,7 +350,7 @@ describe("ODataV4", () => {
         yield* ODataV4.patch(
           "Products(1)",
           { name: "Updated" },
-          Schema.partial(EditableTestEntity),
+          PartialEditableTestEntity,
           { etag: "W/\"abc123\"" }
         )
       }).pipe(
@@ -370,7 +372,7 @@ describe("ODataV4", () => {
         yield* ODataV4.patch(
           "Products(1)",
           { name: "Updated" },
-          Schema.partial(EditableTestEntity),
+          PartialEditableTestEntity,
           { forceUpdate: true }
         )
       }).pipe(
@@ -453,7 +455,7 @@ describe("ODataV4", () => {
     const createTunnelingTestLayer = (
       handler: (request: HttpClientRequest.HttpClientRequest) => Effect.Effect<HttpClientResponse.HttpClientResponse>
     ) => {
-      const tunnelingConfig = Layer.succeed(ODataClientConfig, {
+      const tunnelingConfig = Layer.succeed(ODataClientConfig)({
         baseUrl: "https://test-server.com",
         servicePath: "/odata/v4/",
         useTunneling: true
@@ -470,7 +472,7 @@ describe("ODataV4", () => {
         yield* ODataV4.patch(
           "Products(1)",
           { name: "Updated" },
-          Schema.partial(EditableTestEntity)
+          PartialEditableTestEntity
         )
       }).pipe(
         Effect.provide(
@@ -532,7 +534,7 @@ describe("ODataV4", () => {
         yield* ODataV4.patch(
           "Products(1)",
           { name: "Updated" },
-          Schema.partial(EditableTestEntity)
+          PartialEditableTestEntity
         )
       }).pipe(
         Effect.provide(

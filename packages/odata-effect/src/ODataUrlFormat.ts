@@ -9,8 +9,7 @@
 import * as BigDecimal from "effect/BigDecimal"
 import * as DateTime from "effect/DateTime"
 import * as Duration from "effect/Duration"
-import * as Option from "effect/Option"
-import { Int64 } from "./ODataSchema.js"
+import { formatODataDuration, Int64 } from "./ODataSchema.js"
 
 // ============================================================================
 // URL Value Types
@@ -79,9 +78,7 @@ export const formatV2UrlValue = (value: UrlValue): string => {
   }
   // Effect Duration type - V2 uses time prefix
   if (Duration.isDuration(value)) {
-    const iso = Duration.formatIso(value)
-    const formatted = Option.isSome(iso) ? iso.value : "PT0S"
-    return `time'${formatted}'`
+    return `time'${formatODataDuration(value)}'`
   }
   // Int64 type - uses L suffix
   if (Int64.isInt64(value)) {
@@ -144,8 +141,7 @@ export const formatV4UrlValue = (value: UrlValue): string => {
   }
   // Effect Duration type - V4 uses literal ISO 8601 duration format (no prefix)
   if (Duration.isDuration(value)) {
-    const iso = Duration.formatIso(value)
-    return Option.isSome(iso) ? iso.value : "PT0S"
+    return formatODataDuration(value)
   }
   // Int64 type - V4 uses literal format (no suffix)
   if (Int64.isInt64(value)) {

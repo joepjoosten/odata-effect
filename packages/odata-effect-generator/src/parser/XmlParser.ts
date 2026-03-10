@@ -14,7 +14,7 @@ import type { ODataEdmxModel } from "./EdmxSchema.js"
  * @since 1.0.0
  * @category errors
  */
-export class XmlParseError extends Schema.TaggedError<XmlParseError>()(
+export class XmlParseError extends Schema.TaggedErrorClass<XmlParseError>()(
   "XmlParseError",
   {
     message: Schema.String,

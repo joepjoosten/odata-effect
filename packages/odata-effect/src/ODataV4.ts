@@ -33,12 +33,11 @@ import {
   type HttpClientError,
   HttpClientRequest,
   HttpClientResponse
-} from "@effect/platform"
+} from "effect/unstable/http"
 import * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"
 import { ODataClientConfig } from "./Config.js"
-import type { ParseError } from "./Errors.js"
-import { ODataError } from "./Errors.js"
+import { ODataError, ParseError } from "./Errors.js"
 
 // Re-export config - V4 uses the same unified config as V2
 export { ODataClientConfig, type ODataClientConfigService } from "./Config.js"
@@ -54,13 +53,13 @@ export { ODataClientConfig, type ODataClientConfigService } from "./Config.js"
  * @category schemas
  */
 export const ODataV4Annotations = Schema.Struct({
-  "@odata.context": Schema.optionalWith(Schema.String, { nullable: true }),
-  "@odata.type": Schema.optionalWith(Schema.String, { nullable: true }),
-  "@odata.etag": Schema.optionalWith(Schema.String, { nullable: true }),
-  "@odata.id": Schema.optionalWith(Schema.String, { nullable: true }),
-  "@odata.editLink": Schema.optionalWith(Schema.String, { nullable: true }),
-  "@odata.readLink": Schema.optionalWith(Schema.String, { nullable: true }),
-  "@odata.metadataEtag": Schema.optionalWith(Schema.String, { nullable: true })
+  "@odata.context": Schema.optional(Schema.NullishOr(Schema.String)),
+  "@odata.type": Schema.optional(Schema.NullishOr(Schema.String)),
+  "@odata.etag": Schema.optional(Schema.NullishOr(Schema.String)),
+  "@odata.id": Schema.optional(Schema.NullishOr(Schema.String)),
+  "@odata.editLink": Schema.optional(Schema.NullishOr(Schema.String)),
+  "@odata.readLink": Schema.optional(Schema.NullishOr(Schema.String)),
+  "@odata.metadataEtag": Schema.optional(Schema.NullishOr(Schema.String))
 })
 
 /**
@@ -77,11 +76,11 @@ export type ODataV4Annotations = typeof ODataV4Annotations.Type
  * @since 1.0.0
  * @category schemas
  */
-export const ODataV4CollectionResponse = <A, I, R>(schema: Schema.Schema<A, I, R>) =>
+export const ODataV4CollectionResponse = <A, I, R>(schema: Schema.Codec<A, I, R>) =>
   Schema.Struct({
-    "@odata.context": Schema.optionalWith(Schema.String, { nullable: true }),
-    "@odata.count": Schema.optionalWith(Schema.Number, { nullable: true }),
-    "@odata.nextLink": Schema.optionalWith(Schema.String, { nullable: true }),
+    "@odata.context": Schema.optional(Schema.NullishOr(Schema.String)),
+    "@odata.count": Schema.optional(Schema.NullishOr(Schema.Number)),
+    "@odata.nextLink": Schema.optional(Schema.NullishOr(Schema.String)),
     value: Schema.Array(schema)
   })
 
@@ -91,9 +90,9 @@ export const ODataV4CollectionResponse = <A, I, R>(schema: Schema.Schema<A, I, R
  * @since 1.0.0
  * @category schemas
  */
-export const ODataV4ValueResponse = <A, I, R>(schema: Schema.Schema<A, I, R>) =>
+export const ODataV4ValueResponse = <A, I, R>(schema: Schema.Codec<A, I, R>) =>
   Schema.Struct({
-    "@odata.context": Schema.optionalWith(Schema.String, { nullable: true }),
+    "@odata.context": Schema.optional(Schema.NullishOr(Schema.String)),
     value: schema
   })
 
@@ -242,13 +241,27 @@ const applyRequestOptions = (
 const handleError = <A, E, R>(
   effect: Effect.Effect<A, E, R>
 ): Effect.Effect<A, E | ODataError, R> =>
-  Effect.catchAll(effect, (error) =>
+  Effect.catch(effect, (error) =>
     Effect.fail(
       new ODataError({
         message: "OData V4 request failed",
         cause: error
       })
     ))
+
+const decodeJsonBody = <A, I, R>(schema: Schema.Codec<A, I, R>) =>
+(
+  response: HttpClientResponse.HttpClientResponse
+): Effect.Effect<A, HttpClientError.HttpClientError | ParseError, R> =>
+  HttpClientResponse.schemaBodyJson(schema)(response).pipe(
+    Effect.mapError((error) =>
+      Schema.isSchemaError(error)
+        ? new ParseError({
+          message: "Failed to decode OData V4 response body",
+          cause: error
+        })
+        : error)
+  )
 
 // ============================================================================
 // Standalone Tree-Shakable Functions
@@ -263,7 +276,7 @@ const handleError = <A, E, R>(
  */
 export const get = <A, I, R>(
   path: string,
-  schema: Schema.Schema<A, I, R>,
+  schema: Schema.Codec<A, I, R>,
   options?: ODataV4QueryOptions
 ): Effect.Effect<
   A,
@@ -291,7 +304,7 @@ export const get = <A, I, R>(
 
     const request = HttpClientRequest.get(url)
     const response = yield* client.execute(request)
-    const data = yield* HttpClientResponse.schemaBodyJson(schema)(response)
+    const data = yield* decodeJsonBody(schema)(response)
     return data
   }).pipe(Effect.scoped, handleError)
 }
@@ -305,7 +318,7 @@ export const get = <A, I, R>(
  */
 export const getCollection = <A, I, R>(
   path: string,
-  schema: Schema.Schema<A, I, R>,
+  schema: Schema.Codec<A, I, R>,
   options?: ODataV4QueryOptions
 ): Effect.Effect<
   ReadonlyArray<A>,
@@ -334,7 +347,7 @@ export const getCollection = <A, I, R>(
 
     const request = HttpClientRequest.get(url)
     const response = yield* client.execute(request)
-    const data = yield* HttpClientResponse.schemaBodyJson(responseSchema)(response)
+    const data = yield* decodeJsonBody(responseSchema)(response)
     return data.value
   }).pipe(Effect.scoped, handleError)
 }
@@ -348,7 +361,7 @@ export const getCollection = <A, I, R>(
  */
 export const getCollectionPaged = <A, I, R>(
   path: string,
-  schema: Schema.Schema<A, I, R>,
+  schema: Schema.Codec<A, I, R>,
   options?: ODataV4QueryOptions
 ): Effect.Effect<
   PagedResultV4<A>,
@@ -377,7 +390,7 @@ export const getCollectionPaged = <A, I, R>(
 
     const request = HttpClientRequest.get(url)
     const response = yield* client.execute(request)
-    const data = yield* HttpClientResponse.schemaBodyJson(responseSchema)(response)
+    const data = yield* decodeJsonBody(responseSchema)(response)
     return {
       value: data.value,
       count: data["@odata.count"] ?? undefined,
@@ -396,7 +409,7 @@ export const getCollectionPaged = <A, I, R>(
  */
 export const getValue = <A, I, R>(
   path: string,
-  schema: Schema.Schema<A, I, R>
+  schema: Schema.Codec<A, I, R>
 ): Effect.Effect<
   A,
   HttpClientError.HttpClientError | ParseError | ODataError,
@@ -423,7 +436,7 @@ export const getValue = <A, I, R>(
 
     const request = HttpClientRequest.get(path)
     const response = yield* client.execute(request)
-    const data = yield* HttpClientResponse.schemaBodyJson(responseSchema)(response)
+    const data = yield* decodeJsonBody(responseSchema)(response)
     return data.value
   }).pipe(Effect.scoped, handleError)
 }
@@ -438,8 +451,8 @@ export const getValue = <A, I, R>(
 export const post = <A, I, R, B, BI>(
   path: string,
   body: B,
-  bodySchema: Schema.Schema<B, BI>,
-  responseSchema: Schema.Schema<A, I, R>,
+  bodySchema: Schema.Codec<B, BI>,
+  responseSchema: Schema.Codec<A, I, R>,
   requestOptions?: ODataV4RequestOptions
 ): Effect.Effect<
   A,
@@ -470,7 +483,7 @@ export const post = <A, I, R, B, BI>(
     baseRequest = applyRequestOptions(baseRequest, requestOptions)
     const request = yield* HttpClientRequest.schemaBodyJson(bodySchema)(baseRequest, body)
     const response = yield* client.execute(request)
-    const data = yield* HttpClientResponse.schemaBodyJson(responseSchema)(response)
+    const data = yield* decodeJsonBody(responseSchema)(response)
     return data
   }).pipe(Effect.scoped, handleError)
 
@@ -484,7 +497,7 @@ export const post = <A, I, R, B, BI>(
 export const patch = <B, BI>(
   path: string,
   body: B,
-  bodySchema: Schema.Schema<B, BI>,
+  bodySchema: Schema.Codec<B, BI>,
   requestOptions?: ODataV4RequestOptions
 ): Effect.Effect<
   void,
@@ -532,7 +545,7 @@ export const patch = <B, BI>(
 export const put = <B, BI>(
   path: string,
   body: B,
-  bodySchema: Schema.Schema<B, BI>,
+  bodySchema: Schema.Codec<B, BI>,
   requestOptions?: ODataV4RequestOptions
 ): Effect.Effect<
   void,
@@ -603,7 +616,7 @@ export const del = (
       ? HttpClientRequest.post(path).pipe(
         HttpClientRequest.setHeader("X-HTTP-Method", "DELETE")
       )
-      : HttpClientRequest.del(path)
+      : HttpClientRequest.delete(path)
     request = applyRequestOptions(request, requestOptions)
     yield* client.execute(request)
   }).pipe(Effect.scoped, handleError)

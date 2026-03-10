@@ -32,7 +32,7 @@ describe("ODataEffectPromise", () => {
 
       const runtime = createODataRuntime(
         { baseUrl: "https://example.com", servicePath: "/odata/" },
-        NodeHttpClient.layer
+        NodeHttpClient.layerUndici
       )
 
       const converter = toPromise(runtime)
@@ -48,7 +48,7 @@ describe("ODataEffectPromise", () => {
 
       const runtime = createODataRuntime(
         { baseUrl: "https://example.com", servicePath: "/odata/" },
-        NodeHttpClient.layer
+        NodeHttpClient.layerUndici
       )
 
       // Runtime should be created successfully

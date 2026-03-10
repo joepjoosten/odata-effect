@@ -58,7 +58,7 @@ import {
  * @since 1.0.0
  * @category errors
  */
-export class DigestError extends Schema.TaggedError<DigestError>()(
+export class DigestError extends Schema.TaggedErrorClass<DigestError>()(
   "DigestError",
   {
     message: Schema.String,

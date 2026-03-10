@@ -42,10 +42,9 @@ export const generatePackageJson = (
       coverage: "vitest --coverage"
     },
     dependencies: {
-      "@effect/platform": "^0.94.0",
       "@odata-effect/odata-effect": "workspace:*",
       "@odata-effect/odata-effect-promise": "workspace:*",
-      effect: "^3.10.7"
+      effect: "4.0.0-beta.29"
     },
     devDependencies: {
       "@odata-effect/odata-effect": "workspace:*",

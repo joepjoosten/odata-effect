@@ -23,11 +23,10 @@
     "coverage": "vitest --coverage"
   },
   "dependencies": {
-    "@effect/platform": "^0.94.1",
     "@odata-effect/odata-effect": "workspace:*",
-    "effect": "^3.19.14"
+    "effect": "4.0.0-beta.29"
   },
   "devDependencies": {
-    "@effect/platform-node": "^0.104.0"
+    "@effect/platform-node": "4.0.0-beta.29"
   }
 }

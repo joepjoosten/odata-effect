@@ -1,6 +1,6 @@
 import { describe, expect, it } from "@effect/vitest"
-import * as Effect from "effect/Effect"
-import * as Schema from "effect/Schema"
+import * as Effect from "../src/EffectCompat.js"
+import * as Schema from "../src/SchemaCompat.js"
 import {
   BatchBuilder,
   type BatchChangeset,

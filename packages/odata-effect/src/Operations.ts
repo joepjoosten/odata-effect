@@ -6,12 +6,12 @@
  *
  * @since 1.0.0
  */
-import { HttpClient, type HttpClientError, HttpClientRequest, HttpClientResponse } from "@effect/platform"
 import type * as BigDecimal from "effect/BigDecimal"
 import type * as DateTime from "effect/DateTime"
 import type * as Duration from "effect/Duration"
-import * as Effect from "effect/Effect"
-import * as Schema from "effect/Schema"
+import * as Effect from "./EffectCompat.js"
+import * as Schema from "./SchemaCompat.js"
+import { HttpClient, HttpClientError, HttpClientRequest, HttpClientResponse } from "effect/unstable/http"
 import type { ODataClientConfigService } from "./Config.js"
 import type { ParseError } from "./Errors.js"
 import { ODataError } from "./Errors.js"

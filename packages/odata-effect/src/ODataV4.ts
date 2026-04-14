@@ -27,18 +27,12 @@
  *
  * @since 1.0.0
  */
-import {
-  type HttpBody,
-  HttpClient,
-  type HttpClientError,
-  HttpClientRequest,
-  HttpClientResponse
-} from "@effect/platform"
-import * as Effect from "effect/Effect"
-import * as Schema from "effect/Schema"
+import * as Effect from "./EffectCompat.js"
+import * as Schema from "./SchemaCompat.js"
+import { HttpBody, HttpClient, HttpClientError, HttpClientRequest, HttpClientResponse } from "effect/unstable/http"
 import { ODataClientConfig } from "./Config.js"
 import type { ParseError } from "./Errors.js"
-import { ODataError } from "./Errors.js"
+import { ODataError, ParseError as ParseErrorTag } from "./Errors.js"
 
 // Re-export config - V4 uses the same unified config as V2
 export { ODataClientConfig, type ODataClientConfigService } from "./Config.js"
@@ -241,7 +235,7 @@ const applyRequestOptions = (
 
 const handleError = <A, E, R>(
   effect: Effect.Effect<A, E, R>
-): Effect.Effect<A, E | ODataError, R> =>
+): Effect.Effect<A, ODataError, R> =>
   Effect.catchAll(effect, (error) =>
     Effect.fail(
       new ODataError({
@@ -291,7 +285,9 @@ export const get = <A, I, R>(
 
     const request = HttpClientRequest.get(url)
     const response = yield* client.execute(request)
-    const data = yield* HttpClientResponse.schemaBodyJson(schema)(response)
+    const data = yield* HttpClientResponse.schemaBodyJson(schema)(response).pipe(
+      Effect.mapError((error) => new ParseErrorTag({ message: "Failed to parse OData V4 response body", cause: error }))
+    )
     return data
   }).pipe(Effect.scoped, handleError)
 }
@@ -334,7 +330,9 @@ export const getCollection = <A, I, R>(
 
     const request = HttpClientRequest.get(url)
     const response = yield* client.execute(request)
-    const data = yield* HttpClientResponse.schemaBodyJson(responseSchema)(response)
+    const data = yield* HttpClientResponse.schemaBodyJson(responseSchema)(response).pipe(
+      Effect.mapError((error) => new ParseErrorTag({ message: "Failed to parse OData V4 collection response body", cause: error }))
+    )
     return data.value
   }).pipe(Effect.scoped, handleError)
 }
@@ -377,7 +375,9 @@ export const getCollectionPaged = <A, I, R>(
 
     const request = HttpClientRequest.get(url)
     const response = yield* client.execute(request)
-    const data = yield* HttpClientResponse.schemaBodyJson(responseSchema)(response)
+    const data = yield* HttpClientResponse.schemaBodyJson(responseSchema)(response).pipe(
+      Effect.mapError((error) => new ParseErrorTag({ message: "Failed to parse OData V4 paged response body", cause: error }))
+    )
     return {
       value: data.value,
       count: data["@odata.count"] ?? undefined,
@@ -423,7 +423,9 @@ export const getValue = <A, I, R>(
 
     const request = HttpClientRequest.get(path)
     const response = yield* client.execute(request)
-    const data = yield* HttpClientResponse.schemaBodyJson(responseSchema)(response)
+    const data = yield* HttpClientResponse.schemaBodyJson(responseSchema)(response).pipe(
+      Effect.mapError((error) => new ParseErrorTag({ message: "Failed to parse OData V4 value response body", cause: error }))
+    )
     return data.value
   }).pipe(Effect.scoped, handleError)
 }
@@ -470,7 +472,9 @@ export const post = <A, I, R, B, BI>(
     baseRequest = applyRequestOptions(baseRequest, requestOptions)
     const request = yield* HttpClientRequest.schemaBodyJson(bodySchema)(baseRequest, body)
     const response = yield* client.execute(request)
-    const data = yield* HttpClientResponse.schemaBodyJson(responseSchema)(response)
+    const data = yield* HttpClientResponse.schemaBodyJson(responseSchema)(response).pipe(
+      Effect.mapError((error) => new ParseErrorTag({ message: "Failed to parse OData V4 create response body", cause: error }))
+    )
     return data
   }).pipe(Effect.scoped, handleError)
 
@@ -603,7 +607,7 @@ export const del = (
       ? HttpClientRequest.post(path).pipe(
         HttpClientRequest.setHeader("X-HTTP-Method", "DELETE")
       )
-      : HttpClientRequest.del(path)
+      : HttpClientRequest.delete(path)
     request = applyRequestOptions(request, requestOptions)
     yield* client.execute(request)
   }).pipe(Effect.scoped, handleError)

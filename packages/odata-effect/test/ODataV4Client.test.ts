@@ -1,6 +1,6 @@
 import { describe, expect, it } from "@effect/vitest"
-import * as Effect from "effect/Effect"
-import * as Schema from "effect/Schema"
+import * as Effect from "../src/EffectCompat.js"
+import * as Schema from "../src/SchemaCompat.js"
 import {
   buildEntityPathV4,
   ODataClientConfig,
@@ -45,8 +45,8 @@ describe("ODataV4Client", () => {
           "@odata.etag": null
         }
         const result = yield* Schema.decodeUnknown(ODataV4Annotations)(data)
-        expect(result["@odata.context"]).toBeUndefined()
-        expect(result["@odata.etag"]).toBeUndefined()
+        expect(result["@odata.context"]).toBeNull()
+        expect(result["@odata.etag"]).toBeNull()
       }))
 
     it.effect("handles partial annotations", () =>

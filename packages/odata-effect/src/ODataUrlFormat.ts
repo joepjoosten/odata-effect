@@ -9,7 +9,6 @@
 import * as BigDecimal from "effect/BigDecimal"
 import * as DateTime from "effect/DateTime"
 import * as Duration from "effect/Duration"
-import * as Option from "effect/Option"
 import { Int64 } from "./ODataSchema.js"
 
 // ============================================================================
@@ -32,6 +31,36 @@ export type UrlValue =
   | Int64
   | BigDecimal.BigDecimal
   | null
+
+const formatDurationIso = (duration: Duration.Duration): string => {
+  if (!Duration.isFinite(duration)) {
+    return "PT0S"
+  }
+
+  const totalMillis = Duration.toMillis(duration)
+  const sign = totalMillis < 0 ? "-" : ""
+  let remainingMillis = Math.abs(totalMillis)
+
+  const days = Math.floor(remainingMillis / 86_400_000)
+  remainingMillis -= days * 86_400_000
+
+  const hours = Math.floor(remainingMillis / 3_600_000)
+  remainingMillis -= hours * 3_600_000
+
+  const minutes = Math.floor(remainingMillis / 60_000)
+  remainingMillis -= minutes * 60_000
+
+  const seconds = remainingMillis / 1000
+  const secondText = Number.isInteger(seconds) ? String(seconds) : String(seconds).replace(/\.?0+$/, "")
+  const datePart = days > 0 ? `${days}D` : ""
+  const timePart = [
+    hours > 0 ? `${hours}H` : "",
+    minutes > 0 ? `${minutes}M` : "",
+    seconds > 0 || (days === 0 && hours === 0 && minutes === 0) ? `${secondText}S` : ""
+  ].join("")
+
+  return `${sign}P${datePart}${timePart ? `T${timePart}` : ""}`
+}
 
 // ============================================================================
 // V2 URL Formatting
@@ -79,9 +108,7 @@ export const formatV2UrlValue = (value: UrlValue): string => {
   }
   // Effect Duration type - V2 uses time prefix
   if (Duration.isDuration(value)) {
-    const iso = Duration.formatIso(value)
-    const formatted = Option.isSome(iso) ? iso.value : "PT0S"
-    return `time'${formatted}'`
+    return `time'${formatDurationIso(value)}'`
   }
   // Int64 type - uses L suffix
   if (Int64.isInt64(value)) {
@@ -144,8 +171,7 @@ export const formatV4UrlValue = (value: UrlValue): string => {
   }
   // Effect Duration type - V4 uses literal ISO 8601 duration format (no prefix)
   if (Duration.isDuration(value)) {
-    const iso = Duration.formatIso(value)
-    return Option.isSome(iso) ? iso.value : "PT0S"
+    return formatDurationIso(value)
   }
   // Int64 type - V4 uses literal format (no suffix)
   if (Int64.isInt64(value)) {

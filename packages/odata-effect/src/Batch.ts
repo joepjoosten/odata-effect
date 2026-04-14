@@ -7,9 +7,9 @@
  *
  * @since 1.0.0
  */
-import { HttpClient, type HttpClientError, HttpClientRequest, HttpClientResponse } from "@effect/platform"
-import * as Effect from "effect/Effect"
-import * as Schema from "effect/Schema"
+import * as Effect from "./EffectCompat.js"
+import * as Schema from "./SchemaCompat.js"
+import { HttpClient, HttpClientError, HttpClientRequest, HttpClientResponse } from "effect/unstable/http"
 import type { ODataClientConfigService } from "./Config.js"
 import { ODataError, ParseError } from "./Errors.js"
 
@@ -689,7 +689,7 @@ export const BatchResponseV4JsonSchema = Schema.Struct({
     Schema.Struct({
       id: Schema.String,
       status: Schema.Number,
-      headers: Schema.optional(Schema.Record({ key: Schema.String, value: Schema.String })),
+      headers: Schema.optional(Schema.Record(Schema.String, Schema.String)),
       body: Schema.optional(Schema.Unknown),
       atomicityGroup: Schema.optional(Schema.String)
     })
@@ -890,14 +890,16 @@ export const executeBatchV4Json = (
       request = request.pipe(HttpClientRequest.setHeader("Prefer", "odata.continue-on-error"))
     }
 
-    request = request.pipe(HttpClientRequest.bodyUnsafeJson(batchRequest))
+    request = request.pipe(HttpClientRequest.bodyJsonUnsafe(batchRequest))
 
     const response = yield* client.pipe(
       HttpClient.filterStatusOk,
       (c) => c.execute(request)
     )
 
-    const data = yield* HttpClientResponse.schemaBodyJson(BatchResponseV4JsonSchema)(response)
+    const data = yield* HttpClientResponse.schemaBodyJson(BatchResponseV4JsonSchema)(response).pipe(
+      Effect.mapError((error) => new ParseError({ message: "Failed to parse V4 batch response body", cause: error }))
+    )
     // Parse the typed schema result into our interface
     return parseBatchResponseV4JsonFromSchema(data)
   }).pipe(

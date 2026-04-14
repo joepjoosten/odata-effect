@@ -29,11 +29,11 @@
  *
  * @since 1.0.0
  */
-import type { HttpClient } from "@effect/platform"
-import type * as HttpBody from "@effect/platform/HttpBody"
-import type * as HttpClientError from "@effect/platform/HttpClientError"
 import type * as Effect from "effect/Effect"
-import * as Schema from "effect/Schema"
+import * as Schema from "./SchemaCompat.js"
+import type * as HttpBody from "effect/unstable/http/HttpBody"
+import type * as HttpClient from "effect/unstable/http/HttpClient"
+import type * as HttpClientError from "effect/unstable/http/HttpClientError"
 import type { ODataError, ParseError, SapError } from "./Errors.js"
 import * as OData from "./OData.js"
 import { buildEntityPath, type ODataClientConfig, type ODataQueryOptions } from "./OData.js"

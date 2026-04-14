@@ -6,10 +6,10 @@
  *
  * @since 1.0.0
  */
-import { HttpClient, type HttpClientError, HttpClientRequest, HttpClientResponse } from "@effect/platform"
-import * as Effect from "effect/Effect"
-import * as Schema from "effect/Schema"
+import * as Effect from "./EffectCompat.js"
+import * as Schema from "./SchemaCompat.js"
 import type * as Stream from "effect/Stream"
+import { HttpClient, HttpClientError, HttpClientRequest, HttpClientResponse } from "effect/unstable/http"
 import type { ODataClientConfigService } from "./Config.js"
 import type { ParseError } from "./Errors.js"
 import { ODataError } from "./Errors.js"
@@ -330,7 +330,7 @@ export const deleteMediaV2 = (
   const url = `${config.baseUrl}${config.servicePath}${path}`
 
   return Effect.gen(function*() {
-    let request = HttpClientRequest.del(url)
+    let request = HttpClientRequest.delete(url)
 
     if (etag) {
       request = request.pipe(HttpClientRequest.setHeader("If-Match", etag))
@@ -566,7 +566,7 @@ export const deleteMediaV4 = (
   const url = `${config.baseUrl}${config.servicePath}${path}`
 
   return Effect.gen(function*() {
-    let request = HttpClientRequest.del(url).pipe(
+    let request = HttpClientRequest.delete(url).pipe(
       HttpClientRequest.setHeader("OData-Version", "4.0")
     )
 

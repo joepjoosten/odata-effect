@@ -27,10 +27,8 @@
     "coverage": "vitest --coverage"
   },
   "dependencies": {
-    "@effect/cli": "^0.73.0",
-    "@effect/platform": "^0.94.1",
-    "@effect/platform-node": "^0.104.0",
-    "effect": "^3.19.14",
+    "@effect/platform-node": "4.0.0-beta.48",
+    "effect": "4.0.0-beta.48",
     "xml2js": "^0.6.2"
   },
   "devDependencies": {

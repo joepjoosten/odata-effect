@@ -56,7 +56,8 @@ export interface ODataClientConfigService {
  * @since 1.0.0
  * @category context
  */
-export class ODataClientConfig extends Context.Tag("ODataClientConfig")<
-  ODataClientConfig,
-  ODataClientConfigService
->() {}
+export const ODataClientConfig: Context.Service<ODataClientConfigService, ODataClientConfigService> = Context.Service(
+  "ODataClientConfig"
+)
+
+export type ODataClientConfig = ODataClientConfigService

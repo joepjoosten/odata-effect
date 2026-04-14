@@ -16,8 +16,8 @@ import * as BigDecimal from "effect/BigDecimal"
 import * as DateTime from "effect/DateTime"
 import * as Duration from "effect/Duration"
 import * as Option from "effect/Option"
-import * as ParseResult from "effect/ParseResult"
-import * as Schema from "effect/Schema"
+import * as ParseResult from "./ParseResultCompat.js"
+import * as Schema from "./SchemaCompat.js"
 
 // ============================================================================
 // V2 Date/Time Schemas
@@ -50,6 +50,55 @@ const formatTimezoneOffset = (offsetMs: number): string => {
   return `${sign}${hours.toString().padStart(2, "0")}${minutes.toString().padStart(2, "0")}`
 }
 
+const parseIsoDuration = (value: string): Option.Option<Duration.Duration> => {
+  const match = value.match(
+    /^(-)?P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?)?$/
+  )
+
+  if (!match) {
+    return Option.none()
+  }
+
+  const sign = match[1] ? -1 : 1
+  const days = match[2] ? Number(match[2]) : 0
+  const hours = match[3] ? Number(match[3]) : 0
+  const minutes = match[4] ? Number(match[4]) : 0
+  const seconds = match[5] ? Number(match[5]) : 0
+  const millis = sign * ((((days * 24 + hours) * 60 + minutes) * 60 + seconds) * 1000)
+
+  return Number.isFinite(millis) ? Option.some(Duration.millis(millis)) : Option.none()
+}
+
+const formatIsoDuration = (duration: Duration.Duration): string => {
+  if (!Duration.isFinite(duration)) {
+    return "PT0S"
+  }
+
+  const totalMillis = Duration.toMillis(duration)
+  const sign = totalMillis < 0 ? "-" : ""
+  let remainingMillis = Math.abs(totalMillis)
+
+  const days = Math.floor(remainingMillis / 86_400_000)
+  remainingMillis -= days * 86_400_000
+
+  const hours = Math.floor(remainingMillis / 3_600_000)
+  remainingMillis -= hours * 3_600_000
+
+  const minutes = Math.floor(remainingMillis / 60_000)
+  remainingMillis -= minutes * 60_000
+
+  const seconds = remainingMillis / 1000
+  const secondText = Number.isInteger(seconds) ? String(seconds) : String(seconds).replace(/\.?0+$/, "")
+  const datePart = days > 0 ? `${days}D` : ""
+  const timePart = [
+    hours > 0 ? `${hours}H` : "",
+    minutes > 0 ? `${minutes}M` : "",
+    seconds > 0 || (days === 0 && hours === 0 && minutes === 0) ? `${secondText}S` : ""
+  ].join("")
+
+  return `${sign}P${datePart}${timePart ? `T${timePart}` : ""}`
+}
+
 /**
  * OData V2 DateTime schema.
  *
@@ -77,7 +126,7 @@ export const ODataV2DateTime = Schema.transformOrFail(
       const match = s.match(V2_DATE_PATTERN)
       if (match) {
         const millis = parseInt(match[1], 10)
-        return ParseResult.succeed(DateTime.unsafeMake(millis))
+        return ParseResult.succeed(DateTime.makeUnsafe(millis))
       }
 
       // Try ISO 8601 format (V3/V4): 2022-12-31T23:59:59 or 2022-12-31T23:59:59Z
@@ -113,7 +162,7 @@ export const ODataV2DateTimeOffset = Schema.transformOrFail(
       if (match) {
         const millis = parseInt(match[1], 10)
         const offsetMs = match[2] ? parseTimezoneOffset(match[2]) : 0
-        const utc = DateTime.unsafeMake(millis)
+        const utc = DateTime.makeUnsafe(millis)
         const zoned = DateTime.setZone(utc, DateTime.zoneMakeOffset(offsetMs))
         return ParseResult.succeed(zoned)
       }
@@ -165,20 +214,13 @@ export const ODataV2Time = Schema.transformOrFail(
   {
     strict: true,
     decode: (s, _, ast) => {
-      const duration = Duration.fromIso(s)
+      const duration = parseIsoDuration(s)
       if (Option.isNone(duration)) {
         return ParseResult.fail(new ParseResult.Type(ast, s, `Invalid OData V2 Time format: ${s}`))
       }
       return ParseResult.succeed(duration.value)
     },
-    encode: (d) => {
-      const iso = Duration.formatIso(d)
-      if (Option.isNone(iso)) {
-        // Infinite duration - return a reasonable fallback
-        return ParseResult.succeed("PT0S")
-      }
-      return ParseResult.succeed(iso.value)
-    }
+    encode: (d) => ParseResult.succeed(formatIsoDuration(d))
   }
 )
 
@@ -250,7 +292,7 @@ export const Int64 = {
   /**
    * Create an Int64 from a number.
    */
-  fromNumber: (n: number): Int64 => Int64.make(BigDecimal.fromNumber(n)),
+  fromNumber: (n: number): Int64 => Int64.make(BigDecimal.fromNumberUnsafe(n)),
 
   /**
    * Create an Int64 from a string.
@@ -420,19 +462,13 @@ export const ODataV4Duration = Schema.transformOrFail(
   {
     strict: true,
     decode: (s, _, ast) => {
-      const duration = Duration.fromIso(s)
+      const duration = parseIsoDuration(s)
       if (Option.isNone(duration)) {
         return ParseResult.fail(new ParseResult.Type(ast, s, `Invalid OData V4 Duration format: ${s}`))
       }
       return ParseResult.succeed(duration.value)
     },
-    encode: (d) => {
-      const iso = Duration.formatIso(d)
-      if (Option.isNone(iso)) {
-        return ParseResult.succeed("PT0S")
-      }
-      return ParseResult.succeed(iso.value)
-    }
+    encode: (d) => ParseResult.succeed(formatIsoDuration(d))
   }
 )
 

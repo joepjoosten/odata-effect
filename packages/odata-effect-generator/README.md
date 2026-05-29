@@ -1,268 +1,214 @@
 # @odata-effect/odata-effect-generator
 
-Code generator for Effect-based OData service clients. Generates type-safe TypeScript code from OData metadata.
+Code generator for Effect-based OData service clients. It reads an OData `$metadata` XML file and generates TypeScript schemas, CRUD services, path builders, query helpers, and operations.
 
-## Installation
+This is the recommended starting point for a new project because it turns service metadata into typed code.
 
-```bash
-npm install -g @odata-effect/odata-effect-generator
-# or
-pnpm add -g @odata-effect/odata-effect-generator
-```
+## Install
 
-## Usage
+Install it in the app or workspace where you want to generate code:
 
 ```bash
-odata-effect-gen generate ./metadata.xml ./generated
+pnpm add -D @odata-effect/odata-effect-generator
+pnpm add @odata-effect/odata-effect @odata-effect/odata-effect-promise effect@4.0.0-beta.74 @effect/platform-node@4.0.0-beta.74
 ```
 
-### Arguments
+## Step 1: Download Metadata
 
-- `<metadata-path>`: Path to OData metadata XML file (required)
-- `<output-dir>`: Output directory for generated code (required)
+Save your service metadata as XML:
 
-### Options
+```bash
+curl 'https://server.example.com/sap/opu/odata/sap/MY_SERVICE/$metadata' -o metadata.xml
+```
 
-- `--service-name`: Override service name (defaults to EntityContainer name)
-- `--package-name`: NPM package name (defaults to @template/<service-name>-effect)
-- `--force`: Overwrite existing files
-- `--files-only`: Generate only source files directly in output-dir (no package.json, tsconfig, src/ subdirectory)
+If the endpoint needs authentication, download the same `$metadata` document using your normal authenticated HTTP client and save it locally.
 
-## Generated Code
+## Step 2: Generate Code
 
-The generator produces:
+Generate files directly into an existing app:
+
+```bash
+pnpm exec odata-effect-gen generate ./metadata.xml ./src/generated --files-only --force --config '{"esmExtensions": true}'
+```
+
+Generate a package-style folder instead:
+
+```bash
+pnpm exec odata-effect-gen generate ./metadata.xml ./packages/my-service-client --package-name @my-org/my-service-client --force
+```
+
+Use `--files-only` for application source folders. Omit it when you want the generator to create package files such as `package.json`, `tsconfig`, and `vitest.config`. Package-style output is intended for workspace layouts where the generated package can share the repository's TypeScript and build configuration.
+
+## Step 3: Call The Generated Client
+
+Promise-style application code:
+
+```typescript
+import * as NodeHttpClient from "@effect/platform-node/NodeHttpClient"
+import { createODataRuntime, toPromise } from "@odata-effect/odata-effect-promise"
+import { ProductService } from "./generated/index.js"
+
+const runtime = createODataRuntime(
+  {
+    baseUrl: "https://server.example.com",
+    servicePath: "/sap/opu/odata/sap/MY_SERVICE/"
+  },
+  NodeHttpClient.layer
+)
+
+try {
+  const products = await ProductService.getAll({ $top: 10 }).pipe(toPromise(runtime))
+  const product = await ProductService.getById("123").pipe(toPromise(runtime))
+  console.log({ product, products })
+} finally {
+  await runtime.dispose()
+}
+```
+
+Effect-style code:
+
+```typescript
+import * as NodeHttpClient from "@effect/platform-node/NodeHttpClient"
+import { Config } from "@odata-effect/odata-effect"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import { ProductService } from "./generated/index.js"
+
+const Live = Layer.merge(
+  Layer.succeed(Config.ODataClientConfig, {
+    baseUrl: "https://server.example.com",
+    servicePath: "/sap/opu/odata/sap/MY_SERVICE/"
+  }),
+  NodeHttpClient.layer
+)
+
+const program = ProductService.getAll({ $top: 10 })
+const products = await Effect.runPromise(program.pipe(Effect.provide(Live)))
+```
+
+Generated service names are based on entity set names. For example, an entity set named `Products` becomes `ProductService`.
+
+Generated models use TypeScript-style property names such as `name` or `productID`. The generated schemas handle encoding and decoding the original OData property names for you.
+
+## Generated Files
 
 | File | Description |
-|------|-------------|
-| `Models.ts` | Schema classes for entities and complex types |
-| `QueryModels.ts` | Type-safe query paths for filtering and ordering |
-| `Services.ts` | CRUD services for all entity sets (using crud factory) |
-| `PathBuilders.ts` | Tree-shakable navigation path builders with `toPromise` |
-| `Operations.ts` | Functions/Actions (if present in metadata) |
-| `index.ts` | Re-exports all generated code |
+| ---- | ----------- |
+| `Models.ts` | Effect Schema values for entities, complex types, enums, and editable variants. |
+| `QueryModels.ts` | Type-safe query builders for filter, select, orderby, top, and skip. |
+| `Services.ts` | CRUD services for entity sets. |
+| `PathBuilders.ts` | Tree-shakable navigation path builders with terminal fetch helpers. |
+| `Operations.ts` | Function imports, V4 functions, and V4 actions when present in metadata. |
+| `index.ts` | Re-exports the generated API. |
 
-## Two Ways to Query Data
+## Service Functions
 
-The generator provides two complementary approaches for querying OData services:
-
-### 1. Service Functions (Direct Operations)
-
-Best for simple CRUD operations on a single entity set:
+Use generated services for normal CRUD operations:
 
 ```typescript
-import { ProductService } from "./generated"
-
-// Get all products
-const products = yield* ProductService.getAll()
-
-// Get by ID
-const product = yield* ProductService.getById(123)
-
-// Create
-const newProduct = yield* ProductService.create({ name: "Widget", price: 9.99 })
-
-// Update
-yield* ProductService.update(123, { price: 12.99 })
-
-// Delete
-yield* ProductService.delete(123)
+const products = await ProductService.getAll({ $top: 10 }).pipe(toPromise(runtime))
+const product = await ProductService.getById("123").pipe(toPromise(runtime))
+const created = await ProductService.create({ name: "Notebook" }).pipe(toPromise(runtime))
+await ProductService.update("123", { name: "Updated" }).pipe(toPromise(runtime))
+await ProductService.delete("123").pipe(toPromise(runtime))
 ```
 
-### 2. Path Builders (Pipe-based Navigation)
+## Path Builders
 
-Best for navigating relationships with full type safety. Uses branded types to ensure you can only navigate to valid properties:
-
-```typescript
-import { pipe } from "effect"
-import {
-  People, byKey, trips, planItems, asFlight, bestFriend,
-  fetchCollection, fetchOne
-} from "./generated"
-import { Person, Trip, Flight } from "./generated"
-
-// Navigate through relationships with pipe()
-const flights = yield* pipe(
-  People,                    // Path<PersonModel, true>  - collection
-  byKey("russellwhyte"),     // Path<PersonModel, false> - single entity
-  trips,                     // Path<TripModel, true>    - collection
-  byKey(0),                  // Path<TripModel, false>   - single entity
-  planItems,                 // Path<PlanItemModel, true>
-  asFlight,                  // Path<FlightModel, true>  - type cast
-  fetchCollection(Flight)    // Execute the query
-)
-
-// Get a single entity
-const person = yield* pipe(
-  People,
-  byKey("russellwhyte"),
-  fetchOne(Person)
-)
-
-// Navigate to a single related entity
-const friend = yield* pipe(
-  People,
-  byKey("russellwhyte"),
-  bestFriend,
-  fetchOne(Person)
-)
-```
-
-### Type Safety with Branded Types
-
-The path builders use branded types to ensure type-safe navigation at compile time:
+Use path builders when you need typed navigation across relationships:
 
 ```typescript
-// Path<TEntity, IsCollection> tracks what entity type you're "at"
-type Path<TEntity, IsCollection extends boolean = false> = string & {
-  readonly _entity: TEntity
-  readonly _collection: IsCollection
-}
+import { pipe } from "effect/Function"
+import { Flight, People, byKey, fetchCollection, planItems, trips } from "./generated/index.js"
 
-// TypeScript prevents invalid navigation:
-
-// ✅ Valid - trips is a navigation property on Person
-pipe(People, byKey("russell"), trips)
-
-// ❌ Compile error - planItems is on Trip, not Person
-pipe(People, byKey("russell"), planItems)
-
-// ❌ Compile error - can't byKey on a single entity (not a collection)
-pipe(People, byKey("russell"), byKey("other"))
-```
-
-### Path Builder Features
-
-| Feature | Example |
-|---------|---------|
-| Entity set root | `People` → `Path<PersonModel, true>` |
-| Key access | `byKey("id")` → converts collection to single |
-| Navigation | `trips` → type-safe navigation to related entity |
-| Type casting | `asFlight` → filter to derived type |
-| Terminal ops | `fetchCollection(Schema)`, `fetchOne(Schema)` |
-
-### Tree-Shaking
-
-Path builders are fully tree-shakable. Each navigation function is a separate export:
-
-```typescript
-// Only import what you use - unused navigation functions are removed by bundler
-import { People, byKey, trips } from "./generated"
-```
-
-### Comparison with odata2ts
-
-If you're familiar with odata2ts, here's how the APIs compare:
-
-```typescript
-// odata2ts (method chaining)
-const response = await trippinService
-  .people("russellwhyte")
-  .trips(0)
-  .planItems()
-  .asFlightCollectionService()
-  .query()
-
-// odata-effect (pipe composition)
-const flights = yield* pipe(
+const flights = await pipe(
   People,
   byKey("russellwhyte"),
   trips,
   byKey(0),
   planItems,
-  asFlight,
-  fetchCollection(Flight)
+  fetchCollection(Flight),
+  toPromise(runtime)
 )
 ```
 
-## Query Options
+The path type tracks both the current entity type and whether the path is a collection, so TypeScript rejects invalid navigation.
 
-Both service functions and path builders support OData query options:
+## Type-Safe Queries
 
-```typescript
-// With service functions
-const products = yield* ProductService.getAll({
-  $filter: "price gt 10",
-  $orderby: "name",
-  $top: 10,
-  $select: "id,name,price"
-})
-
-// With path builders (via fetchCollection/fetchOne)
-const myTrips = yield* pipe(
-  People,
-  byKey("russellwhyte"),
-  trips,
-  (path) => fetchCollection(Trip)(path, {
-    $filter: "budget gt 1000",
-    $orderby: "startsAt desc"
-  })
-)
-```
-
-## Type-Safe Query Building
-
-Use the generated `QueryModels` for type-safe filter and orderby construction:
+Use generated query models instead of hand-written query strings when possible:
 
 ```typescript
-import { productQuery } from "./generated"
+import { productQuery } from "./generated/index.js"
 
 const query = productQuery()
-  .filter(q => q.price.gt(10).and(q.name.contains("Widget")))
-  .orderBy(q => q.name.asc())
-  .select("id", "name", "price")
+  .filter((q) => q.name.contains("Notebook"))
+  .orderBy((q) => q.name.asc())
+  .select("productID", "name")
   .top(10)
   .build()
 
-const products = yield* ProductService.getAll(query)
+const products = await ProductService.getAll(query).pipe(toPromise(runtime))
 ```
 
-## Promise-Based Usage
+## Operations
 
-For non-Effect environments, use the `toPromise` function to convert any Effect to a Promise:
+If the metadata contains FunctionImports, Functions, or Actions, they are exported from `Operations.ts`:
 
 ```typescript
-import { pipe } from "effect"
-import { createODataRuntime } from "@odata-effect/odata-effect-promise"
-import { ProductService, toPromise, People, byKey, trips, fetchCollection, Trip } from "./generated"
+import { Operations } from "./generated/index.js"
 
-const runtime = createODataRuntime({
-  baseUrl: "https://api.example.com",
-  servicePath: "/odata/v4/"
-})
-
-// Service functions - pipe through toPromise
-const products = await ProductService.getAll().pipe(toPromise(runtime))
-const product = await ProductService.getById(123).pipe(toPromise(runtime))
-
-// Path builders - add toPromise at the end of the pipe
-const myTrips = await pipe(
-  People,
-  byKey("russellwhyte"),
-  trips,
-  fetchCollection(Trip),
-  toPromise(runtime)
-)
-
-// Don't forget to dispose when done
-await runtime.dispose()
+const result = await Operations.getProductsByRating({ rating: 5 }).pipe(toPromise(runtime))
+await Operations.resetDataSource().pipe(toPromise(runtime))
 ```
 
-## Operations (Functions & Actions)
+## CLI Reference
 
-If your OData service defines FunctionImports (V2) or Functions/Actions (V4), they are generated in `Operations.ts`:
-
-```typescript
-import { Operations } from "./generated"
-
-// V2 FunctionImport
-const result = yield* Operations.getProductsByRating({ rating: 5 })
-
-// V4 Function (no side effects)
-const airport = yield* Operations.getNearestAirport({ lat: 51.5, lon: -0.1 })
-
-// V4 Action (may have side effects)
-yield* Operations.resetDataSource()
+```bash
+odata-effect-gen generate <metadata-path> <output-dir> [options]
 ```
+
+| Option | Description |
+| ------ | ----------- |
+| `--service-name <name>` | Override the service name. Defaults to the EntityContainer name. |
+| `--package-name <name>` | Package name for package-style workspace generation. |
+| `--force` | Overwrite existing files. |
+| `--files-only` | Generate only source files directly into `output-dir`. |
+| `--config <json-or-path>` | JSON string or path to JSON config. Supports `esmExtensions` and naming `overrides`. |
+
+Example config file:
+
+```json
+{
+  "esmExtensions": true,
+  "overrides": {
+    "properties": {
+      "ID": "id",
+      "SKU": "sku"
+    },
+    "entities": {
+      "BusinessPartner": {
+        "name": "Partner"
+      }
+    }
+  }
+}
+```
+
+Run with:
+
+```bash
+pnpm exec odata-effect-gen generate ./metadata.xml ./src/generated --files-only --config ./odata-effect.config.json
+```
+
+## Troubleshooting
+
+| Problem | What to check |
+| ------- | ------------- |
+| Generated imports fail in Node ESM | Use `--config '{"esmExtensions": true}'`. |
+| `ProductService` does not exist | Check the entity set name in metadata; service names are singularized from entity sets. |
+| Request URL is wrong | `baseUrl` should be host only; `servicePath` should be the OData service root; generated paths are relative. |
+| Metadata download fails | Download `$metadata` with the same authentication method your SAP service requires. |
 
 ## License
 

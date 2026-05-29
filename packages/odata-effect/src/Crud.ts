@@ -52,16 +52,23 @@ import { buildEntityPath, type ODataClientConfig, type ODataQueryOptions } from 
  */
 export type EntityKey = string | number | boolean | { [key: string]: string | number | boolean }
 
-type EditableSchema<TEditable, TEditableInput> = Schema.Codec<TEditable, TEditableInput> & {
+type StructEditableSchema<TEditable, TEditableInput> = Schema.Codec<TEditable, TEditableInput> & {
   readonly mapFields: (
     f: (fields: Schema.Struct.Fields) => Schema.Struct.Fields
   ) => Schema.Top
 }
 
 const partialSchema = <TEditable, TEditableInput>(
-  schema: EditableSchema<TEditable, TEditableInput>
+  schema: Schema.Codec<TEditable, TEditableInput>
 ): Schema.Codec<Partial<TEditable>, Partial<TEditableInput>> =>
-  schema.mapFields(Struct.map(Schema.optional)) as unknown as Schema.Codec<Partial<TEditable>, Partial<TEditableInput>>
+  "mapFields" in schema && typeof schema.mapFields === "function"
+    ? (schema as StructEditableSchema<TEditable, TEditableInput>).mapFields(
+      Struct.map(Schema.optional)
+    ) as unknown as Schema.Codec<
+      Partial<TEditable>,
+      Partial<TEditableInput>
+    >
+    : schema as unknown as Schema.Codec<Partial<TEditable>, Partial<TEditableInput>>
 
 /**
  * Configuration for creating a CRUD service.
@@ -81,7 +88,9 @@ export interface CrudConfig<
   /** Schema for the entity type */
   readonly schema: Schema.Codec<TEntity, TEntityInput>
   /** Schema for creating/updating entities */
-  readonly editableSchema: EditableSchema<TEditable, TEditableInput>
+  readonly editableSchema: Schema.Codec<TEditable, TEditableInput>
+  /** Optional schema for partial update bodies. Required for transformed editable schemas. */
+  readonly partialEditableSchema?: Schema.Codec<Partial<TEditable>, Partial<TEditableInput>>
   /** Function to convert ID to entity key */
   readonly idToKey: (id: TId) => EntityKey
 }
@@ -176,7 +185,7 @@ export const crud = <
     OData.patch(
       buildEntityPath(config.path, config.idToKey(id)),
       entity,
-      partialSchema(config.editableSchema)
+      config.partialEditableSchema ?? partialSchema(config.editableSchema)
     ),
 
   delete: (id) => OData.del(buildEntityPath(config.path, config.idToKey(id)))

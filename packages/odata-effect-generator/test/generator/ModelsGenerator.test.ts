@@ -3,7 +3,7 @@ import { generateModels } from "../../src/generator/ModelsGenerator.js"
 import type { DataModel, EntityTypeModel, PropertyModel } from "../../src/model/DataModel.js"
 
 describe("ModelsGenerator", () => {
-  describe("fromKey generation", () => {
+  describe("encoded key generation", () => {
     const createProperty = (
       odataName: string,
       tsName: string,
@@ -55,12 +55,12 @@ describe("ModelsGenerator", () => {
       const dataModel = createDataModel(properties)
       const output = generateModels(dataModel)
 
-      // Should use simple format: name: Schema.optionalWith(...)
-      expect(output).toContain("name: Schema.optionalWith(Schema.String, { nullable: true })")
+      // Should use simple format for matching OData and TypeScript names
+      expect(output).toContain("name: Schema.optional(Schema.NullOr(Schema.String))")
       expect(output).not.toContain("Schema.fromKey(\"name\")")
     })
 
-    it("generates fromKey when OData name differs from TypeScript name", () => {
+    it("generates encodeKeys when OData name differs from TypeScript name", () => {
       const properties = [
         createProperty("ID", "id", true),
         createProperty("ProductName", "productName", false)
@@ -68,11 +68,12 @@ describe("ModelsGenerator", () => {
       const dataModel = createDataModel(properties)
       const output = generateModels(dataModel)
 
-      // Required fields (keys) use propertySignature wrapper
-      expect(output).toContain("id: Schema.propertySignature(Schema.String).pipe(Schema.fromKey(\"ID\"))")
+      // Renamed fields are mapped with encodeKeys at the struct level
+      expect(output).toContain("id: Schema.String")
       expect(output).toContain(
-        "productName: Schema.optionalWith(Schema.String, { nullable: true }).pipe(Schema.fromKey(\"ProductName\"))"
+        "productName: Schema.optional(Schema.NullOr(Schema.String))"
       )
+      expect(output).toContain(".pipe(Schema.encodeKeys({ id: \"ID\", productName: \"ProductName\" }))")
     })
 
     it("generates mixed properties correctly", () => {
@@ -84,18 +85,19 @@ describe("ModelsGenerator", () => {
       const dataModel = createDataModel(properties)
       const output = generateModels(dataModel)
 
-      // ID (required key) should use propertySignature with fromKey
-      expect(output).toContain("id: Schema.propertySignature(Schema.String).pipe(Schema.fromKey(\"ID\"))")
+      // ID (required key) should use the field schema and encodeKeys
+      expect(output).toContain("id: Schema.String")
       // name should use simple format (same OData and TS names)
-      expect(output).toContain("name: Schema.optionalWith(Schema.String, { nullable: true })")
+      expect(output).toContain("name: Schema.optional(Schema.NullOr(Schema.String))")
       expect(output).not.toContain("Schema.fromKey(\"name\")")
-      // ReleaseDate (optional) should use optionalWith with fromKey
+      // ReleaseDate (optional) should use optional nullable schema and encodeKeys
       expect(output).toContain(
-        "releaseDate: Schema.optionalWith(Schema.String, { nullable: true }).pipe(Schema.fromKey(\"ReleaseDate\"))"
+        "releaseDate: Schema.optional(Schema.NullOr(Schema.String))"
       )
+      expect(output).toContain(".pipe(Schema.encodeKeys({ id: \"ID\", releaseDate: \"ReleaseDate\" }))")
     })
 
-    it("generates editable types with fromKey", () => {
+    it("generates editable types with encodeKeys", () => {
       const properties = [
         createProperty("ID", "id", true),
         createProperty("ProductName", "productName", false)
@@ -105,10 +107,12 @@ describe("ModelsGenerator", () => {
 
       // Editable type should not include key field
       expect(output).toContain("export const EditableProduct = Schema.Struct({")
-      // Optional fields use optionalWith with fromKey
+      expect(output).toContain("export const PartialEditableProduct = Schema.Struct({")
+      // Optional fields use optional nullable schema and encodeKeys
       expect(output).toContain(
-        "productName: Schema.optionalWith(Schema.String, { nullable: true }).pipe(Schema.fromKey(\"ProductName\"))"
+        "productName: Schema.optional(Schema.NullOr(Schema.String))"
       )
+      expect(output).toContain(".pipe(Schema.encodeKeys({ productName: \"ProductName\" }))")
     })
   })
 })

@@ -1,6 +1,5 @@
 import { describe, expect, it } from "@effect/vitest"
 import * as Effect from "../src/EffectCompat.js"
-import * as Schema from "../src/SchemaCompat.js"
 import {
   buildEntityPathV4,
   ODataClientConfig,
@@ -8,6 +7,7 @@ import {
   ODataV4CollectionResponse,
   ODataV4ValueResponse
 } from "../src/ODataV4.js"
+import * as Schema from "../src/SchemaCompat.js"
 
 describe("ODataV4Client", () => {
   describe("ODataV4Annotations", () => {

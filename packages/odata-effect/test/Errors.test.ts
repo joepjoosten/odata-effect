@@ -1,6 +1,5 @@
 import { describe, expect, it } from "@effect/vitest"
 import * as Effect from "../src/EffectCompat.js"
-import * as Schema from "../src/SchemaCompat.js"
 import {
   EntityNotFoundError,
   ODataError,
@@ -13,6 +12,7 @@ import {
   SapErrorResolution,
   SapErrorResponse
 } from "../src/Errors.js"
+import * as Schema from "../src/SchemaCompat.js"
 
 describe("Errors", () => {
   describe("ODataError", () => {

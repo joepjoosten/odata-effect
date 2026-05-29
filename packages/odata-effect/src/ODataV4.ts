@@ -27,12 +27,13 @@
  *
  * @since 1.0.0
  */
-import * as Effect from "./EffectCompat.js"
-import * as Schema from "./SchemaCompat.js"
-import { HttpBody, HttpClient, HttpClientError, HttpClientRequest, HttpClientResponse } from "effect/unstable/http"
+import type { HttpBody, HttpClientError } from "effect/unstable/http"
+import { HttpClient, HttpClientRequest, HttpClientResponse } from "effect/unstable/http"
 import { ODataClientConfig } from "./Config.js"
+import * as Effect from "./EffectCompat.js"
 import type { ParseError } from "./Errors.js"
 import { ODataError, ParseError as ParseErrorTag } from "./Errors.js"
+import * as Schema from "./SchemaCompat.js"
 
 // Re-export config - V4 uses the same unified config as V2
 export { ODataClientConfig, type ODataClientConfigService } from "./Config.js"
@@ -331,7 +332,9 @@ export const getCollection = <A, I, R>(
     const request = HttpClientRequest.get(url)
     const response = yield* client.execute(request)
     const data = yield* HttpClientResponse.schemaBodyJson(responseSchema)(response).pipe(
-      Effect.mapError((error) => new ParseErrorTag({ message: "Failed to parse OData V4 collection response body", cause: error }))
+      Effect.mapError((error) =>
+        new ParseErrorTag({ message: "Failed to parse OData V4 collection response body", cause: error })
+      )
     )
     return data.value
   }).pipe(Effect.scoped, handleError)
@@ -376,7 +379,9 @@ export const getCollectionPaged = <A, I, R>(
     const request = HttpClientRequest.get(url)
     const response = yield* client.execute(request)
     const data = yield* HttpClientResponse.schemaBodyJson(responseSchema)(response).pipe(
-      Effect.mapError((error) => new ParseErrorTag({ message: "Failed to parse OData V4 paged response body", cause: error }))
+      Effect.mapError((error) =>
+        new ParseErrorTag({ message: "Failed to parse OData V4 paged response body", cause: error })
+      )
     )
     return {
       value: data.value,
@@ -424,7 +429,9 @@ export const getValue = <A, I, R>(
     const request = HttpClientRequest.get(path)
     const response = yield* client.execute(request)
     const data = yield* HttpClientResponse.schemaBodyJson(responseSchema)(response).pipe(
-      Effect.mapError((error) => new ParseErrorTag({ message: "Failed to parse OData V4 value response body", cause: error }))
+      Effect.mapError((error) =>
+        new ParseErrorTag({ message: "Failed to parse OData V4 value response body", cause: error })
+      )
     )
     return data.value
   }).pipe(Effect.scoped, handleError)
@@ -473,7 +480,9 @@ export const post = <A, I, R, B, BI>(
     const request = yield* HttpClientRequest.schemaBodyJson(bodySchema)(baseRequest, body)
     const response = yield* client.execute(request)
     const data = yield* HttpClientResponse.schemaBodyJson(responseSchema)(response).pipe(
-      Effect.mapError((error) => new ParseErrorTag({ message: "Failed to parse OData V4 create response body", cause: error }))
+      Effect.mapError((error) =>
+        new ParseErrorTag({ message: "Failed to parse OData V4 create response body", cause: error })
+      )
     )
     return data
   }).pipe(Effect.scoped, handleError)

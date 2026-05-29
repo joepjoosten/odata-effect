@@ -8,7 +8,7 @@ import type * as ParseResult from "./ParseResultCompat.js"
 
 export * from "effect/Schema"
 
-export interface Schema<T, E = T, RD = never> extends S.Codec<T, E, RD, never> {}
+export type Schema<T, E = T, RD = never> = S.Codec<T, E, RD, never>
 
 export namespace Schema {
   export type Type<S0> = S.Schema.Type<S0>
@@ -48,8 +48,7 @@ export const optionalWith = <A, E = A, RD = never>(
   return options.exact ? S.optionalKey(withNullability) : S.optional(withNullability)
 }
 
-export const partial = <S0 extends S.Top>(schema: S0): any =>
-  (schema as any).mapFields(Struct.map(S.optional))
+export const partial = <S0 extends S.Top>(schema: S0): any => (schema as any).mapFields(Struct.map(S.optional))
 
 const toSchemaIssue = (input: unknown, error: unknown) =>
   error instanceof Error

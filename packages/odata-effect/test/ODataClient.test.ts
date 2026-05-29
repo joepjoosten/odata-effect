@@ -1,9 +1,8 @@
-import { HttpClient, HttpClientResponse } from "effect/unstable/http"
-import * as HttpClientRequest from "effect/unstable/http/HttpClientRequest"
 import { describe, expect, it } from "@effect/vitest"
-import * as Effect from "../src/EffectCompat.js"
 import * as Layer from "effect/Layer"
-import * as Schema from "../src/SchemaCompat.js"
+import { HttpClient, HttpClientResponse } from "effect/unstable/http"
+import type * as HttpClientRequest from "effect/unstable/http/HttpClientRequest"
+import * as Effect from "../src/EffectCompat.js"
 import * as OData from "../src/OData.js"
 import {
   buildEntityPath,
@@ -13,6 +12,7 @@ import {
   ODataCollectionResponse,
   ODataSingleResponse
 } from "../src/OData.js"
+import * as Schema from "../src/SchemaCompat.js"
 
 // Test schema
 class TestEntity extends Schema.Class<TestEntity>("TestEntity")({

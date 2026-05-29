@@ -9,16 +9,17 @@
 import type * as BigDecimal from "effect/BigDecimal"
 import type * as DateTime from "effect/DateTime"
 import type * as Duration from "effect/Duration"
-import * as Effect from "./EffectCompat.js"
-import * as Schema from "./SchemaCompat.js"
-import { HttpClient, HttpClientError, HttpClientRequest, HttpClientResponse } from "effect/unstable/http"
+import type { HttpClientError } from "effect/unstable/http"
+import { HttpClient, HttpClientRequest, HttpClientResponse } from "effect/unstable/http"
 import type { ODataClientConfigService } from "./Config.js"
+import * as Effect from "./EffectCompat.js"
 import type { ParseError } from "./Errors.js"
 import { ODataError } from "./Errors.js"
 import { ODataCollectionResponse, ODataSingleResponse } from "./OData.js"
 import type { Int64 } from "./ODataSchema.js"
 import { encodeUrlValue, formatV2UrlValue, formatV4UrlValue } from "./ODataUrlFormat.js"
 import { ODataV4CollectionResponse, ODataV4ValueResponse } from "./ODataV4.js"
+import * as Schema from "./SchemaCompat.js"
 
 // ============================================================================
 // Operation Parameter Types

@@ -30,7 +30,6 @@
  * @since 1.0.0
  */
 import type * as Effect from "effect/Effect"
-import * as Schema from "./SchemaCompat.js"
 import type * as HttpBody from "effect/unstable/http/HttpBody"
 import type * as HttpClient from "effect/unstable/http/HttpClient"
 import type * as HttpClientError from "effect/unstable/http/HttpClientError"
@@ -38,6 +37,7 @@ import type { ODataClientConfig } from "./Config.js"
 import type { ODataError, ParseError } from "./Errors.js"
 import * as ODataV4 from "./ODataV4.js"
 import { buildEntityPathV4, type ODataV4QueryOptions } from "./ODataV4.js"
+import * as Schema from "./SchemaCompat.js"
 
 // ============================================================================
 // Types

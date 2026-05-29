@@ -1,8 +1,7 @@
-import { HttpClient, HttpClientResponse } from "effect/unstable/http"
-import * as HttpClientRequest from "effect/unstable/http/HttpClientRequest"
 import { describe, expect, it } from "@effect/vitest"
+import { HttpClient, HttpClientResponse } from "effect/unstable/http"
+import type * as HttpClientRequest from "effect/unstable/http/HttpClientRequest"
 import * as Effect from "../src/EffectCompat.js"
-import * as Schema from "../src/SchemaCompat.js"
 import {
   buildFunctionImportUrl,
   buildV4BoundOperationUrl,
@@ -19,6 +18,7 @@ import {
   executeV4FunctionPrimitive,
   executeV4FunctionVoid
 } from "../src/Operations.js"
+import * as Schema from "../src/SchemaCompat.js"
 
 // Test schemas
 class TestEntity extends Schema.Class<TestEntity>("TestEntity")({

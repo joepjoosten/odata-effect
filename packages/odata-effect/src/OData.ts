@@ -22,12 +22,13 @@
  *
  * @since 1.0.0
  */
-import * as Effect from "./EffectCompat.js"
-import * as Schema from "./SchemaCompat.js"
-import { HttpBody, HttpClient, HttpClientError, HttpClientRequest, HttpClientResponse } from "effect/unstable/http"
+import type { HttpBody, HttpClientError } from "effect/unstable/http"
+import { HttpClient, HttpClientRequest, HttpClientResponse } from "effect/unstable/http"
 import { ODataClientConfig } from "./Config.js"
+import * as Effect from "./EffectCompat.js"
 import type { ParseError, SapError } from "./Errors.js"
 import { ODataError, ParseError as ParseErrorTag } from "./Errors.js"
+import * as Schema from "./SchemaCompat.js"
 
 // Re-export config for backward compatibility
 export { ODataClientConfig, type ODataClientConfigService } from "./Config.js"
@@ -434,7 +435,9 @@ export const getCollection = <A, I, R>(
     const request = HttpClientRequest.get(url)
     const response = yield* client.execute(request)
     const data = yield* HttpClientResponse.schemaBodyJson(responseSchema)(response).pipe(
-      Effect.mapError((error) => new ParseErrorTag({ message: "Failed to parse OData collection response body", cause: error }))
+      Effect.mapError((error) =>
+        new ParseErrorTag({ message: "Failed to parse OData collection response body", cause: error })
+      )
     )
     // Handle V2 ({ d: { results: [...] } }, { d: [...] }) and V3/V4 ({ value: [...] }) formats
     if ("value" in data) {
@@ -480,7 +483,9 @@ export const getCollectionPaged = <A, I, R>(
     const request = HttpClientRequest.get(url)
     const response = yield* client.execute(request)
     const data = yield* HttpClientResponse.schemaBodyJson(responseSchema)(response).pipe(
-      Effect.mapError((error) => new ParseErrorTag({ message: "Failed to parse OData paged response body", cause: error }))
+      Effect.mapError((error) =>
+        new ParseErrorTag({ message: "Failed to parse OData paged response body", cause: error })
+      )
     )
     // Handle V2 and V3/V4 formats
     if ("value" in data) {
@@ -553,7 +558,9 @@ export const getValue = <A, I, R>(
     const request = HttpClientRequest.get(path)
     const response = yield* client.execute(request)
     const data = yield* HttpClientResponse.schemaBodyJson(responseSchema)(response).pipe(
-      Effect.mapError((error) => new ParseErrorTag({ message: "Failed to parse OData value response body", cause: error }))
+      Effect.mapError((error) =>
+        new ParseErrorTag({ message: "Failed to parse OData value response body", cause: error })
+      )
     )
     return (data.d as Record<string, A>)[propertyName]
   }).pipe(Effect.scoped, handleError)
@@ -592,7 +599,9 @@ export const getComplex = <A, I, R>(
     const request = HttpClientRequest.get(path)
     const response = yield* client.execute(request)
     const data = yield* HttpClientResponse.schemaBodyJson(responseSchema)(response).pipe(
-      Effect.mapError((error) => new ParseErrorTag({ message: "Failed to parse OData complex response body", cause: error }))
+      Effect.mapError((error) =>
+        new ParseErrorTag({ message: "Failed to parse OData complex response body", cause: error })
+      )
     )
     // Handle V2 ({ d: Entity }) and V3/V4 (Entity at root) formats
     if (data !== null && typeof data === "object" && "d" in data) {
@@ -637,7 +646,9 @@ export const expandDeferred = <A, I, R>(
     const request = HttpClientRequest.get(relativePath)
     const response = yield* client.execute(request)
     const data = yield* HttpClientResponse.schemaBodyJson(responseSchema)(response).pipe(
-      Effect.mapError((error) => new ParseErrorTag({ message: "Failed to parse deferred OData response body", cause: error }))
+      Effect.mapError((error) =>
+        new ParseErrorTag({ message: "Failed to parse deferred OData response body", cause: error })
+      )
     )
     // Handle V2 ({ d: Entity }) and V3/V4 (Entity at root) formats
     if (data !== null && typeof data === "object" && "d" in data) {
@@ -682,7 +693,9 @@ export const expandDeferredCollection = <A, I, R>(
     const request = HttpClientRequest.get(relativePath)
     const response = yield* client.execute(request)
     const data = yield* HttpClientResponse.schemaBodyJson(responseSchema)(response).pipe(
-      Effect.mapError((error) => new ParseErrorTag({ message: "Failed to parse deferred OData collection response body", cause: error }))
+      Effect.mapError((error) =>
+        new ParseErrorTag({ message: "Failed to parse deferred OData collection response body", cause: error })
+      )
     )
     // Handle V2 ({ d: { results: [...] } }, { d: [...] }) and V3/V4 ({ value: [...] }) formats
     if ("value" in data) {
@@ -732,7 +745,9 @@ export const post = <A, I, R, B, BI>(
     const request = yield* HttpClientRequest.schemaBodyJson(bodySchema)(baseRequest, body)
     const response = yield* client.execute(request)
     const data = yield* HttpClientResponse.schemaBodyJson(wrappedResponseSchema)(response).pipe(
-      Effect.mapError((error) => new ParseErrorTag({ message: "Failed to parse OData create response body", cause: error }))
+      Effect.mapError((error) =>
+        new ParseErrorTag({ message: "Failed to parse OData create response body", cause: error })
+      )
     )
     // Handle V2 ({ d: Entity }) and V3/V4 (Entity at root) formats
     if (data !== null && typeof data === "object" && "d" in data) {

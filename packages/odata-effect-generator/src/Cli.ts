@@ -100,58 +100,58 @@ const generateCommand = Command.make(
       serviceName: svcName
     }
   ) {
-      const fs = yield* FileSystem.FileSystem
+    const fs = yield* FileSystem.FileSystem
 
-      // Load config if provided (JSON string or file path)
-      let esmExtensions: boolean | undefined
-      let overrides: NamingOverrides | undefined
-      if (cfgOption._tag === "Some") {
-        const parsed = yield* parseConfig(cfgOption.value, fs)
-        esmExtensions = parsed.esmExtensions
-        overrides = parsed.overrides
-      }
+    // Load config if provided (JSON string or file path)
+    let esmExtensions: boolean | undefined
+    let overrides: NamingOverrides | undefined
+    if (cfgOption._tag === "Some") {
+      const parsed = yield* parseConfig(cfgOption.value, fs)
+      esmExtensions = parsed.esmExtensions
+      overrides = parsed.overrides
+    }
 
-      yield* Console.log(`Reading metadata from: ${metaPath}`)
+    yield* Console.log(`Reading metadata from: ${metaPath}`)
 
-      // Read metadata file
-      const metadataContent = yield* fs.readFileString(metaPath).pipe(
-        Effect.mapError((error) => new Error(`Failed to read metadata file: ${metaPath}. ${error}`))
-      )
+    // Read metadata file
+    const metadataContent = yield* fs.readFileString(metaPath).pipe(
+      Effect.mapError((error) => new Error(`Failed to read metadata file: ${metaPath}. ${error}`))
+    )
 
-      yield* Console.log("Parsing metadata...")
+    yield* Console.log("Parsing metadata...")
 
-      // Parse XML
-      const edmx = yield* parseODataMetadata(metadataContent)
+    // Parse XML
+    const edmx = yield* parseODataMetadata(metadataContent)
 
-      yield* Console.log("Digesting metadata...")
+    yield* Console.log("Digesting metadata...")
 
-      // Digest metadata with optional overrides
-      const dataModel = yield* digestMetadata(edmx, overrides)
+    // Digest metadata with optional overrides
+    const dataModel = yield* digestMetadata(edmx, overrides)
 
-      yield* Console.log(`Detected OData ${dataModel.version}`)
-      yield* Console.log(`Namespace: ${dataModel.namespace}`)
-      yield* Console.log(`Service: ${dataModel.serviceName}`)
-      yield* Console.log(`Entity Types: ${dataModel.entityTypes.size}`)
-      yield* Console.log(`Complex Types: ${dataModel.complexTypes.size}`)
-      yield* Console.log(`Enum Types: ${dataModel.enumTypes.size}`)
-      yield* Console.log(`Entity Sets: ${dataModel.entitySets.size}`)
+    yield* Console.log(`Detected OData ${dataModel.version}`)
+    yield* Console.log(`Namespace: ${dataModel.namespace}`)
+    yield* Console.log(`Service: ${dataModel.serviceName}`)
+    yield* Console.log(`Entity Types: ${dataModel.entityTypes.size}`)
+    yield* Console.log(`Complex Types: ${dataModel.complexTypes.size}`)
+    yield* Console.log(`Enum Types: ${dataModel.enumTypes.size}`)
+    yield* Console.log(`Entity Sets: ${dataModel.entitySets.size}`)
 
-      yield* Console.log(`\nGenerating code to: ${outDir}`)
+    yield* Console.log(`\nGenerating code to: ${outDir}`)
 
-      // Generate code
-      const config = {
-        outputDir: outDir,
-        force: forceOverwrite,
-        filesOnly: onlyFiles,
-        overrides,
-        esmExtensions,
-        ...(svcName._tag === "Some" ? { serviceName: svcName.value } : {}),
-        ...(pkgName._tag === "Some" ? { packageName: pkgName.value } : {})
-      }
-      yield* generate(dataModel, config)
+    // Generate code
+    const config = {
+      outputDir: outDir,
+      force: forceOverwrite,
+      filesOnly: onlyFiles,
+      overrides,
+      esmExtensions,
+      ...(svcName._tag === "Some" ? { serviceName: svcName.value } : {}),
+      ...(pkgName._tag === "Some" ? { packageName: pkgName.value } : {})
+    }
+    yield* generate(dataModel, config)
 
-      yield* Console.log("\nDone!")
-    }))
+    yield* Console.log("\nDone!")
+  }))
 )
 
 // ============================================================================

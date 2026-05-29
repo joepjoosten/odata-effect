@@ -7,11 +7,12 @@
  *
  * @since 1.0.0
  */
-import * as Effect from "./EffectCompat.js"
-import * as Schema from "./SchemaCompat.js"
-import { HttpClient, HttpClientError, HttpClientRequest, HttpClientResponse } from "effect/unstable/http"
+import type { HttpClientError } from "effect/unstable/http"
+import { HttpClient, HttpClientRequest, HttpClientResponse } from "effect/unstable/http"
 import type { ODataClientConfigService } from "./Config.js"
+import * as Effect from "./EffectCompat.js"
 import { ODataError, ParseError } from "./Errors.js"
+import * as Schema from "./SchemaCompat.js"
 
 // ============================================================================
 // Batch Request Types

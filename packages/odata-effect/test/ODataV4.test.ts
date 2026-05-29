@@ -1,11 +1,11 @@
-import { HttpClient, HttpClientResponse } from "effect/unstable/http"
-import * as HttpClientRequest from "effect/unstable/http/HttpClientRequest"
 import { describe, expect, it } from "@effect/vitest"
-import * as Effect from "../src/EffectCompat.js"
 import * as Layer from "effect/Layer"
-import * as Schema from "../src/SchemaCompat.js"
+import { HttpClient, HttpClientResponse } from "effect/unstable/http"
+import type * as HttpClientRequest from "effect/unstable/http/HttpClientRequest"
+import * as Effect from "../src/EffectCompat.js"
 import * as ODataV4 from "../src/ODataV4.js"
 import { ODataClientConfig } from "../src/ODataV4.js"
+import * as Schema from "../src/SchemaCompat.js"
 
 // Test schema
 class TestEntity extends Schema.Class<TestEntity>("TestEntity")({

@@ -1,8 +1,7 @@
-import { HttpClient, HttpClientResponse } from "effect/unstable/http"
-import * as HttpClientRequest from "effect/unstable/http/HttpClientRequest"
 import { describe, expect, it } from "@effect/vitest"
+import { HttpClient, HttpClientResponse } from "effect/unstable/http"
+import type * as HttpClientRequest from "effect/unstable/http/HttpClientRequest"
 import * as Effect from "../src/EffectCompat.js"
-import * as Schema from "../src/SchemaCompat.js"
 import {
   buildMediaPropertyPath,
   buildMediaValuePath,
@@ -20,6 +19,7 @@ import {
   uploadMediaV2,
   uploadMediaV4
 } from "../src/Media.js"
+import * as Schema from "../src/SchemaCompat.js"
 
 // Test configurations
 const v2Config = {

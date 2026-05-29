@@ -1,12 +1,9 @@
 ---
+"@odata-effect/odata-effect": patch
+"@odata-effect/odata-effect-generator": patch
+"@odata-effect/odata-effect-promise": patch
 ---
 
-Document the Effect 4 release migration.
+Finalize the Effect 4 migration release.
 
-This PR already bumps package versions for the Effect 4 release line:
-
-- `@odata-effect/odata-effect` to `1.0.0`
-- `@odata-effect/odata-effect-generator` to `1.0.0`
-- `@odata-effect/odata-effect-promise` to `4.0.0`
-
-It also migrates the workspace to `effect@4.0.0-beta.74`, removes temporary compatibility shims, updates generated client output for Effect 4 Schema APIs, and expands package READMEs with first-run setup and usage guidance.
+This includes the `effect@4.0.0-beta.74` migration, removal of the temporary compatibility shims, generated client output updates for Effect 4 Schema APIs, partial update schema support for generated CRUD services, and expanded first-run README guidance for each package.

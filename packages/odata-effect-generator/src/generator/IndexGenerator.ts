@@ -8,6 +8,7 @@ import {
   formatRelativeImport,
   getEditableTypeName,
   getIdTypeName,
+  getPartialEditableTypeName,
   getQueryFactoryName,
   getQueryInstanceName,
   getQueryInterfaceName,
@@ -75,6 +76,7 @@ export const generateIndex = (
       modelExports.push(getIdTypeName(entityType.name))
     }
     modelExports.push(getEditableTypeName(entityType.name))
+    modelExports.push(getPartialEditableTypeName(entityType.name))
   }
 
   for (let i = 0; i < modelExports.length; i++) {

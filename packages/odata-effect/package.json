@@ -1,6 +1,6 @@
 {
   "name": "@odata-effect/odata-effect",
-  "version": "0.7.0",
+  "version": "1.0.0",
   "type": "module",
   "license": "MIT",
   "description": "Effect-based OData client infrastructure for SAP OData V2/V4 services",
@@ -24,8 +24,7 @@
     "coverage": "vitest --coverage"
   },
   "dependencies": {
-    "@effect/platform": "^0.94.1",
-    "effect": "^3.19.14"
+    "effect": "4.0.0-beta.74"
   },
   "effect": {
     "generateExports": {

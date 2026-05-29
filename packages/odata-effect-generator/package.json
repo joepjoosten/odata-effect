@@ -1,6 +1,6 @@
 {
   "name": "@odata-effect/odata-effect-generator",
-  "version": "0.6.12",
+  "version": "1.0.0",
   "type": "module",
   "license": "MIT",
   "description": "Effect-based OData service code generator",
@@ -27,10 +27,8 @@
     "coverage": "vitest --coverage"
   },
   "dependencies": {
-    "@effect/cli": "^0.73.0",
-    "@effect/platform": "^0.94.1",
-    "@effect/platform-node": "^0.104.0",
-    "effect": "^3.19.14",
+    "@effect/platform-node": "4.0.0-beta.74",
+    "effect": "4.0.0-beta.74",
     "xml2js": "^0.6.2"
   },
   "devDependencies": {

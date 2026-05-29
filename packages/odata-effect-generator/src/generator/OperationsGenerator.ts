@@ -316,8 +316,8 @@ const generateOperationsFile = (
   if (needsSchema) {
     lines.push(`import * as Schema from "effect/Schema"`)
   }
-  lines.push(`import { HttpClient } from "@effect/platform"`)
-  lines.push(`import type * as HttpClientError from "@effect/platform/HttpClientError"`)
+  lines.push(`import { HttpClient } from "effect/unstable/http"`)
+  lines.push(`import type * as HttpClientError from "effect/unstable/http/HttpClientError"`)
   lines.push(``)
 
   // Import Operations module

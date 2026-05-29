@@ -25,12 +25,13 @@ describe("V2 Integration", () => {
       // Generate Models.ts
       const modelsCode = generateModels(dataModel)
       expect(modelsCode).toContain("import * as Schema from")
-      expect(modelsCode).toContain("export class Product extends Schema.Class")
-      expect(modelsCode).toContain("export class Category extends Schema.Class")
-      expect(modelsCode).toContain("export class Supplier extends Schema.Class")
-      expect(modelsCode).toContain("export class Address extends Schema.Class")
-      expect(modelsCode).toContain("export const ProductId = Schema.Union")
+      expect(modelsCode).toContain("export const Product = Schema.Struct")
+      expect(modelsCode).toContain("export const Category = Schema.Struct")
+      expect(modelsCode).toContain("export const Supplier = Schema.Struct")
+      expect(modelsCode).toContain("export const Address = Schema.Struct")
+      expect(modelsCode).toContain("export const ProductId = Schema.Union([")
       expect(modelsCode).toContain("export const EditableProduct = Schema.Struct")
+      expect(modelsCode).toContain("export const PartialEditableProduct = Schema.Struct")
 
       // Check properties
       expect(modelsCode).toContain("id: Schema.Number")
@@ -65,6 +66,7 @@ describe("V2 Integration", () => {
       expect(servicesContent).toContain("path: \"Products\"")
       expect(servicesContent).toContain("schema: Product,")
       expect(servicesContent).toContain("editableSchema: EditableProduct,")
+      expect(servicesContent).toContain("partialEditableSchema: PartialEditableProduct,")
       expect(servicesContent).toContain("idToKey:")
 
       // Generate Operations.ts (FunctionImports)
@@ -85,6 +87,7 @@ describe("V2 Integration", () => {
       expect(indexCode).toContain("export {")
       expect(indexCode).toContain("Product")
       expect(indexCode).toContain("EditableProduct")
+      expect(indexCode).toContain("PartialEditableProduct")
       expect(indexCode).toContain("ProductService")
       expect(indexCode).toContain("} from \"./Services\"")
       expect(indexCode).toContain("export * as Operations")

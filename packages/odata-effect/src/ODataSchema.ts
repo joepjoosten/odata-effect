@@ -15,9 +15,11 @@
 import * as BigDecimal from "effect/BigDecimal"
 import * as DateTime from "effect/DateTime"
 import * as Duration from "effect/Duration"
+import * as Effect from "effect/Effect"
 import * as Option from "effect/Option"
-import * as ParseResult from "effect/ParseResult"
 import * as Schema from "effect/Schema"
+import * as SchemaIssue from "effect/SchemaIssue"
+import * as SchemaTransformation from "effect/SchemaTransformation"
 
 // ============================================================================
 // V2 Date/Time Schemas
@@ -50,6 +52,67 @@ const formatTimezoneOffset = (offsetMs: number): string => {
   return `${sign}${hours.toString().padStart(2, "0")}${minutes.toString().padStart(2, "0")}`
 }
 
+const parseIsoDuration = (value: string): Option.Option<Duration.Duration> => {
+  const match = value.match(
+    /^(-)?P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?)?$/
+  )
+
+  if (!match) {
+    return Option.none()
+  }
+
+  const sign = match[1] ? -1 : 1
+  const days = match[2] ? Number(match[2]) : 0
+  const hours = match[3] ? Number(match[3]) : 0
+  const minutes = match[4] ? Number(match[4]) : 0
+  const seconds = match[5] ? Number(match[5]) : 0
+  const millis = sign * ((((days * 24 + hours) * 60 + minutes) * 60 + seconds) * 1000)
+
+  return Number.isFinite(millis) ? Option.some(Duration.millis(millis)) : Option.none()
+}
+
+const formatIsoDuration = (duration: Duration.Duration): string => {
+  if (!Duration.isFinite(duration)) {
+    return "PT0S"
+  }
+
+  const totalMillis = Duration.toMillis(duration)
+  const sign = totalMillis < 0 ? "-" : ""
+  let remainingMillis = Math.abs(totalMillis)
+
+  const days = Math.floor(remainingMillis / 86_400_000)
+  remainingMillis -= days * 86_400_000
+
+  const hours = Math.floor(remainingMillis / 3_600_000)
+  remainingMillis -= hours * 3_600_000
+
+  const minutes = Math.floor(remainingMillis / 60_000)
+  remainingMillis -= minutes * 60_000
+
+  const seconds = remainingMillis / 1000
+  const secondText = Number.isInteger(seconds) ? String(seconds) : String(seconds).replace(/\.?0+$/, "")
+  const datePart = days > 0 ? `${days}D` : ""
+  const timePart = [
+    hours > 0 ? `${hours}H` : "",
+    minutes > 0 ? `${minutes}M` : "",
+    seconds > 0 || (days === 0 && hours === 0 && minutes === 0) ? `${secondText}S` : ""
+  ].join("")
+
+  return `${sign}P${datePart}${timePart ? `T${timePart}` : ""}`
+}
+
+const fail = (input: unknown, message: string) =>
+  Effect.fail(new SchemaIssue.InvalidValue(Option.some(input), { message }))
+
+const transformOrFail = <To extends Schema.Top, From extends Schema.Top, RD = never, RE = never>(
+  from: From,
+  to: To,
+  options: {
+    readonly decode: (input: From["Type"]) => Effect.Effect<To["Encoded"], SchemaIssue.Issue, RD>
+    readonly encode: (input: To["Encoded"]) => Effect.Effect<From["Type"], SchemaIssue.Issue, RE>
+  }
+) => from.pipe(Schema.decodeTo(to, SchemaTransformation.transformOrFail(options)))
+
 /**
  * OData V2 DateTime schema.
  *
@@ -67,28 +130,27 @@ const formatTimezoneOffset = (offsetMs: number): string => {
  * @since 1.0.0
  * @category V2 schemas
  */
-export const ODataV2DateTime = Schema.transformOrFail(
+export const ODataV2DateTime = transformOrFail(
   Schema.String,
-  Schema.DateTimeUtcFromSelf,
+  Schema.DateTimeUtc,
   {
-    strict: true,
-    decode: (s, _, ast) => {
+    decode: (s) => {
       // Try V2 format first: /Date(millis)/
       const match = s.match(V2_DATE_PATTERN)
       if (match) {
         const millis = parseInt(match[1], 10)
-        return ParseResult.succeed(DateTime.unsafeMake(millis))
+        return Effect.succeed(DateTime.makeUnsafe(millis))
       }
 
       // Try ISO 8601 format (V3/V4): 2022-12-31T23:59:59 or 2022-12-31T23:59:59Z
       const isoDate = DateTime.make(s.endsWith("Z") ? s : `${s}Z`)
       if (Option.isSome(isoDate)) {
-        return ParseResult.succeed(isoDate.value)
+        return Effect.succeed(isoDate.value)
       }
 
-      return ParseResult.fail(new ParseResult.Type(ast, s, `Invalid OData DateTime format: ${s}`))
+      return fail(s, `Invalid OData DateTime format: ${s}`)
     },
-    encode: (dt) => ParseResult.succeed(`/Date(${DateTime.toEpochMillis(dt)})/`)
+    encode: (dt) => Effect.succeed(`/Date(${DateTime.toEpochMillis(dt)})/`)
   }
 )
 
@@ -102,44 +164,43 @@ export const ODataV2DateTime = Schema.transformOrFail(
  * @since 1.0.0
  * @category V2 schemas
  */
-export const ODataV2DateTimeOffset = Schema.transformOrFail(
+export const ODataV2DateTimeOffset = transformOrFail(
   Schema.String,
-  Schema.DateTimeZonedFromSelf,
+  Schema.DateTimeZoned,
   {
-    strict: true,
-    decode: (s, _, ast) => {
+    decode: (s) => {
       // Try V2 format first: /Date(millis+offset)/
       const match = s.match(V2_DATE_PATTERN)
       if (match) {
         const millis = parseInt(match[1], 10)
         const offsetMs = match[2] ? parseTimezoneOffset(match[2]) : 0
-        const utc = DateTime.unsafeMake(millis)
+        const utc = DateTime.makeUnsafe(millis)
         const zoned = DateTime.setZone(utc, DateTime.zoneMakeOffset(offsetMs))
-        return ParseResult.succeed(zoned)
+        return Effect.succeed(zoned)
       }
 
       // Try ISO 8601 format (V3/V4): 2022-12-31T23:59:59+01:00 or 2022-12-31T23:59:59Z
       const zoned = DateTime.makeZonedFromString(s)
       if (Option.isSome(zoned)) {
-        return ParseResult.succeed(zoned.value)
+        return Effect.succeed(zoned.value)
       }
 
       // Try as UTC if no timezone specified
       const utc = DateTime.make(s.endsWith("Z") ? s : `${s}Z`)
       if (Option.isSome(utc)) {
         const zonedUtc = DateTime.setZone(utc.value, DateTime.zoneMakeOffset(0))
-        return ParseResult.succeed(zonedUtc)
+        return Effect.succeed(zonedUtc)
       }
 
-      return ParseResult.fail(new ParseResult.Type(ast, s, `Invalid OData DateTimeOffset format: ${s}`))
+      return fail(s, `Invalid OData DateTimeOffset format: ${s}`)
     },
     encode: (dt) => {
       const millis = DateTime.toEpochMillis(dt)
       const offset = DateTime.zonedOffset(dt)
       if (offset === 0) {
-        return ParseResult.succeed(`/Date(${millis})/`)
+        return Effect.succeed(`/Date(${millis})/`)
       }
-      return ParseResult.succeed(`/Date(${millis}${formatTimezoneOffset(offset)})/`)
+      return Effect.succeed(`/Date(${millis}${formatTimezoneOffset(offset)})/`)
     }
   }
 )
@@ -159,26 +220,18 @@ export const ODataV2DateTimeOffset = Schema.transformOrFail(
  * @since 1.0.0
  * @category V2 schemas
  */
-export const ODataV2Time = Schema.transformOrFail(
+export const ODataV2Time = transformOrFail(
   Schema.String,
-  Schema.DurationFromSelf,
+  Schema.Duration,
   {
-    strict: true,
-    decode: (s, _, ast) => {
-      const duration = Duration.fromIso(s)
+    decode: (s) => {
+      const duration = parseIsoDuration(s)
       if (Option.isNone(duration)) {
-        return ParseResult.fail(new ParseResult.Type(ast, s, `Invalid OData V2 Time format: ${s}`))
+        return fail(s, `Invalid OData V2 Time format: ${s}`)
       }
-      return ParseResult.succeed(duration.value)
+      return Effect.succeed(duration.value)
     },
-    encode: (d) => {
-      const iso = Duration.formatIso(d)
-      if (Option.isNone(iso)) {
-        // Infinite duration - return a reasonable fallback
-        return ParseResult.succeed("PT0S")
-      }
-      return ParseResult.succeed(iso.value)
-    }
+    encode: (d) => Effect.succeed(formatIsoDuration(d))
   }
 )
 
@@ -195,19 +248,18 @@ export const ODataV2Time = Schema.transformOrFail(
  * @since 1.0.0
  * @category V2 schemas
  */
-export const ODataV2Number = Schema.transformOrFail(
+export const ODataV2Number = transformOrFail(
   Schema.String,
   Schema.Number,
   {
-    strict: true,
-    decode: (s, _, ast) => {
+    decode: (s) => {
       const n = parseFloat(s)
       if (isNaN(n)) {
-        return ParseResult.fail(new ParseResult.Type(ast, s, `Invalid number format: ${s}`))
+        return fail(s, `Invalid number format: ${s}`)
       }
-      return ParseResult.succeed(n)
+      return Effect.succeed(n)
     },
-    encode: (n) => ParseResult.succeed(String(n))
+    encode: (n) => Effect.succeed(String(n))
   }
 )
 
@@ -250,7 +302,7 @@ export const Int64 = {
   /**
    * Create an Int64 from a number.
    */
-  fromNumber: (n: number): Int64 => Int64.make(BigDecimal.fromNumber(n)),
+  fromNumber: (n: number): Int64 => Int64.make(BigDecimal.fromNumberUnsafe(n)),
 
   /**
    * Create an Int64 from a string.
@@ -274,7 +326,7 @@ export const Int64 = {
  * @since 1.0.0
  * @category schemas
  */
-const Int64Schema: Schema.Schema<Int64, Int64> = Schema.declare(Int64.isInt64)
+const Int64Schema: Schema.Codec<Int64, Int64> = Schema.declare(Int64.isInt64)
 
 /**
  * OData V2 Int64 schema.
@@ -286,19 +338,18 @@ const Int64Schema: Schema.Schema<Int64, Int64> = Schema.declare(Int64.isInt64)
  * @since 1.0.0
  * @category V2 schemas
  */
-export const ODataV2Int64 = Schema.transformOrFail(
+export const ODataV2Int64 = transformOrFail(
   Schema.String,
   Int64Schema,
   {
-    strict: true,
-    decode: (s, _, ast) => {
+    decode: (s) => {
       const bd = BigDecimal.fromString(s)
       if (Option.isNone(bd)) {
-        return ParseResult.fail(new ParseResult.Type(ast, s, `Invalid Int64 format: ${s}`))
+        return fail(s, `Invalid Int64 format: ${s}`)
       }
-      return ParseResult.succeed(Int64.make(bd.value))
+      return Effect.succeed(Int64.make(bd.value))
     },
-    encode: (i) => ParseResult.succeed(BigDecimal.format(i.value))
+    encode: (i) => Effect.succeed(BigDecimal.format(i.value))
   }
 )
 
@@ -311,19 +362,18 @@ export const ODataV2Int64 = Schema.transformOrFail(
  * @since 1.0.0
  * @category V2 schemas
  */
-export const ODataV2Decimal = Schema.transformOrFail(
+export const ODataV2Decimal = transformOrFail(
   Schema.String,
-  Schema.BigDecimalFromSelf,
+  Schema.BigDecimal,
   {
-    strict: true,
-    decode: (s, _, ast) => {
+    decode: (s) => {
       const bd = BigDecimal.fromString(s)
       if (Option.isNone(bd)) {
-        return ParseResult.fail(new ParseResult.Type(ast, s, `Invalid Decimal format: ${s}`))
+        return fail(s, `Invalid Decimal format: ${s}`)
       }
-      return ParseResult.succeed(bd.value)
+      return Effect.succeed(bd.value)
     },
-    encode: (bd) => ParseResult.succeed(BigDecimal.format(bd))
+    encode: (bd) => Effect.succeed(BigDecimal.format(bd))
   }
 )
 
@@ -340,30 +390,29 @@ export const ODataV2Decimal = Schema.transformOrFail(
  * @since 1.0.0
  * @category V4 schemas
  */
-export const ODataV4DateTimeOffset = Schema.transformOrFail(
+export const ODataV4DateTimeOffset = transformOrFail(
   Schema.String,
-  Schema.DateTimeZonedFromSelf,
+  Schema.DateTimeZoned,
   {
-    strict: true,
-    decode: (s, _, ast) => {
+    decode: (s) => {
       // Try parsing as zoned first (with timezone info)
       const zoned = DateTime.makeZonedFromString(s)
       if (Option.isSome(zoned)) {
-        return ParseResult.succeed(zoned.value)
+        return Effect.succeed(zoned.value)
       }
 
       // Fall back to parsing as UTC and creating a zoned with UTC offset
       const utc = DateTime.make(s)
       if (Option.isNone(utc)) {
-        return ParseResult.fail(new ParseResult.Type(ast, s, `Invalid OData V4 DateTimeOffset format: ${s}`))
+        return fail(s, `Invalid OData V4 DateTimeOffset format: ${s}`)
       }
       // Convert to zoned with UTC offset
       const zonedUtc = DateTime.setZone(utc.value, DateTime.zoneMakeOffset(0))
-      return ParseResult.succeed(zonedUtc)
+      return Effect.succeed(zonedUtc)
     },
     encode: (dt) => {
       // Format as ISO with offset
-      return ParseResult.succeed(DateTime.formatIsoOffset(dt))
+      return Effect.succeed(DateTime.formatIsoOffset(dt))
     }
   }
 )
@@ -377,19 +426,18 @@ export const ODataV4DateTimeOffset = Schema.transformOrFail(
  * @since 1.0.0
  * @category V4 schemas
  */
-export const ODataV4Date = Schema.transformOrFail(
+export const ODataV4Date = transformOrFail(
   Schema.String,
-  Schema.DateTimeUtcFromSelf,
+  Schema.DateTimeUtc,
   {
-    strict: true,
-    decode: (s, _, ast) => {
+    decode: (s) => {
       const dt = DateTime.make(`${s}T00:00:00Z`)
       if (Option.isNone(dt)) {
-        return ParseResult.fail(new ParseResult.Type(ast, s, `Invalid OData V4 Date format: ${s}`))
+        return fail(s, `Invalid OData V4 Date format: ${s}`)
       }
-      return ParseResult.succeed(dt.value)
+      return Effect.succeed(dt.value)
     },
-    encode: (dt) => ParseResult.succeed(DateTime.formatIsoDate(dt))
+    encode: (dt) => Effect.succeed(DateTime.formatIsoDate(dt))
   }
 )
 
@@ -414,25 +462,18 @@ export const ODataV4TimeOfDay = Schema.String
  * @since 1.0.0
  * @category V4 schemas
  */
-export const ODataV4Duration = Schema.transformOrFail(
+export const ODataV4Duration = transformOrFail(
   Schema.String,
-  Schema.DurationFromSelf,
+  Schema.Duration,
   {
-    strict: true,
-    decode: (s, _, ast) => {
-      const duration = Duration.fromIso(s)
+    decode: (s) => {
+      const duration = parseIsoDuration(s)
       if (Option.isNone(duration)) {
-        return ParseResult.fail(new ParseResult.Type(ast, s, `Invalid OData V4 Duration format: ${s}`))
+        return fail(s, `Invalid OData V4 Duration format: ${s}`)
       }
-      return ParseResult.succeed(duration.value)
+      return Effect.succeed(duration.value)
     },
-    encode: (d) => {
-      const iso = Duration.formatIso(d)
-      if (Option.isNone(iso)) {
-        return ParseResult.succeed("PT0S")
-      }
-      return ParseResult.succeed(iso.value)
-    }
+    encode: (d) => Effect.succeed(formatIsoDuration(d))
   }
 )
 

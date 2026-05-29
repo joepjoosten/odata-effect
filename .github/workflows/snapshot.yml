@@ -17,6 +17,10 @@ jobs:
         uses: ./.github/actions/setup
       - name: Build package
         run: pnpm build
+      - name: Skip snapshot
+        if: vars.PKG_PR_NEW_ENABLED != 'true'
+        run: echo "Skipping snapshot publish. Set repository variable PKG_PR_NEW_ENABLED=true after installing the pkg-pr-new GitHub App."
       - name: Create snapshot
+        if: vars.PKG_PR_NEW_ENABLED == 'true'
         id: snapshot
         run: pnpx pkg-pr-new@0.0.24 publish --pnpm --comment=off ./packages/*

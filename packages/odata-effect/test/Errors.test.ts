@@ -97,7 +97,7 @@ describe("Errors", () => {
             severity: "error",
             target: "/Name"
           }
-          const result = yield* Schema.decodeUnknown(SapErrorDetail)(data)
+          const result = yield* Schema.decodeUnknownEffect(SapErrorDetail)(data)
           expect(result.code).toBe("ERR001")
           expect(result.message).toBe("Field is required")
           expect(result.propertyref).toBe("Name")
@@ -113,7 +113,7 @@ describe("Errors", () => {
             SAP_Transaction: "SM13",
             SAP_Note: "123456"
           }
-          const result = yield* Schema.decodeUnknown(SapErrorResolution)(data)
+          const result = yield* Schema.decodeUnknownEffect(SapErrorResolution)(data)
           expect(result.SAP_Transaction).toBe("SM13")
           expect(result.SAP_Note).toBe("123456")
         }).pipe(Effect.runPromise))
@@ -128,7 +128,7 @@ describe("Errors", () => {
             service_id: "TEST_SRV",
             service_version: "0001"
           }
-          const result = yield* Schema.decodeUnknown(SapApplication)(data)
+          const result = yield* Schema.decodeUnknownEffect(SapApplication)(data)
           expect(result.component_id).toBe("BC-SRV-ODA")
           expect(result.service_namespace).toBe("/SAP/")
           expect(result.service_id).toBe("TEST_SRV")
@@ -143,7 +143,7 @@ describe("Errors", () => {
             lang: "en",
             value: "An error occurred"
           }
-          const result = yield* Schema.decodeUnknown(SapErrorMessage)(data)
+          const result = yield* Schema.decodeUnknownEffect(SapErrorMessage)(data)
           expect(result.lang).toBe("en")
           expect(result.value).toBe("An error occurred")
         }).pipe(Effect.runPromise))
@@ -159,7 +159,7 @@ describe("Errors", () => {
               value: "Something went wrong"
             }
           }
-          const result = yield* Schema.decodeUnknown(SapErrorBody)(data)
+          const result = yield* Schema.decodeUnknownEffect(SapErrorBody)(data)
           expect(result.code).toBe("ERR001")
           expect(result.message.lang).toBe("en")
           expect(result.message.value).toBe("Something went wrong")
@@ -198,7 +198,7 @@ describe("Errors", () => {
               ]
             }
           }
-          const result = yield* Schema.decodeUnknown(SapErrorBody)(data)
+          const result = yield* Schema.decodeUnknownEffect(SapErrorBody)(data)
           expect(result.innererror).toBeDefined()
           expect(result.innererror!.transactionid).toBe("TX123")
           expect(result.innererror!.errordetails).toHaveLength(1)
@@ -217,7 +217,7 @@ describe("Errors", () => {
               }
             }
           }
-          const result = yield* Schema.decodeUnknown(SapErrorResponse)(data)
+          const result = yield* Schema.decodeUnknownEffect(SapErrorResponse)(data)
           expect(result.error.code).toBe("ERR001")
           expect(result.error.message.value).toBe("An error occurred")
         }).pipe(Effect.runPromise))

@@ -11,7 +11,7 @@ import type {
   NavigationPropertyModel,
   PropertyModel
 } from "../model/DataModel.js"
-import { getClassName, getEditableTypeName, getIdTypeName } from "./NamingHelper.js"
+import { getClassName, getEditableTypeName, getIdTypeName, getPartialEditableTypeName } from "./NamingHelper.js"
 
 /**
  * Get dependencies for a type (complex types it references via properties or baseType).
@@ -175,7 +175,7 @@ const generateEnumType = (enumType: EnumTypeModel): Array<string> => {
   lines.push(` * @category enums`)
   lines.push(` */`)
   lines.push(`export const ${enumType.name} = Schema.Literal(${members})`)
-  lines.push(`export type ${enumType.name} = Schema.Schema.Type<typeof ${enumType.name}>`)
+  lines.push(`export type ${enumType.name} = typeof ${enumType.name}.Type`)
 
   return lines
 }
@@ -198,9 +198,10 @@ const generateComplexType = (
 
   const fields = generateSchemaFields(complexType.properties, complexType.navigationProperties, dataModel)
 
-  lines.push(`export class ${complexType.name} extends Schema.Class<${complexType.name}>("${complexType.name}")({`)
+  lines.push(`export const ${complexType.name} = Schema.Struct({`)
   for (const f of fields) lines.push(`  ${f}`)
-  lines.push(`}) {}`)
+  lines.push(`})${generateEncodeKeysPipe(complexType.properties)}`)
+  lines.push(`export type ${complexType.name} = typeof ${complexType.name}.Type`)
 
   // Generate editable type
   lines.push(``)
@@ -216,8 +217,8 @@ const generateComplexType = (
 
   lines.push(`export const ${editableName} = Schema.Struct({`)
   for (const f of editableFields) lines.push(`  ${f}`)
-  lines.push(`})`)
-  lines.push(`export type ${editableName} = Schema.Schema.Type<typeof ${editableName}>`)
+  lines.push(`})${generateEncodeKeysPipe(complexType.properties)}`)
+  lines.push(`export type ${editableName} = typeof ${editableName}.Type`)
 
   return lines
 }
@@ -231,7 +232,7 @@ const generateEntityType = (
 ): Array<string> => {
   const lines: Array<string> = []
 
-  // Main entity class
+  // Main entity schema
   lines.push(`/**`)
   lines.push(` * ${entityType.odataName} entity type.`)
   lines.push(` *`)
@@ -241,9 +242,10 @@ const generateEntityType = (
 
   const fields = generateSchemaFields(entityType.properties, entityType.navigationProperties, dataModel)
 
-  lines.push(`export class ${entityType.name} extends Schema.Class<${entityType.name}>("${entityType.name}")({`)
+  lines.push(`export const ${entityType.name} = Schema.Struct({`)
   for (const f of fields) lines.push(`  ${f}`)
-  lines.push(`}) {}`)
+  lines.push(`})${generateEncodeKeysPipe(entityType.properties)}`)
+  lines.push(`export type ${entityType.name} = typeof ${entityType.name}.Type`)
 
   // ID type
   if (entityType.keys.length > 0) {
@@ -260,10 +262,10 @@ const generateEntityType = (
     if (entityType.keys.length === 1) {
       const key = entityType.keys[0]
       const keySchema = getPropertySchemaType(key, false)
-      lines.push(`export const ${idTypeName} = Schema.Union(`)
+      lines.push(`export const ${idTypeName} = Schema.Union([`)
       lines.push(`  ${keySchema},`)
       lines.push(`  Schema.Struct({ ${key.name}: ${keySchema} })`)
-      lines.push(`)`)
+      lines.push(`])`)
     } else {
       // Composite key - only struct form makes sense
       const keyFields = entityType.keys.map((k) => {
@@ -272,7 +274,7 @@ const generateEntityType = (
       })
       lines.push(`export const ${idTypeName} = Schema.Struct({ ${keyFields.join(", ")} })`)
     }
-    lines.push(`export type ${idTypeName} = Schema.Schema.Type<typeof ${idTypeName}>`)
+    lines.push(`export type ${idTypeName} = typeof ${idTypeName}.Type`)
   }
 
   // Editable type
@@ -291,14 +293,31 @@ const generateEntityType = (
 
   lines.push(`export const ${editableName} = Schema.Struct({`)
   for (const f of editableFields) lines.push(`  ${f}`)
-  lines.push(`})`)
-  lines.push(`export type ${editableName} = Schema.Schema.Type<typeof ${editableName}>`)
+  lines.push(`})${generateEncodeKeysPipe(entityType.properties.filter((p) => !p.isKey))}`)
+  lines.push(`export type ${editableName} = typeof ${editableName}.Type`)
+
+  const partialEditableFields = generatePartialEditableSchemaFields(
+    entityType.properties.filter((p) => !p.isKey)
+  )
+  const partialEditableName = getPartialEditableTypeName(entityType.name)
+
+  lines.push(``)
+  lines.push(`/**`)
+  lines.push(` * Partial editable ${entityType.odataName} for update operations.`)
+  lines.push(` *`)
+  lines.push(` * @since 1.0.0`)
+  lines.push(` * @category models`)
+  lines.push(` */`)
+  lines.push(`export const ${partialEditableName} = Schema.Struct({`)
+  for (const f of partialEditableFields) lines.push(`  ${f}`)
+  lines.push(`})${generateEncodeKeysPipe(entityType.properties.filter((p) => !p.isKey))}`)
+  lines.push(`export type ${partialEditableName} = typeof ${partialEditableName}.Type`)
 
   return lines
 }
 
 /**
- * Generate schema field definitions for a class.
+ * Generate schema field definitions for a model struct.
  * Note: Navigation properties are excluded to avoid circular reference issues.
  * They can be loaded via $expand queries.
  */
@@ -318,7 +337,7 @@ const generateSchemaFields = (
     fields.push(`${fieldDef}${isLast ? "" : ","}`)
   }
 
-  // Navigation properties are intentionally excluded from Schema.Class
+  // Navigation properties are intentionally excluded from the model schema
   // to avoid circular reference issues. They can be loaded via $expand.
 
   return fields
@@ -345,51 +364,43 @@ const generateEditableSchemaFields = (
 }
 
 /**
- * Get a complete property field definition including fromKey mapping if needed.
+ * Generate schema field definitions for a partial editable struct.
+ */
+const generatePartialEditableSchemaFields = (
+  properties: ReadonlyArray<PropertyModel>
+): Array<string> => {
+  const fields: Array<string> = []
+
+  for (let i = 0; i < properties.length; i++) {
+    const prop = properties[i]
+    const schemaType = getPartialPropertySchemaType(prop)
+    const isLast = i === properties.length - 1
+    const fieldDef = getPropertyFieldDefinition(prop, schemaType, true)
+    fields.push(`${fieldDef}${isLast ? "" : ","}`)
+  }
+
+  return fields
+}
+
+/**
+ * Get a complete property field definition.
  *
  * When the OData property name differs from the TypeScript property name,
- * we use Schema.fromKey to map between them.
- *
- * For optional fields (using Schema.optionalWith), we pipe fromKey directly
- * since optionalWith already returns a PropertySignature.
- *
- * For required fields, we wrap in Schema.propertySignature first.
- * Note: ODataSchema types need Schema.asSchema() to satisfy Schema.All constraint.
+ * Field renaming is applied at the struct level with Schema.encodeKeys.
  *
  * @example
  * // When odataName == name:
  * name: Schema.String
  *
- * // When odataName ("ID") != name ("id") - required field:
- * id: Schema.propertySignature(Schema.Number).pipe(Schema.fromKey("ID"))
- *
  * // When odataName ("Name") != name ("name") - optional field:
- * name: Schema.optionalWith(Schema.String, { nullable: true }).pipe(Schema.fromKey("Name"))
- *
- * // ODataSchema types need asSchema wrapper:
- * price: Schema.propertySignature(Schema.asSchema(ODataSchema.ODataV2Decimal)).pipe(Schema.fromKey("Price"))
+ * name: Schema.optional(Schema.NullOr(Schema.String))
  */
 const getPropertyFieldDefinition = (
   prop: PropertyModel,
   schemaType: string,
-  isOptional: boolean
+  _isOptional: boolean
 ): string => {
-  // If OData name matches TypeScript name, use simple format
-  if (prop.odataName === prop.name) {
-    return `${prop.name}: ${schemaType}`
-  }
-
-  // If optional, Schema.optionalWith already returns a PropertySignature, so just pipe fromKey
-  if (isOptional) {
-    return `${prop.name}: ${schemaType}.pipe(Schema.fromKey("${prop.odataName}"))`
-  }
-
-  // For required fields, wrap in propertySignature first, then pipe fromKey
-  // ODataSchema types (transformOrFail) need Schema.asSchema() to satisfy Schema.All constraint
-  const wrappedSchema = schemaType.startsWith("ODataSchema.")
-    ? `Schema.asSchema(${schemaType})`
-    : schemaType
-  return `${prop.name}: Schema.propertySignature(${wrappedSchema}).pipe(Schema.fromKey("${prop.odataName}"))`
+  return `${prop.name}: ${schemaType}`
 }
 
 /**
@@ -399,17 +410,32 @@ const getPropertySchemaType = (
   prop: PropertyModel,
   makeOptional: boolean
 ): string => {
-  let baseType = prop.typeMapping.effectSchema
-
-  // Handle collection
-  if (prop.isCollection) {
-    baseType = `Schema.Array(${baseType})`
-  }
+  const baseType = getPropertyBaseSchemaType(prop)
 
   // Handle nullable/optional
   if (makeOptional) {
-    return `Schema.optionalWith(${baseType}, { nullable: true })`
+    return `Schema.optional(Schema.NullOr(${baseType}))`
   }
 
   return baseType
 }
+
+const getPartialPropertySchemaType = (prop: PropertyModel): string => {
+  const baseType = getPropertyBaseSchemaType(prop)
+  return prop.isNullable ? `Schema.optional(Schema.NullOr(${baseType}))` : `Schema.optional(${baseType})`
+}
+
+const getPropertyBaseSchemaType = (prop: PropertyModel): string => {
+  const baseType = prop.typeMapping.effectSchema
+  return prop.isCollection ? `Schema.Array(${baseType})` : baseType
+}
+
+const generateEncodeKeysPipe = (properties: ReadonlyArray<PropertyModel>): string => {
+  const mappings = properties.filter((prop) => prop.odataName !== prop.name)
+  if (mappings.length === 0) return ""
+
+  const entries = mappings.map((prop) => `${formatObjectKey(prop.name)}: ${JSON.stringify(prop.odataName)}`)
+  return `.pipe(Schema.encodeKeys({ ${entries.join(", ")} }))`
+}
+
+const formatObjectKey = (key: string): string => /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key) ? key : JSON.stringify(key)

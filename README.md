@@ -1,98 +1,119 @@
 # odata-effect
 
-Effect-based OData client library for SAP OData V2/V4 services.
+Effect-based OData clients for SAP OData V2 and V4 services.
 
-Inspired by [odata2ts](https://github.com/odata2ts/odata2ts).
+The usual workflow is:
+
+1. Download your service metadata XML.
+2. Generate a typed client from that metadata.
+3. Run the generated Effect operations directly, or convert them to Promises.
 
 ## Packages
 
-| Package | Description |
-|---------|-------------|
-| [@odata-effect/odata-effect](./packages/odata-effect) | Core OData client infrastructure |
-| [@odata-effect/odata-effect-promise](./packages/odata-effect-promise) | Promise-based wrapper for non-Effect environments |
-| [@odata-effect/odata-effect-generator](./packages/odata-effect-generator) | Code generator for type-safe service clients |
+| Package | Use it when |
+| ------- | ----------- |
+| [@odata-effect/odata-effect](./packages/odata-effect) | You write Effect code directly or need low-level OData helpers. |
+| [@odata-effect/odata-effect-generator](./packages/odata-effect-generator) | You want generated schemas, services, path builders, and operations from `$metadata`. |
+| [@odata-effect/odata-effect-promise](./packages/odata-effect-promise) | You want to call generated or core Effect operations from Promise-based code. |
 
-## Installation
+## Install
+
+For a Node.js app using generated clients:
 
 ```bash
-# Core package (Effect-based)
-pnpm add @odata-effect/odata-effect
-
-# Promise-based wrapper
-pnpm add @odata-effect/odata-effect-promise
-
-# Code generator (CLI)
-pnpm add -g @odata-effect/odata-effect-generator
+pnpm add @odata-effect/odata-effect @odata-effect/odata-effect-promise effect@4.0.0-beta.74 @effect/platform-node@4.0.0-beta.74
+pnpm add -D @odata-effect/odata-effect-generator
 ```
 
-## Quick Start
+Use `npm install` or `yarn add` instead if your project does not use pnpm.
 
-### With Effect
+## Quick Start: Generate A Client
+
+Download your OData metadata document:
+
+```bash
+curl 'https://server.example.com/sap/opu/odata/sap/MY_SERVICE/$metadata' -o metadata.xml
+```
+
+Generate TypeScript files into your app:
+
+```bash
+pnpm exec odata-effect-gen generate ./metadata.xml ./src/generated --files-only --force --config '{"esmExtensions": true}'
+```
+
+Call a generated service from Promise-based application code:
 
 ```typescript
-import { OData } from "@odata-effect/odata-effect"
-import * as Effect from "effect/Effect"
-import * as Layer from "effect/Layer"
+import * as NodeHttpClient from "@effect/platform-node/NodeHttpClient"
+import { createODataRuntime, toPromise } from "@odata-effect/odata-effect-promise"
+import { ProductService } from "./generated/index.js"
 
-const program = Effect.gen(function* () {
-  const products = yield* OData.get("/Products")
-  return products
-})
-
-const MainLive = Layer.merge(
-  OData.ODataClientLive,
-  OData.HttpClientLive
+const runtime = createODataRuntime(
+  {
+    baseUrl: "https://server.example.com",
+    servicePath: "/sap/opu/odata/sap/MY_SERVICE/"
+  },
+  NodeHttpClient.layer
 )
 
-Effect.runPromise(program.pipe(Effect.provide(MainLive)))
+try {
+  const products = await ProductService.getAll({ $top: 10 }).pipe(toPromise(runtime))
+  console.log(products)
+} finally {
+  await runtime.dispose()
+}
 ```
 
-### With Promises
+`baseUrl` is the protocol and host. `servicePath` is the OData service root and should usually end with `/`. Operation paths are relative to that service root, for example `Products` or `Products('123')`.
+
+## Manual Client Usage
+
+Use the core package directly when you do not want code generation.
 
 ```typescript
-import { createODataRuntime } from "@odata-effect/odata-effect-promise"
-import * as OData from "@odata-effect/odata-effect-promise/OData"
+import * as NodeHttpClient from "@effect/platform-node/NodeHttpClient"
+import { Config, OData } from "@odata-effect/odata-effect"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import * as Schema from "effect/Schema"
 
-const runtime = createODataRuntime({
-  baseUrl: "https://api.example.com",
-  servicePath: "/sap/opu/odata/sap/MY_SERVICE/"
+const Product = Schema.Struct({
+  ProductID: Schema.String,
+  Name: Schema.String
 })
 
-const products = await OData.get(runtime, "Products", ProductSchema)
-await runtime.dispose()
+const Live = Layer.merge(
+  Layer.succeed(Config.ODataClientConfig, {
+    baseUrl: "https://server.example.com",
+    servicePath: "/sap/opu/odata/sap/MY_SERVICE/"
+  }),
+  NodeHttpClient.layer
+)
+
+const program = OData.getCollection("Products", Product, { $top: 10 })
+
+const products = await Effect.runPromise(program.pipe(Effect.provide(Live)))
 ```
 
-### Generate Type-Safe Clients
+For OData V4 services, use `ODataV4` instead of `OData`.
 
-```bash
-odata-effect-gen generate ./metadata.xml ./generated
-```
+## Common Tasks
 
-## Features
-
-- Fully treeshakable, including generated clients
-- Type-safe OData V2 and V4 clients
-- Effect-based error handling with detailed error types
-- Query builder with type-safe filtering and ordering
-- Batch request support
-- Media entity operations (upload/download)
-- SAP-specific error handling
-- Promise wrapper for non-Effect environments
-- Code generator for type-safe service clients
+| Task | Start here |
+| ---- | ---------- |
+| Generate a client from metadata | [@odata-effect/odata-effect-generator](./packages/odata-effect-generator) |
+| Call generated services from an Express, Next.js, or script-style app | [@odata-effect/odata-effect-promise](./packages/odata-effect-promise) |
+| Write custom Effect programs against OData | [@odata-effect/odata-effect](./packages/odata-effect) |
+| Build type-safe filters and query options | Generated `QueryModels.ts` or `QueryBuilder` in the core package |
+| Work with V2 date, decimal, Int64, or duration wire formats | `ODataSchema` in the core package |
 
 ## Development
 
 ```bash
-# Install dependencies
 pnpm install
-
-# Type check
+pnpm codegen
 pnpm check
-
-# Run tests
-pnpm test
-
-# Build all packages
+pnpm test -- --run
 pnpm build
 ```
 

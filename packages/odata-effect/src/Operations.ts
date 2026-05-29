@@ -6,12 +6,13 @@
  *
  * @since 1.0.0
  */
-import { HttpClient, type HttpClientError, HttpClientRequest, HttpClientResponse } from "@effect/platform"
 import type * as BigDecimal from "effect/BigDecimal"
 import type * as DateTime from "effect/DateTime"
 import type * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"
+import type { HttpClientError } from "effect/unstable/http"
+import { HttpClient, HttpClientRequest, HttpClientResponse } from "effect/unstable/http"
 import type { ODataClientConfigService } from "./Config.js"
 import type { ParseError } from "./Errors.js"
 import { ODataError } from "./Errors.js"
@@ -154,7 +155,7 @@ export const executeFunctionImportVoid = (
     )
   }).pipe(
     Effect.scoped,
-    Effect.catchAll((error) => Effect.fail(new ODataError({ message: "Function import failed", cause: error })))
+    Effect.catch((error) => Effect.fail(new ODataError({ message: "Function import failed", cause: error })))
   )
 }
 
@@ -168,7 +169,7 @@ export const executeFunctionImportEntity = <A, I, R>(
   client: HttpClient.HttpClient,
   config: ODataClientConfigService,
   functionName: string,
-  schema: Schema.Schema<A, I, R>,
+  schema: Schema.Codec<A, I, R>,
   parameters?: OperationParameters,
   options?: FunctionImportOptions
 ): Effect.Effect<A, HttpClientError.HttpClientError | ParseError | ODataError, R> => {
@@ -198,7 +199,7 @@ export const executeFunctionImportEntity = <A, I, R>(
     return data as A
   }).pipe(
     Effect.scoped,
-    Effect.catchAll((error) => Effect.fail(new ODataError({ message: "Function import failed", cause: error })))
+    Effect.catch((error) => Effect.fail(new ODataError({ message: "Function import failed", cause: error })))
   )
 }
 
@@ -212,7 +213,7 @@ export const executeFunctionImportCollection = <A, I, R>(
   client: HttpClient.HttpClient,
   config: ODataClientConfigService,
   functionName: string,
-  schema: Schema.Schema<A, I, R>,
+  schema: Schema.Codec<A, I, R>,
   parameters?: OperationParameters,
   options?: FunctionImportOptions
 ): Effect.Effect<ReadonlyArray<A>, HttpClientError.HttpClientError | ParseError | ODataError, R> => {
@@ -243,7 +244,7 @@ export const executeFunctionImportCollection = <A, I, R>(
     return results
   }).pipe(
     Effect.scoped,
-    Effect.catchAll((error) => Effect.fail(new ODataError({ message: "Function import failed", cause: error })))
+    Effect.catch((error) => Effect.fail(new ODataError({ message: "Function import failed", cause: error })))
   )
 }
 
@@ -258,7 +259,7 @@ export const executeFunctionImportPrimitive = <A, I, R>(
   config: ODataClientConfigService,
   functionName: string,
   propertyName: string,
-  schema: Schema.Schema<A, I, R>,
+  schema: Schema.Codec<A, I, R>,
   parameters?: OperationParameters,
   options?: FunctionImportOptions
 ): Effect.Effect<A, HttpClientError.HttpClientError | ParseError | ODataError, R> => {
@@ -288,7 +289,7 @@ export const executeFunctionImportPrimitive = <A, I, R>(
     return (data.d as Record<string, A>)[propertyName]
   }).pipe(
     Effect.scoped,
-    Effect.catchAll((error) => Effect.fail(new ODataError({ message: "Function import failed", cause: error })))
+    Effect.catch((error) => Effect.fail(new ODataError({ message: "Function import failed", cause: error })))
   )
 }
 
@@ -394,7 +395,7 @@ export const executeV4FunctionVoid = (
     )
   }).pipe(
     Effect.scoped,
-    Effect.catchAll((error) => Effect.fail(new ODataError({ message: "V4 function failed", cause: error })))
+    Effect.catch((error) => Effect.fail(new ODataError({ message: "V4 function failed", cause: error })))
   )
 }
 
@@ -408,7 +409,7 @@ export const executeV4FunctionEntity = <A, I, R>(
   client: HttpClient.HttpClient,
   config: ODataClientConfigService,
   functionUrl: string,
-  schema: Schema.Schema<A, I, R>
+  schema: Schema.Codec<A, I, R>
 ): Effect.Effect<A, HttpClientError.HttpClientError | ParseError | ODataError, R> => {
   const url = `${config.baseUrl}${config.servicePath}${functionUrl}`
 
@@ -427,7 +428,7 @@ export const executeV4FunctionEntity = <A, I, R>(
     return data
   }).pipe(
     Effect.scoped,
-    Effect.catchAll((error) => Effect.fail(new ODataError({ message: "V4 function failed", cause: error })))
+    Effect.catch((error) => Effect.fail(new ODataError({ message: "V4 function failed", cause: error })))
   )
 }
 
@@ -441,7 +442,7 @@ export const executeV4FunctionCollection = <A, I, R>(
   client: HttpClient.HttpClient,
   config: ODataClientConfigService,
   functionUrl: string,
-  schema: Schema.Schema<A, I, R>
+  schema: Schema.Codec<A, I, R>
 ): Effect.Effect<ReadonlyArray<A>, HttpClientError.HttpClientError | ParseError | ODataError, R> => {
   const url = `${config.baseUrl}${config.servicePath}${functionUrl}`
   const responseSchema = ODataV4CollectionResponse(schema)
@@ -460,7 +461,7 @@ export const executeV4FunctionCollection = <A, I, R>(
     return data.value
   }).pipe(
     Effect.scoped,
-    Effect.catchAll((error) => Effect.fail(new ODataError({ message: "V4 function failed", cause: error })))
+    Effect.catch((error) => Effect.fail(new ODataError({ message: "V4 function failed", cause: error })))
   )
 }
 
@@ -474,7 +475,7 @@ export const executeV4FunctionPrimitive = <A, I, R>(
   client: HttpClient.HttpClient,
   config: ODataClientConfigService,
   functionUrl: string,
-  schema: Schema.Schema<A, I, R>
+  schema: Schema.Codec<A, I, R>
 ): Effect.Effect<A, HttpClientError.HttpClientError | ParseError | ODataError, R> => {
   const url = `${config.baseUrl}${config.servicePath}${functionUrl}`
   const responseSchema = ODataV4ValueResponse(schema)
@@ -493,7 +494,7 @@ export const executeV4FunctionPrimitive = <A, I, R>(
     return data.value
   }).pipe(
     Effect.scoped,
-    Effect.catchAll((error) => Effect.fail(new ODataError({ message: "V4 function failed", cause: error })))
+    Effect.catch((error) => Effect.fail(new ODataError({ message: "V4 function failed", cause: error })))
   )
 }
 
@@ -508,7 +509,7 @@ export const executeV4ActionVoid = <B, BI>(
   config: ODataClientConfigService,
   actionUrl: string,
   body?: B,
-  bodySchema?: Schema.Schema<B, BI>
+  bodySchema?: Schema.Codec<B, BI>
 ): Effect.Effect<void, HttpClientError.HttpClientError | ODataError, never> => {
   const url = `${config.baseUrl}${config.servicePath}${actionUrl}`
 
@@ -529,7 +530,7 @@ export const executeV4ActionVoid = <B, BI>(
     )
   }).pipe(
     Effect.scoped,
-    Effect.catchAll((error) => Effect.fail(new ODataError({ message: "V4 action failed", cause: error })))
+    Effect.catch((error) => Effect.fail(new ODataError({ message: "V4 action failed", cause: error })))
   )
 }
 
@@ -543,9 +544,9 @@ export const executeV4ActionEntity = <A, I, R, B, BI>(
   client: HttpClient.HttpClient,
   config: ODataClientConfigService,
   actionUrl: string,
-  responseSchema: Schema.Schema<A, I, R>,
+  responseSchema: Schema.Codec<A, I, R>,
   body?: B,
-  bodySchema?: Schema.Schema<B, BI>
+  bodySchema?: Schema.Codec<B, BI>
 ): Effect.Effect<A, HttpClientError.HttpClientError | ParseError | ODataError, R> => {
   const url = `${config.baseUrl}${config.servicePath}${actionUrl}`
 
@@ -568,7 +569,7 @@ export const executeV4ActionEntity = <A, I, R, B, BI>(
     return data
   }).pipe(
     Effect.scoped,
-    Effect.catchAll((error) => Effect.fail(new ODataError({ message: "V4 action failed", cause: error })))
+    Effect.catch((error) => Effect.fail(new ODataError({ message: "V4 action failed", cause: error })))
   )
 }
 
@@ -582,9 +583,9 @@ export const executeV4ActionCollection = <A, I, R, B, BI>(
   client: HttpClient.HttpClient,
   config: ODataClientConfigService,
   actionUrl: string,
-  schema: Schema.Schema<A, I, R>,
+  schema: Schema.Codec<A, I, R>,
   body?: B,
-  bodySchema?: Schema.Schema<B, BI>
+  bodySchema?: Schema.Codec<B, BI>
 ): Effect.Effect<ReadonlyArray<A>, HttpClientError.HttpClientError | ParseError | ODataError, R> => {
   const url = `${config.baseUrl}${config.servicePath}${actionUrl}`
   const responseSchema = ODataV4CollectionResponse(schema)
@@ -608,6 +609,6 @@ export const executeV4ActionCollection = <A, I, R, B, BI>(
     return data.value
   }).pipe(
     Effect.scoped,
-    Effect.catchAll((error) => Effect.fail(new ODataError({ message: "V4 action failed", cause: error })))
+    Effect.catch((error) => Effect.fail(new ODataError({ message: "V4 action failed", cause: error })))
   )
 }

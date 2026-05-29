@@ -30,11 +30,21 @@
     "generateExports": {
       "include": [
         "**/*.ts"
+      ],
+      "exclude": [
+        "EffectCompat.ts",
+        "ParseResultCompat.ts",
+        "SchemaCompat.ts"
       ]
     },
     "generateIndex": {
       "include": [
         "**/*.ts"
+      ],
+      "exclude": [
+        "EffectCompat.ts",
+        "ParseResultCompat.ts",
+        "SchemaCompat.ts"
       ]
     }
   }

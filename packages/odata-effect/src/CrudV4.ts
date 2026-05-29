@@ -30,6 +30,8 @@
  * @since 1.0.0
  */
 import type * as Effect from "effect/Effect"
+import * as Schema from "effect/Schema"
+import * as Struct from "effect/Struct"
 import type * as HttpBody from "effect/unstable/http/HttpBody"
 import type * as HttpClient from "effect/unstable/http/HttpClient"
 import type * as HttpClientError from "effect/unstable/http/HttpClientError"
@@ -37,7 +39,6 @@ import type { ODataClientConfig } from "./Config.js"
 import type { ODataError, ParseError } from "./Errors.js"
 import * as ODataV4 from "./ODataV4.js"
 import { buildEntityPathV4, type ODataV4QueryOptions } from "./ODataV4.js"
-import * as Schema from "./SchemaCompat.js"
 
 // ============================================================================
 // Types
@@ -51,6 +52,17 @@ import * as Schema from "./SchemaCompat.js"
  * @category models
  */
 export type EntityKey = string | number | boolean | { [key: string]: string | number | boolean }
+
+type EditableSchema<TEditable, TEditableInput> = Schema.Codec<TEditable, TEditableInput> & {
+  readonly mapFields: (
+    f: (fields: Schema.Struct.Fields) => Schema.Struct.Fields
+  ) => Schema.Top
+}
+
+const partialSchema = <TEditable, TEditableInput>(
+  schema: EditableSchema<TEditable, TEditableInput>
+): Schema.Codec<Partial<TEditable>, Partial<TEditableInput>> =>
+  schema.mapFields(Struct.map(Schema.optional)) as unknown as Schema.Codec<Partial<TEditable>, Partial<TEditableInput>>
 
 /**
  * Configuration for creating a CRUD service.
@@ -68,9 +80,9 @@ export interface CrudConfig<
   /** The entity set path (e.g., "People", "Products") */
   readonly path: string
   /** Schema for the entity type */
-  readonly schema: Schema.Schema<TEntity, TEntityInput>
+  readonly schema: Schema.Codec<TEntity, TEntityInput>
   /** Schema for creating/updating entities */
-  readonly editableSchema: Schema.Schema<TEditable, TEditableInput>
+  readonly editableSchema: EditableSchema<TEditable, TEditableInput>
   /** Function to convert ID to entity key */
   readonly idToKey: (id: TId) => EntityKey
 }
@@ -164,7 +176,7 @@ export const crud = <
     ODataV4.patch(
       buildEntityPathV4(config.path, config.idToKey(id)),
       entity,
-      Schema.partial(config.editableSchema)
+      partialSchema(config.editableSchema)
     ),
 
   delete: (id) => ODataV4.del(buildEntityPathV4(config.path, config.idToKey(id)))

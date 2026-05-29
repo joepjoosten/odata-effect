@@ -1,4 +1,6 @@
 import { describe, expect, it } from "@effect/vitest"
+import * as Effect from "effect/Effect"
+import * as Schema from "effect/Schema"
 import {
   BatchBuilder,
   type BatchChangeset,
@@ -17,8 +19,6 @@ import {
   serializeBatchV2,
   serializeBatchV4Json
 } from "../src/Batch.js"
-import * as Effect from "../src/EffectCompat.js"
-import * as Schema from "../src/SchemaCompat.js"
 
 describe("Batch", () => {
   describe("createBatchBuilder", () => {

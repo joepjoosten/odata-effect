@@ -2,6 +2,7 @@ import { describe, expect, it } from "@effect/vitest"
 import * as BigDecimal from "effect/BigDecimal"
 import * as DateTime from "effect/DateTime"
 import * as Duration from "effect/Duration"
+import * as Schema from "effect/Schema"
 import {
   Int64,
   ODataBinary,
@@ -17,7 +18,6 @@ import {
   ODataV4Duration,
   ODataV4TimeOfDay
 } from "../src/ODataSchema.js"
-import * as Schema from "../src/SchemaCompat.js"
 
 describe("ODataSchema", () => {
   describe("V2 DateTime", () => {

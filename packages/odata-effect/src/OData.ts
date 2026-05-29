@@ -22,13 +22,13 @@
  *
  * @since 1.0.0
  */
+import * as Effect from "effect/Effect"
+import * as Schema from "effect/Schema"
 import type { HttpBody, HttpClientError } from "effect/unstable/http"
 import { HttpClient, HttpClientRequest, HttpClientResponse } from "effect/unstable/http"
 import { ODataClientConfig } from "./Config.js"
-import * as Effect from "./EffectCompat.js"
 import type { ParseError, SapError } from "./Errors.js"
 import { ODataError, ParseError as ParseErrorTag } from "./Errors.js"
-import * as Schema from "./SchemaCompat.js"
 
 // Re-export config for backward compatibility
 export { ODataClientConfig, type ODataClientConfigService } from "./Config.js"
@@ -44,15 +44,17 @@ export { ODataClientConfig, type ODataClientConfigService } from "./Config.js"
  * @since 1.0.0
  * @category schemas
  */
-export const ODataSingleResponse = <A, I, R>(schema: Schema.Schema<A, I, R>) =>
-  Schema.Union(
+const optionalNullable = <S extends Schema.Top>(schema: S) => Schema.optional(Schema.NullOr(schema))
+
+export const ODataSingleResponse = <A, I, R>(schema: Schema.Codec<A, I, R>) =>
+  Schema.Union([
     // V2: { d: Entity }
     Schema.Struct({
       d: schema
     }),
     // V3/V4: Entity at root - extra fields like odata.metadata are allowed by default
     schema
-  )
+  ])
 
 /**
  * OData response wrapper for collections.
@@ -61,8 +63,8 @@ export const ODataSingleResponse = <A, I, R>(schema: Schema.Schema<A, I, R>) =>
  * @since 1.0.0
  * @category schemas
  */
-export const ODataCollectionResponse = <A, I, R>(schema: Schema.Schema<A, I, R>) =>
-  Schema.Union(
+export const ODataCollectionResponse = <A, I, R>(schema: Schema.Codec<A, I, R>) =>
+  Schema.Union([
     // V2 Standard: { d: { results: [...] } }
     Schema.Struct({
       d: Schema.Struct({
@@ -76,9 +78,9 @@ export const ODataCollectionResponse = <A, I, R>(schema: Schema.Schema<A, I, R>)
     // V3/V4: { value: [...] }
     Schema.Struct({
       value: Schema.Array(schema),
-      "odata.metadata": Schema.optionalWith(Schema.String, { nullable: true })
+      "odata.metadata": optionalNullable(Schema.String)
     })
-  )
+  ])
 
 /**
  * OData collection response with pagination metadata.
@@ -87,14 +89,14 @@ export const ODataCollectionResponse = <A, I, R>(schema: Schema.Schema<A, I, R>)
  * @since 1.0.0
  * @category schemas
  */
-export const ODataCollectionResponseWithMeta = <A, I, R>(schema: Schema.Schema<A, I, R>) =>
-  Schema.Union(
+export const ODataCollectionResponseWithMeta = <A, I, R>(schema: Schema.Codec<A, I, R>) =>
+  Schema.Union([
     // V2 Standard: { d: { results: [...], __count?, __next? } }
     Schema.Struct({
       d: Schema.Struct({
         results: Schema.Array(schema),
-        __count: Schema.optionalWith(Schema.String, { nullable: true }),
-        __next: Schema.optionalWith(Schema.String, { nullable: true })
+        __count: optionalNullable(Schema.String),
+        __next: optionalNullable(Schema.String)
       })
     }),
     // V2 Legacy: { d: [...] }
@@ -104,11 +106,11 @@ export const ODataCollectionResponseWithMeta = <A, I, R>(schema: Schema.Schema<A
     // V3/V4: { value: [...], odata.count?, odata.nextLink? }
     Schema.Struct({
       value: Schema.Array(schema),
-      "odata.metadata": Schema.optionalWith(Schema.String, { nullable: true }),
-      "odata.count": Schema.optionalWith(Schema.Union(Schema.String, Schema.Number), { nullable: true }),
-      "odata.nextLink": Schema.optionalWith(Schema.String, { nullable: true })
+      "odata.metadata": optionalNullable(Schema.String),
+      "odata.count": optionalNullable(Schema.Union([Schema.String, Schema.Number])),
+      "odata.nextLink": optionalNullable(Schema.String)
     })
-  )
+  ])
 
 /**
  * OData V2 entity metadata embedded in responses.
@@ -118,9 +120,9 @@ export const ODataCollectionResponseWithMeta = <A, I, R>(schema: Schema.Schema<A
  */
 export const EntityMetadata = Schema.Struct({
   uri: Schema.String,
-  type: Schema.optionalWith(Schema.String, { nullable: true }),
-  etag: Schema.optionalWith(Schema.String, { nullable: true }),
-  id: Schema.optionalWith(Schema.String, { nullable: true })
+  type: optionalNullable(Schema.String),
+  etag: optionalNullable(Schema.String),
+  id: optionalNullable(Schema.String)
 })
 
 /**
@@ -139,12 +141,12 @@ export type EntityMetadata = typeof EntityMetadata.Type
  */
 export const MediaMetadata = Schema.Struct({
   uri: Schema.String,
-  type: Schema.optionalWith(Schema.String, { nullable: true }),
-  etag: Schema.optionalWith(Schema.String, { nullable: true }),
+  type: optionalNullable(Schema.String),
+  etag: optionalNullable(Schema.String),
   media_src: Schema.String,
-  media_etag: Schema.optionalWith(Schema.String, { nullable: true }),
-  edit_media: Schema.optionalWith(Schema.String, { nullable: true }),
-  content_type: Schema.optionalWith(Schema.String, { nullable: true })
+  media_etag: optionalNullable(Schema.String),
+  edit_media: optionalNullable(Schema.String),
+  content_type: optionalNullable(Schema.String)
 })
 
 /**
@@ -181,7 +183,7 @@ export type DeferredContent = typeof DeferredContent.Type
  * @since 1.0.0
  * @category schemas
  */
-export const ODataValueResponse = <A, I, R>(propertyName: string, schema: Schema.Schema<A, I, R>) =>
+export const ODataValueResponse = <A, I, R>(propertyName: string, schema: Schema.Codec<A, I, R>) =>
   Schema.Struct({
     d: Schema.Struct({
       [propertyName]: schema
@@ -336,7 +338,7 @@ const buildQueryString = (options?: ODataQueryOptions): string => {
 const handleError = <A, E, R>(
   effect: Effect.Effect<A, E, R>
 ): Effect.Effect<A, ODataError, R> =>
-  Effect.catchAll(effect, (error) =>
+  Effect.catch(effect, (error) =>
     Effect.fail(
       new ODataError({
         message: "OData request failed",
@@ -362,7 +364,7 @@ const handleError = <A, E, R>(
  */
 export const get = <A, I, R>(
   path: string,
-  schema: Schema.Schema<A, I, R>,
+  schema: Schema.Codec<A, I, R>,
   options?: ODataQueryOptions
 ): Effect.Effect<
   A,
@@ -408,7 +410,7 @@ export const get = <A, I, R>(
  */
 export const getCollection = <A, I, R>(
   path: string,
-  schema: Schema.Schema<A, I, R>,
+  schema: Schema.Codec<A, I, R>,
   options?: ODataQueryOptions
 ): Effect.Effect<
   ReadonlyArray<A>,
@@ -456,7 +458,7 @@ export const getCollection = <A, I, R>(
  */
 export const getCollectionPaged = <A, I, R>(
   path: string,
-  schema: Schema.Schema<A, I, R>,
+  schema: Schema.Codec<A, I, R>,
   options?: ODataQueryOptions
 ): Effect.Effect<
   PagedResult<A>,
@@ -533,7 +535,7 @@ export const getCollectionPaged = <A, I, R>(
 export const getValue = <A, I, R>(
   path: string,
   propertyName: string,
-  schema: Schema.Schema<A, I, R>
+  schema: Schema.Codec<A, I, R>
 ): Effect.Effect<
   A,
   HttpClientError.HttpClientError | ParseError | SapError | ODataError,
@@ -574,7 +576,7 @@ export const getValue = <A, I, R>(
  */
 export const getComplex = <A, I, R>(
   path: string,
-  schema: Schema.Schema<A, I, R>
+  schema: Schema.Codec<A, I, R>
 ): Effect.Effect<
   A,
   HttpClientError.HttpClientError | ParseError | SapError | ODataError,
@@ -619,7 +621,7 @@ export const getComplex = <A, I, R>(
  */
 export const expandDeferred = <A, I, R>(
   deferred: { readonly __deferred: { readonly uri: string } },
-  schema: Schema.Schema<A, I, R>
+  schema: Schema.Codec<A, I, R>
 ): Effect.Effect<
   A,
   HttpClientError.HttpClientError | ParseError | SapError | ODataError,
@@ -666,7 +668,7 @@ export const expandDeferred = <A, I, R>(
  */
 export const expandDeferredCollection = <A, I, R>(
   deferred: { readonly __deferred: { readonly uri: string } },
-  schema: Schema.Schema<A, I, R>
+  schema: Schema.Codec<A, I, R>
 ): Effect.Effect<
   ReadonlyArray<A>,
   HttpClientError.HttpClientError | ParseError | SapError | ODataError,
@@ -715,8 +717,8 @@ export const expandDeferredCollection = <A, I, R>(
 export const post = <A, I, R, B, BI>(
   path: string,
   body: B,
-  bodySchema: Schema.Schema<B, BI>,
-  responseSchema: Schema.Schema<A, I, R>
+  bodySchema: Schema.Codec<B, BI>,
+  responseSchema: Schema.Codec<A, I, R>
 ): Effect.Effect<
   A,
   HttpClientError.HttpClientError | HttpBody.HttpBodyError | ParseError | SapError | ODataError,
@@ -766,7 +768,7 @@ export const post = <A, I, R, B, BI>(
 export const patch = <B, BI>(
   path: string,
   body: B,
-  bodySchema: Schema.Schema<B, BI>,
+  bodySchema: Schema.Codec<B, BI>,
   requestOptions?: ODataRequestOptions
 ): Effect.Effect<
   void,

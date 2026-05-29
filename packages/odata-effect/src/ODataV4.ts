@@ -27,13 +27,13 @@
  *
  * @since 1.0.0
  */
+import * as Effect from "effect/Effect"
+import * as Schema from "effect/Schema"
 import type { HttpBody, HttpClientError } from "effect/unstable/http"
 import { HttpClient, HttpClientRequest, HttpClientResponse } from "effect/unstable/http"
 import { ODataClientConfig } from "./Config.js"
-import * as Effect from "./EffectCompat.js"
 import type { ParseError } from "./Errors.js"
 import { ODataError, ParseError as ParseErrorTag } from "./Errors.js"
-import * as Schema from "./SchemaCompat.js"
 
 // Re-export config - V4 uses the same unified config as V2
 export { ODataClientConfig, type ODataClientConfigService } from "./Config.js"
@@ -42,6 +42,8 @@ export { ODataClientConfig, type ODataClientConfigService } from "./Config.js"
 // Response Schemas
 // ============================================================================
 
+const optionalNullable = <S extends Schema.Top>(schema: S) => Schema.optional(Schema.NullOr(schema))
+
 /**
  * OData V4 annotations that can appear in responses.
  *
@@ -49,13 +51,13 @@ export { ODataClientConfig, type ODataClientConfigService } from "./Config.js"
  * @category schemas
  */
 export const ODataV4Annotations = Schema.Struct({
-  "@odata.context": Schema.optionalWith(Schema.String, { nullable: true }),
-  "@odata.type": Schema.optionalWith(Schema.String, { nullable: true }),
-  "@odata.etag": Schema.optionalWith(Schema.String, { nullable: true }),
-  "@odata.id": Schema.optionalWith(Schema.String, { nullable: true }),
-  "@odata.editLink": Schema.optionalWith(Schema.String, { nullable: true }),
-  "@odata.readLink": Schema.optionalWith(Schema.String, { nullable: true }),
-  "@odata.metadataEtag": Schema.optionalWith(Schema.String, { nullable: true })
+  "@odata.context": optionalNullable(Schema.String),
+  "@odata.type": optionalNullable(Schema.String),
+  "@odata.etag": optionalNullable(Schema.String),
+  "@odata.id": optionalNullable(Schema.String),
+  "@odata.editLink": optionalNullable(Schema.String),
+  "@odata.readLink": optionalNullable(Schema.String),
+  "@odata.metadataEtag": optionalNullable(Schema.String)
 })
 
 /**
@@ -72,11 +74,11 @@ export type ODataV4Annotations = typeof ODataV4Annotations.Type
  * @since 1.0.0
  * @category schemas
  */
-export const ODataV4CollectionResponse = <A, I, R>(schema: Schema.Schema<A, I, R>) =>
+export const ODataV4CollectionResponse = <A, I, R>(schema: Schema.Codec<A, I, R>) =>
   Schema.Struct({
-    "@odata.context": Schema.optionalWith(Schema.String, { nullable: true }),
-    "@odata.count": Schema.optionalWith(Schema.Number, { nullable: true }),
-    "@odata.nextLink": Schema.optionalWith(Schema.String, { nullable: true }),
+    "@odata.context": optionalNullable(Schema.String),
+    "@odata.count": optionalNullable(Schema.Number),
+    "@odata.nextLink": optionalNullable(Schema.String),
     value: Schema.Array(schema)
   })
 
@@ -86,9 +88,9 @@ export const ODataV4CollectionResponse = <A, I, R>(schema: Schema.Schema<A, I, R
  * @since 1.0.0
  * @category schemas
  */
-export const ODataV4ValueResponse = <A, I, R>(schema: Schema.Schema<A, I, R>) =>
+export const ODataV4ValueResponse = <A, I, R>(schema: Schema.Codec<A, I, R>) =>
   Schema.Struct({
-    "@odata.context": Schema.optionalWith(Schema.String, { nullable: true }),
+    "@odata.context": optionalNullable(Schema.String),
     value: schema
   })
 
@@ -237,7 +239,7 @@ const applyRequestOptions = (
 const handleError = <A, E, R>(
   effect: Effect.Effect<A, E, R>
 ): Effect.Effect<A, ODataError, R> =>
-  Effect.catchAll(effect, (error) =>
+  Effect.catch(effect, (error) =>
     Effect.fail(
       new ODataError({
         message: "OData V4 request failed",
@@ -258,7 +260,7 @@ const handleError = <A, E, R>(
  */
 export const get = <A, I, R>(
   path: string,
-  schema: Schema.Schema<A, I, R>,
+  schema: Schema.Codec<A, I, R>,
   options?: ODataV4QueryOptions
 ): Effect.Effect<
   A,
@@ -302,7 +304,7 @@ export const get = <A, I, R>(
  */
 export const getCollection = <A, I, R>(
   path: string,
-  schema: Schema.Schema<A, I, R>,
+  schema: Schema.Codec<A, I, R>,
   options?: ODataV4QueryOptions
 ): Effect.Effect<
   ReadonlyArray<A>,
@@ -349,7 +351,7 @@ export const getCollection = <A, I, R>(
  */
 export const getCollectionPaged = <A, I, R>(
   path: string,
-  schema: Schema.Schema<A, I, R>,
+  schema: Schema.Codec<A, I, R>,
   options?: ODataV4QueryOptions
 ): Effect.Effect<
   PagedResultV4<A>,
@@ -401,7 +403,7 @@ export const getCollectionPaged = <A, I, R>(
  */
 export const getValue = <A, I, R>(
   path: string,
-  schema: Schema.Schema<A, I, R>
+  schema: Schema.Codec<A, I, R>
 ): Effect.Effect<
   A,
   HttpClientError.HttpClientError | ParseError | ODataError,
@@ -447,8 +449,8 @@ export const getValue = <A, I, R>(
 export const post = <A, I, R, B, BI>(
   path: string,
   body: B,
-  bodySchema: Schema.Schema<B, BI>,
-  responseSchema: Schema.Schema<A, I, R>,
+  bodySchema: Schema.Codec<B, BI>,
+  responseSchema: Schema.Codec<A, I, R>,
   requestOptions?: ODataV4RequestOptions
 ): Effect.Effect<
   A,
@@ -497,7 +499,7 @@ export const post = <A, I, R, B, BI>(
 export const patch = <B, BI>(
   path: string,
   body: B,
-  bodySchema: Schema.Schema<B, BI>,
+  bodySchema: Schema.Codec<B, BI>,
   requestOptions?: ODataV4RequestOptions
 ): Effect.Effect<
   void,
@@ -545,7 +547,7 @@ export const patch = <B, BI>(
 export const put = <B, BI>(
   path: string,
   body: B,
-  bodySchema: Schema.Schema<B, BI>,
+  bodySchema: Schema.Codec<B, BI>,
   requestOptions?: ODataV4RequestOptions
 ): Effect.Effect<
   void,

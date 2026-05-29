@@ -1,11 +1,12 @@
 import { describe, expect, it } from "@effect/vitest"
+import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
+import * as Schema from "effect/Schema"
+import * as Struct from "effect/Struct"
 import { HttpClient, HttpClientResponse } from "effect/unstable/http"
 import type * as HttpClientRequest from "effect/unstable/http/HttpClientRequest"
-import * as Effect from "../src/EffectCompat.js"
 import * as ODataV4 from "../src/ODataV4.js"
 import { ODataClientConfig } from "../src/ODataV4.js"
-import * as Schema from "../src/SchemaCompat.js"
 
 // Test schema
 class TestEntity extends Schema.Class<TestEntity>("TestEntity")({
@@ -327,7 +328,7 @@ describe("ODataV4", () => {
         yield* ODataV4.patch(
           "Products(1)",
           { name: "Updated" },
-          Schema.partial(EditableTestEntity)
+          EditableTestEntity.mapFields(Struct.map(Schema.optional))
         )
       }).pipe(
         Effect.provide(
@@ -348,7 +349,7 @@ describe("ODataV4", () => {
         yield* ODataV4.patch(
           "Products(1)",
           { name: "Updated" },
-          Schema.partial(EditableTestEntity),
+          EditableTestEntity.mapFields(Struct.map(Schema.optional)),
           { etag: "W/\"abc123\"" }
         )
       }).pipe(
@@ -370,7 +371,7 @@ describe("ODataV4", () => {
         yield* ODataV4.patch(
           "Products(1)",
           { name: "Updated" },
-          Schema.partial(EditableTestEntity),
+          EditableTestEntity.mapFields(Struct.map(Schema.optional)),
           { forceUpdate: true }
         )
       }).pipe(
@@ -470,7 +471,7 @@ describe("ODataV4", () => {
         yield* ODataV4.patch(
           "Products(1)",
           { name: "Updated" },
-          Schema.partial(EditableTestEntity)
+          EditableTestEntity.mapFields(Struct.map(Schema.optional))
         )
       }).pipe(
         Effect.provide(
@@ -532,7 +533,7 @@ describe("ODataV4", () => {
         yield* ODataV4.patch(
           "Products(1)",
           { name: "Updated" },
-          Schema.partial(EditableTestEntity)
+          EditableTestEntity.mapFields(Struct.map(Schema.optional))
         )
       }).pipe(
         Effect.provide(

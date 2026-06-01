@@ -76,7 +76,7 @@ Best for navigating relationships with full type safety. Uses branded types to e
 import { pipe } from "effect"
 import {
   People, byKey, trips, planItems, asFlight, bestFriend,
-  fetchCollection, fetchOne
+  fetchCollection, fetchOne, withQueryOptions
 } from "./generated"
 import { Person, Trip, Flight } from "./generated"
 
@@ -192,10 +192,11 @@ const myTrips = yield* pipe(
   People,
   byKey("russellwhyte"),
   trips,
-  (path) => fetchCollection(Trip)(path, {
+  withQueryOptions({
     $filter: "budget gt 1000",
     $orderby: "startsAt desc"
-  })
+  }),
+  fetchCollection(Trip)
 )
 ```
 

@@ -95,7 +95,7 @@ Generated models use TypeScript-style property names such as `name` or `productI
 | File | Description |
 | ---- | ----------- |
 | `Models.ts` | Effect Schema values for entities, complex types, enums, and editable variants. |
-| `QueryModels.ts` | Type-safe query builders for filter, select, expand, nested expanding, orderby, top, and skip. |
+| `QueryModels.ts` | Type-safe query builders for filter, select, expand, V4 nested expanding, orderby, top, and skip. |
 | `Services.ts` | CRUD services for entity sets. |
 | `PathBuilders.ts` | Tree-shakable navigation path builders with terminal fetch helpers. |
 | `Operations.ts` | Function imports, V4 functions, and V4 actions when present in metadata. |
@@ -151,7 +151,7 @@ const query = productQuery()
 const products = await ProductService.getAll(query).pipe(toPromise(runtime))
 ```
 
-Use `expanding` when an expanded navigation target needs its own select, filter, ordering, or paging options:
+For OData V4 services, use `expanding` when an expanded navigation target needs its own select, filter, ordering, or paging options:
 
 ```typescript
 import { PersonService, personQuery } from "./generated/index.js"
@@ -170,7 +170,7 @@ const query = personQuery()
 const people = await PersonService.getAll(query).pipe(toPromise(runtime))
 ```
 
-The expanded builder is typed from the generated navigation property. In the example above, the callback receives a trip query builder and the generated trip query paths, while the final query still uses the original OData path names.
+The expanded builder is typed from the generated navigation property. In the example above, the callback receives a trip query builder and the generated trip query paths, while the final query still uses the original OData path names. For V2 services, use regular `expand("trips")`; nested `expanding(...)` emits V4 inline expand options.
 
 Attach query options inside path-builder pipes with `withQueryOptions`:
 

@@ -1,11 +1,6 @@
 import { describe, expect, it } from "@effect/vitest"
 import { generateModels } from "../../src/generator/ModelsGenerator.js"
-import type {
-  DataModel,
-  EntityTypeModel,
-  NavigationPropertyModel,
-  PropertyModel
-} from "../../src/model/DataModel.js"
+import type { DataModel, EntityTypeModel, NavigationPropertyModel, PropertyModel } from "../../src/model/DataModel.js"
 import type { ODataVersion } from "../../src/parser/EdmxSchema.js"
 
 describe("ModelsGenerator", () => {
@@ -216,7 +211,9 @@ describe("ModelsGenerator", () => {
       )
       expect(output).toContain("satisfies Schema.Codec<Product, unknown, never, never>")
       expect(output).toContain("satisfies Schema.Codec<Category, unknown, never, never>")
-      expect(output).toContain("Schema.encodeKeys({ id: \"ID\", productName: \"ProductName\", category: \"Category\" })")
+      expect(output).toContain(
+        "Schema.encodeKeys({ id: \"ID\", productName: \"ProductName\", category: \"Category\" })"
+      )
       expect(output).not.toContain("OData.DeferredContent")
     })
 

@@ -443,7 +443,9 @@ const generatePathBuildersFile = (dataModel: DataModel, esmExtensions: boolean):
   lines.push(` * @example`)
   lines.push(` * \`\`\`typescript`)
   lines.push(` * const allPeople = yield* pipe(People, fetchCollection(Person))`)
-  lines.push(` * const expandedPeople = yield* pipe(People, fetchCollection(Person, personQuery().expand("trips").build()))`)
+  lines.push(
+    ` * const expandedPeople = yield* pipe(People, fetchCollection(Person, personQuery().expand("trips").build()))`
+  )
   lines.push(` * \`\`\``)
   lines.push(` *`)
   lines.push(` * @since 1.0.0`)
@@ -467,7 +469,9 @@ const generatePathBuildersFile = (dataModel: DataModel, esmExtensions: boolean):
   lines.push(` * @example`)
   lines.push(` * \`\`\`typescript`)
   lines.push(` * const person = yield* pipe(People, byKey("russell"), fetchOne(Person))`)
-  lines.push(` * const personWithTrips = yield* pipe(People, byKey("russell"), fetchOne(Person, personQuery().expand("trips").build()))`)
+  lines.push(
+    ` * const personWithTrips = yield* pipe(People, byKey("russell"), fetchOne(Person, personQuery().expand("trips").build()))`
+  )
   lines.push(` * \`\`\``)
   lines.push(` *`)
   lines.push(` * @since 1.0.0`)

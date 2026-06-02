@@ -1,5 +1,11 @@
 # @odata-effect/odata-effect-generator
 
+## 1.1.0
+
+### Minor Changes
+
+- [#28](https://github.com/joepjoosten/odata-effect/pull/28) [`55525ca`](https://github.com/joepjoosten/odata-effect/commit/55525ca3d9de6abcac3eada0b4e18db3cd9b79cf) Thanks [@joepjoosten](https://github.com/joepjoosten)! - Generate pipeable query options for path builders with `withQueryOptions`, and allow terminal fetch helpers to consume paths carrying query options.
+
 ## 1.0.1
 
 ### Patch Changes

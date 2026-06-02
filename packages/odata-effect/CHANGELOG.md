@@ -1,5 +1,11 @@
 # @odata-effect/odata-effect
 
+## 1.2.0
+
+### Minor Changes
+
+- [#33](https://github.com/joepjoosten/odata-effect/pull/33) [`9082ae0`](https://github.com/joepjoosten/odata-effect/commit/9082ae09cb859f1cedb27721dd205675d97468fc) Thanks [@joepjoosten](https://github.com/joepjoosten)! - Add typed nested navigation expansion through `QueryBuilder.expanding`, allowing generated query models to configure select, filter, expand, ordering, and paging options for expanded navigation targets.
+
 ## 1.1.0
 
 ### Minor Changes

@@ -1,5 +1,11 @@
 # @odata-effect/odata-effect
 
+## 1.1.0
+
+### Minor Changes
+
+- [#30](https://github.com/joepjoosten/odata-effect/pull/30) [`52375e8`](https://github.com/joepjoosten/odata-effect/commit/52375e8909acf69d21699151a5f9a1113b495764) Thanks [@joepjoosten](https://github.com/joepjoosten)! - Generate model schemas that expose expanded navigation payloads, add V2 deferred navigation handling, map generated query-model property names to OData path names, and allow generated path-builder fetch helpers to accept query options in pipe-friendly calls.
+
 ## 1.0.1
 
 ### Patch Changes

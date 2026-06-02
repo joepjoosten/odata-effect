@@ -1,5 +1,11 @@
 # @odata-effect/odata-effect-generator
 
+## 1.2.1
+
+### Patch Changes
+
+- [#35](https://github.com/joepjoosten/odata-effect/pull/35) [`44182f7`](https://github.com/joepjoosten/odata-effect/commit/44182f7536139313562e8cabf51b6edba369e35a) Thanks [@joepjoosten](https://github.com/joepjoosten)! - Clarify that nested `QueryBuilder.expanding(...)` emits OData V4 inline expand options and that V2 services should use regular navigation `expand(...)`.
+
 ## 1.2.0
 
 ### Minor Changes

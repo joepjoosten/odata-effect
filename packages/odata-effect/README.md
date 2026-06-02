@@ -69,7 +69,7 @@ const product = await Effect.runPromise(
 | `ODataV4` | V4 operations and V4 response handling. |
 | `ODataSchema` | OData wire-format schemas for V2/V4 date, time, duration, decimal, and Int64 values. |
 | `Crud` / `CrudV4` | Factories for entity-set CRUD services. |
-| `QueryBuilder` | Type-safe filter, select, expand, nested expanding, orderby, top, and skip helpers. |
+| `QueryBuilder` | Type-safe filter, select, expand, V4 nested expanding, orderby, top, and skip helpers. |
 | `Batch` | V2 multipart batch and V4 multipart/JSON batch support. |
 | `Media` | Media entity download, stream, upload, update, and delete helpers. |
 | `Operations` | Function imports, functions, and actions. |
@@ -108,7 +108,7 @@ const query = personQuery()
   .build()
 ```
 
-`expanding` derives the nested builder from the generated navigation path, so `trips` is typed as the expanded trip model. The resulting `$expand` uses inline nested options such as `Trips($select=Description,Budget;$filter=Budget gt 1000)`.
+`expand("trips")` is usable for normal navigation expansion. `expanding("trips", ...)` is for OData V4 services because it emits V4 inline nested expand options such as `Trips($select=Description,Budget;$filter=Budget gt 1000)`. The nested builder is derived from the generated navigation path, so `trips` is typed as the expanded trip model.
 
 ## Writes
 

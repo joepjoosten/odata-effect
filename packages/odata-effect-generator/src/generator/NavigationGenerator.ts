@@ -281,6 +281,40 @@ const generatePathBuildersFile = (dataModel: DataModel, esmExtensions: boolean):
   lines.push(`  readonly _collection: IsCollection`)
   lines.push(`}`)
   lines.push(``)
+  lines.push(`/**`)
+  lines.push(` * A path bundled with query options so options can participate in pipe() chains.`)
+  lines.push(` *`)
+  lines.push(` * @since 1.0.0`)
+  lines.push(` * @category types`)
+  lines.push(` */`)
+  lines.push(`export interface PathWithQueryOptions<TEntity, IsCollection extends boolean = false> {`)
+  lines.push(`  readonly path: Path<TEntity, IsCollection>`)
+  lines.push(`  readonly options: ${versionConfig.clientModule}.${versionConfig.queryOptionsType}`)
+  lines.push(`}`)
+  lines.push(``)
+  lines.push(`/**`)
+  lines.push(` * Input accepted by terminal operations.`)
+  lines.push(` *`)
+  lines.push(` * @since 1.0.0`)
+  lines.push(` * @category types`)
+  lines.push(` */`)
+  lines.push(`export type PathInput<TEntity, IsCollection extends boolean = false> =`)
+  lines.push(`  | Path<TEntity, IsCollection>`)
+  lines.push(`  | PathWithQueryOptions<TEntity, IsCollection>`)
+  lines.push(``)
+  lines.push(`const resolvePathInput = <T, IsCollection extends boolean>(`)
+  lines.push(`  input: PathInput<T, IsCollection>`)
+  lines.push(
+    `): { readonly path: Path<T, IsCollection>; readonly options?: ${versionConfig.clientModule}.${versionConfig.queryOptionsType} } =>`
+  )
+  lines.push(`  typeof input === "string" ? { path: input } : input`)
+  lines.push(``)
+  lines.push(`const mergeQueryOptions = (`)
+  lines.push(`  left: ${versionConfig.clientModule}.${versionConfig.queryOptionsType} | undefined,`)
+  lines.push(`  right: ${versionConfig.clientModule}.${versionConfig.queryOptionsType} | undefined`)
+  lines.push(`): ${versionConfig.clientModule}.${versionConfig.queryOptionsType} | undefined =>`)
+  lines.push(`  left === undefined ? right : right === undefined ? left : { ...left, ...right }`)
+  lines.push(``)
 
   // Entity set roots (PascalCase, types use Model suffix to avoid collision)
   lines.push(`// ============================================================================`)
@@ -324,6 +358,31 @@ const generatePathBuildersFile = (dataModel: DataModel, esmExtensions: boolean):
   lines.push(`export const byKey = <T>(key: string | number) =>`)
   lines.push(`  (base: Path<T, true>): Path<T, false> =>`)
   lines.push(`    \`\${base}(\${typeof key === "string" ? \`'\${key}'\` : key})\` as Path<T, false>`)
+  lines.push(``)
+  lines.push(`/**`)
+  lines.push(` * Attach query options to a path while keeping terminal operations pipeable.`)
+  lines.push(` *`)
+  lines.push(` * @example`)
+  lines.push(` * \`\`\`typescript`)
+  lines.push(` * const trips = yield* pipe(`)
+  lines.push(` *   People,`)
+  lines.push(` *   byKey("russellwhyte"),`)
+  lines.push(` *   trips,`)
+  lines.push(` *   withQueryOptions({ $filter: "budget gt 1000" }),`)
+  lines.push(` *   fetchCollection(Trip)`)
+  lines.push(` * )`)
+  lines.push(` * \`\`\``)
+  lines.push(` *`)
+  lines.push(` * @since 1.0.0`)
+  lines.push(` * @category navigation`)
+  lines.push(` */`)
+  lines.push(`export const withQueryOptions = (`)
+  lines.push(`  options: ${versionConfig.clientModule}.${versionConfig.queryOptionsType}`)
+  lines.push(`) =>`)
+  lines.push(
+    `  <T, IsCollection extends boolean>(path: Path<T, IsCollection>): PathWithQueryOptions<T, IsCollection> =>`
+  )
+  lines.push(`    ({ path, options })`)
   lines.push(``)
 
   // Navigation property functions
@@ -391,12 +450,16 @@ const generatePathBuildersFile = (dataModel: DataModel, esmExtensions: boolean):
   lines.push(` * @category operations`)
   lines.push(` */`)
   lines.push(
-    `export const fetchCollection = <T, I, R = never>(schema: Schema.Codec<T, I, R>, options?: ${versionConfig.clientModule}.${versionConfig.queryOptionsType}) =>`
+    `export const fetchCollection = <T, I, R = never>(schema: Schema.Codec<T, I, R>, queryOptions?: ${versionConfig.clientModule}.${versionConfig.queryOptionsType}) =>`
   )
   lines.push(
-    `  (path: Path<T, true>, pathOptions?: ${versionConfig.clientModule}.${versionConfig.queryOptionsType}): Effect.Effect<ReadonlyArray<T>, ${versionConfig.odataNamespace}.${versionConfig.errorType}, R | ${versionConfig.odataNamespace}.${versionConfig.dependenciesType}> =>`
+    `  (input: PathInput<T, true>, pathOptions?: ${versionConfig.clientModule}.${versionConfig.queryOptionsType}): Effect.Effect<ReadonlyArray<T>, ${versionConfig.odataNamespace}.${versionConfig.errorType}, R | ${versionConfig.odataNamespace}.${versionConfig.dependenciesType}> => {`
   )
-  lines.push(`    ${versionConfig.odataNamespace}.getCollection(path, schema, pathOptions ?? options)`)
+  lines.push(`    const resolved = resolvePathInput(input)`)
+  lines.push(
+    `    return ${versionConfig.odataNamespace}.getCollection(resolved.path, schema, mergeQueryOptions(mergeQueryOptions(resolved.options, queryOptions), pathOptions))`
+  )
+  lines.push(`  }`)
   lines.push(``)
   lines.push(`/**`)
   lines.push(` * Fetch a single entity at the given path (Effect-based).`)
@@ -411,12 +474,16 @@ const generatePathBuildersFile = (dataModel: DataModel, esmExtensions: boolean):
   lines.push(` * @category operations`)
   lines.push(` */`)
   lines.push(
-    `export const fetchOne = <T, I, R = never>(schema: Schema.Codec<T, I, R>, options?: ${versionConfig.clientModule}.${versionConfig.queryOptionsType}) =>`
+    `export const fetchOne = <T, I, R = never>(schema: Schema.Codec<T, I, R>, queryOptions?: ${versionConfig.clientModule}.${versionConfig.queryOptionsType}) =>`
   )
   lines.push(
-    `  (path: Path<T, false>, pathOptions?: ${versionConfig.clientModule}.${versionConfig.queryOptionsType}): Effect.Effect<T, ${versionConfig.odataNamespace}.${versionConfig.errorType}, R | ${versionConfig.odataNamespace}.${versionConfig.dependenciesType}> =>`
+    `  (input: PathInput<T, false>, pathOptions?: ${versionConfig.clientModule}.${versionConfig.queryOptionsType}): Effect.Effect<T, ${versionConfig.odataNamespace}.${versionConfig.errorType}, R | ${versionConfig.odataNamespace}.${versionConfig.dependenciesType}> => {`
   )
-  lines.push(`    ${versionConfig.odataNamespace}.get(path, schema, pathOptions ?? options)`)
+  lines.push(`    const resolved = resolvePathInput(input)`)
+  lines.push(
+    `    return ${versionConfig.odataNamespace}.get(resolved.path, schema, mergeQueryOptions(mergeQueryOptions(resolved.options, queryOptions), pathOptions))`
+  )
+  lines.push(`  }`)
   lines.push(``)
 
   // Promise conversion (re-export from odata-effect-promise)

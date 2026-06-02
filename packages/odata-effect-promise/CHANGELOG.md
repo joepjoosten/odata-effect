@@ -1,5 +1,16 @@
 # @odata-effect/odata-effect-promise
 
+## 4.0.1
+
+### Patch Changes
+
+- [#25](https://github.com/joepjoosten/odata-effect/pull/25) [`ba43520`](https://github.com/joepjoosten/odata-effect/commit/ba435200c2948492db6e9b248087c320cc0cca06) Thanks [@joepjoosten](https://github.com/joepjoosten)! - Finalize the Effect 4 migration release.
+
+  This includes the `effect@4.0.0-beta.74` migration, removal of the temporary compatibility shims, generated client output updates for Effect 4 Schema APIs, partial update schema support for generated CRUD services, and expanded first-run README guidance for each package.
+
+- Updated dependencies [[`ba43520`](https://github.com/joepjoosten/odata-effect/commit/ba435200c2948492db6e9b248087c320cc0cca06)]:
+  - @odata-effect/odata-effect@1.0.1
+
 ## 3.0.11
 
 ### Patch Changes

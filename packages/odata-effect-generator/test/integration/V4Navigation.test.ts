@@ -31,6 +31,8 @@ describe("V4 Navigation Generation", () => {
       expect(content).toContain("export type Path<TEntity, IsCollection extends boolean = false>")
       expect(content).toContain("readonly _entity: TEntity")
       expect(content).toContain("readonly _collection: IsCollection")
+      expect(content).toContain("export interface PathWithQueryOptions<TEntity, IsCollection extends boolean = false>")
+      expect(content).toContain("export type PathInput<TEntity, IsCollection extends boolean = false>")
 
       // Check entity set roots (PascalCase, types use Model suffix)
       expect(content).toContain("export const People: Path<PersonModel, true> = \"People\"")
@@ -40,6 +42,8 @@ describe("V4 Navigation Generation", () => {
       // Check byKey function
       expect(content).toContain("export const byKey = <T>(key: string | number)")
       expect(content).toContain("(base: Path<T, true>): Path<T, false>")
+      expect(content).toContain("export const withQueryOptions = (")
+      expect(content).toContain("<T, IsCollection extends boolean>(path: Path<T, IsCollection>)")
 
       // Check navigation property functions (flat exports with Model suffix)
       expect(content).toContain("export const trips = (base: Path<PersonModel, false>): Path<TripModel, true>")
@@ -53,13 +57,19 @@ describe("V4 Navigation Generation", () => {
 
       // Check terminal operations
       expect(content).toContain(
-        "export const fetchCollection = <T, I, R = never>(schema: Schema.Codec<T, I, R>, options?: ODataV4.ODataV4QueryOptions)"
+        "export const fetchCollection = <T, I, R = never>(schema: Schema.Codec<T, I, R>, queryOptions?: ODataV4.ODataV4QueryOptions)"
       )
-      expect(content).toContain("getCollection(path, schema, pathOptions ?? options)")
       expect(content).toContain(
-        "export const fetchOne = <T, I, R = never>(schema: Schema.Codec<T, I, R>, options?: ODataV4.ODataV4QueryOptions)"
+        "export const fetchOne = <T, I, R = never>(schema: Schema.Codec<T, I, R>, queryOptions?: ODataV4.ODataV4QueryOptions)"
       )
-      expect(content).toContain("ODataV4.get(path, schema, pathOptions ?? options)")
+      expect(content).toContain("(input: PathInput<T, true>, pathOptions?: ODataV4.ODataV4QueryOptions)")
+      expect(content).toContain("(input: PathInput<T, false>, pathOptions?: ODataV4.ODataV4QueryOptions)")
+      expect(content).toContain(
+        "return ODataV4.getCollection(resolved.path, schema, mergeQueryOptions(mergeQueryOptions(resolved.options, queryOptions), pathOptions))"
+      )
+      expect(content).toContain(
+        "return ODataV4.get(resolved.path, schema, mergeQueryOptions(mergeQueryOptions(resolved.options, queryOptions), pathOptions))"
+      )
 
       // Check Model suffix imports to avoid collision with entity set names
       expect(content).toContain("Person as PersonModel")

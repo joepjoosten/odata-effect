@@ -1,5 +1,19 @@
 # @odata-effect/odata-effect-generator
 
+## 1.1.0
+
+### Minor Changes
+
+- [#28](https://github.com/joepjoosten/odata-effect/pull/28) [`55525ca`](https://github.com/joepjoosten/odata-effect/commit/55525ca3d9de6abcac3eada0b4e18db3cd9b79cf) Thanks [@joepjoosten](https://github.com/joepjoosten)! - Generate pipeable query options for path builders with `withQueryOptions`, and allow terminal fetch helpers to consume paths carrying query options.
+
+## 1.0.1
+
+### Patch Changes
+
+- [#25](https://github.com/joepjoosten/odata-effect/pull/25) [`ba43520`](https://github.com/joepjoosten/odata-effect/commit/ba435200c2948492db6e9b248087c320cc0cca06) Thanks [@joepjoosten](https://github.com/joepjoosten)! - Finalize the Effect 4 migration release.
+
+  This includes the `effect@4.0.0-beta.74` migration, removal of the temporary compatibility shims, generated client output updates for Effect 4 Schema APIs, partial update schema support for generated CRUD services, and expanded first-run README guidance for each package.
+
 ## 0.6.12
 
 ### Patch Changes

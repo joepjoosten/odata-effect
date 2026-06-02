@@ -13,7 +13,7 @@ describe("ODataV4Client", () => {
   describe("ODataV4Annotations", () => {
     it.effect("decodes empty annotations object", () =>
       Effect.gen(function*() {
-        const result = yield* Schema.decodeUnknown(ODataV4Annotations)({})
+        const result = yield* Schema.decodeUnknownEffect(ODataV4Annotations)({})
         expect(result).toEqual({})
       }))
 
@@ -28,7 +28,7 @@ describe("ODataV4Client", () => {
           "@odata.readLink": "Products(1)",
           "@odata.metadataEtag": "W/\"meta123\""
         }
-        const result = yield* Schema.decodeUnknown(ODataV4Annotations)(data)
+        const result = yield* Schema.decodeUnknownEffect(ODataV4Annotations)(data)
         expect(result["@odata.context"]).toBe("$metadata#Products")
         expect(result["@odata.type"]).toBe("#Namespace.Product")
         expect(result["@odata.etag"]).toBe("W/\"abc123\"")
@@ -44,9 +44,9 @@ describe("ODataV4Client", () => {
           "@odata.context": null,
           "@odata.etag": null
         }
-        const result = yield* Schema.decodeUnknown(ODataV4Annotations)(data)
-        expect(result["@odata.context"]).toBeUndefined()
-        expect(result["@odata.etag"]).toBeUndefined()
+        const result = yield* Schema.decodeUnknownEffect(ODataV4Annotations)(data)
+        expect(result["@odata.context"]).toBeNull()
+        expect(result["@odata.etag"]).toBeNull()
       }))
 
     it.effect("handles partial annotations", () =>
@@ -55,7 +55,7 @@ describe("ODataV4Client", () => {
           "@odata.context": "$metadata#Products",
           "@odata.etag": "W/\"123\""
         }
-        const result = yield* Schema.decodeUnknown(ODataV4Annotations)(data)
+        const result = yield* Schema.decodeUnknownEffect(ODataV4Annotations)(data)
         expect(result["@odata.context"]).toBe("$metadata#Products")
         expect(result["@odata.etag"]).toBe("W/\"123\"")
         expect(result["@odata.type"]).toBeUndefined()
@@ -77,7 +77,7 @@ describe("ODataV4Client", () => {
           ]
         }
         const ResponseSchema = ODataV4CollectionResponse(ProductSchema)
-        const result = yield* Schema.decodeUnknown(ResponseSchema)(data)
+        const result = yield* Schema.decodeUnknownEffect(ResponseSchema)(data)
         expect(result.value).toHaveLength(2)
         expect(result.value[0].id).toBe(1)
         expect(result.value[1].name).toBe("Product 2")
@@ -90,7 +90,7 @@ describe("ODataV4Client", () => {
           value: [{ id: 1, name: "Product 1" }]
         }
         const ResponseSchema = ODataV4CollectionResponse(ProductSchema)
-        const result = yield* Schema.decodeUnknown(ResponseSchema)(data)
+        const result = yield* Schema.decodeUnknownEffect(ResponseSchema)(data)
         expect(result["@odata.count"]).toBe(100)
       }))
 
@@ -101,7 +101,7 @@ describe("ODataV4Client", () => {
           value: [{ id: 1, name: "Product 1" }]
         }
         const ResponseSchema = ODataV4CollectionResponse(ProductSchema)
-        const result = yield* Schema.decodeUnknown(ResponseSchema)(data)
+        const result = yield* Schema.decodeUnknownEffect(ResponseSchema)(data)
         expect(result["@odata.nextLink"]).toBe("Products?$skip=10&$top=10")
       }))
 
@@ -112,7 +112,7 @@ describe("ODataV4Client", () => {
           value: []
         }
         const ResponseSchema = ODataV4CollectionResponse(ProductSchema)
-        const result = yield* Schema.decodeUnknown(ResponseSchema)(data)
+        const result = yield* Schema.decodeUnknownEffect(ResponseSchema)(data)
         expect(result.value).toHaveLength(0)
         expect(result["@odata.context"]).toBe("$metadata#Products")
       }))
@@ -129,7 +129,7 @@ describe("ODataV4Client", () => {
           ]
         }
         const ResponseSchema = ODataV4CollectionResponse(ProductSchema)
-        const result = yield* Schema.decodeUnknown(ResponseSchema)(data)
+        const result = yield* Schema.decodeUnknownEffect(ResponseSchema)(data)
         expect(result["@odata.context"]).toBe("$metadata#Products")
         expect(result["@odata.count"]).toBe(50)
         expect(result["@odata.nextLink"]).toBe("Products?$skip=10")
@@ -145,7 +145,7 @@ describe("ODataV4Client", () => {
           value: "Widget"
         }
         const ResponseSchema = ODataV4ValueResponse(Schema.String)
-        const result = yield* Schema.decodeUnknown(ResponseSchema)(data)
+        const result = yield* Schema.decodeUnknownEffect(ResponseSchema)(data)
         expect(result.value).toBe("Widget")
         expect(result["@odata.context"]).toBe("$metadata#Products(1)/name")
       }))
@@ -156,7 +156,7 @@ describe("ODataV4Client", () => {
           value: 42
         }
         const ResponseSchema = ODataV4ValueResponse(Schema.Number)
-        const result = yield* Schema.decodeUnknown(ResponseSchema)(data)
+        const result = yield* Schema.decodeUnknownEffect(ResponseSchema)(data)
         expect(result.value).toBe(42)
       }))
 
@@ -166,7 +166,7 @@ describe("ODataV4Client", () => {
           value: true
         }
         const ResponseSchema = ODataV4ValueResponse(Schema.Boolean)
-        const result = yield* Schema.decodeUnknown(ResponseSchema)(data)
+        const result = yield* Schema.decodeUnknownEffect(ResponseSchema)(data)
         expect(result.value).toBe(true)
       }))
   })

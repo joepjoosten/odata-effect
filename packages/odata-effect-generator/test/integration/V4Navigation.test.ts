@@ -56,8 +56,8 @@ describe("V4 Navigation Generation", () => {
       expect(content).toContain("export const asEvent = (base: Path<PlanItemModel, true>): Path<EventModel, true>")
 
       // Check terminal operations
-      expect(content).toContain("export const fetchCollection = <T, I>(schema: Schema.Schema<T, I>)")
-      expect(content).toContain("export const fetchOne = <T, I>(schema: Schema.Schema<T, I>)")
+      expect(content).toContain("export const fetchCollection = <T, I, R = never>(schema: Schema.Codec<T, I, R>)")
+      expect(content).toContain("export const fetchOne = <T, I, R = never>(schema: Schema.Codec<T, I, R>)")
       expect(content).toContain("(input: PathInput<T, true>, options?: ODataV4.ODataV4QueryOptions)")
       expect(content).toContain("(input: PathInput<T, false>, options?: ODataV4.ODataV4QueryOptions)")
       expect(content).toContain(

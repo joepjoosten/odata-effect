@@ -6,10 +6,11 @@
  *
  * @since 1.0.0
  */
-import { HttpClient, type HttpClientError, HttpClientRequest, HttpClientResponse } from "@effect/platform"
 import * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"
 import type * as Stream from "effect/Stream"
+import type { HttpClientError } from "effect/unstable/http"
+import { HttpClient, HttpClientRequest, HttpClientResponse } from "effect/unstable/http"
 import type { ODataClientConfigService } from "./Config.js"
 import type { ParseError } from "./Errors.js"
 import { ODataError } from "./Errors.js"
@@ -156,7 +157,7 @@ export const getMediaV2 = (
     }
   }).pipe(
     Effect.scoped,
-    Effect.catchAll((error) => Effect.fail(new ODataError({ message: "Media download failed", cause: error })))
+    Effect.catch((error) => Effect.fail(new ODataError({ message: "Media download failed", cause: error })))
   )
 }
 
@@ -203,7 +204,7 @@ export const getMediaStreamV2 = (
     }
   }).pipe(
     Effect.scoped,
-    Effect.catchAll((error) => Effect.fail(new ODataError({ message: "Media stream failed", cause: error })))
+    Effect.catch((error) => Effect.fail(new ODataError({ message: "Media stream failed", cause: error })))
   )
 }
 
@@ -229,7 +230,7 @@ export const uploadMediaV2 = <A, I, R>(
   path: string,
   data: Uint8Array,
   options: MediaUploadOptions,
-  responseSchema?: Schema.Schema<A, I, R>
+  responseSchema?: Schema.Codec<A, I, R>
 ): Effect.Effect<A | void, HttpClientError.HttpClientError | ParseError | ODataError, R> => {
   const url = `${config.baseUrl}${config.servicePath}${path}`
 
@@ -269,7 +270,7 @@ export const uploadMediaV2 = <A, I, R>(
     return undefined as void
   }).pipe(
     Effect.scoped,
-    Effect.catchAll((error) => Effect.fail(new ODataError({ message: "Media upload failed", cause: error })))
+    Effect.catch((error) => Effect.fail(new ODataError({ message: "Media upload failed", cause: error })))
   )
 }
 
@@ -311,7 +312,7 @@ export const updateMediaV2 = (
     )
   }).pipe(
     Effect.scoped,
-    Effect.catchAll((error) => Effect.fail(new ODataError({ message: "Media update failed", cause: error })))
+    Effect.catch((error) => Effect.fail(new ODataError({ message: "Media update failed", cause: error })))
   )
 }
 
@@ -330,7 +331,7 @@ export const deleteMediaV2 = (
   const url = `${config.baseUrl}${config.servicePath}${path}`
 
   return Effect.gen(function*() {
-    let request = HttpClientRequest.del(url)
+    let request = HttpClientRequest.delete(url)
 
     if (etag) {
       request = request.pipe(HttpClientRequest.setHeader("If-Match", etag))
@@ -342,7 +343,7 @@ export const deleteMediaV2 = (
     )
   }).pipe(
     Effect.scoped,
-    Effect.catchAll((error) => Effect.fail(new ODataError({ message: "Media delete failed", cause: error })))
+    Effect.catch((error) => Effect.fail(new ODataError({ message: "Media delete failed", cause: error })))
   )
 }
 
@@ -398,7 +399,7 @@ export const getMediaV4 = (
     }
   }).pipe(
     Effect.scoped,
-    Effect.catchAll((error) => Effect.fail(new ODataError({ message: "V4 media download failed", cause: error })))
+    Effect.catch((error) => Effect.fail(new ODataError({ message: "V4 media download failed", cause: error })))
   )
 }
 
@@ -446,7 +447,7 @@ export const getMediaStreamV4 = (
     }
   }).pipe(
     Effect.scoped,
-    Effect.catchAll((error) => Effect.fail(new ODataError({ message: "V4 media stream failed", cause: error })))
+    Effect.catch((error) => Effect.fail(new ODataError({ message: "V4 media stream failed", cause: error })))
   )
 }
 
@@ -462,7 +463,7 @@ export const uploadMediaV4 = <A, I, R>(
   path: string,
   data: Uint8Array,
   options: MediaUploadOptions,
-  responseSchema?: Schema.Schema<A, I, R>
+  responseSchema?: Schema.Codec<A, I, R>
 ): Effect.Effect<A | void, HttpClientError.HttpClientError | ParseError | ODataError, R> => {
   const url = `${config.baseUrl}${config.servicePath}${path}`
 
@@ -504,7 +505,7 @@ export const uploadMediaV4 = <A, I, R>(
     return undefined as void
   }).pipe(
     Effect.scoped,
-    Effect.catchAll((error) => Effect.fail(new ODataError({ message: "V4 media upload failed", cause: error })))
+    Effect.catch((error) => Effect.fail(new ODataError({ message: "V4 media upload failed", cause: error })))
   )
 }
 
@@ -547,7 +548,7 @@ export const updateMediaV4 = (
     )
   }).pipe(
     Effect.scoped,
-    Effect.catchAll((error) => Effect.fail(new ODataError({ message: "V4 media update failed", cause: error })))
+    Effect.catch((error) => Effect.fail(new ODataError({ message: "V4 media update failed", cause: error })))
   )
 }
 
@@ -566,7 +567,7 @@ export const deleteMediaV4 = (
   const url = `${config.baseUrl}${config.servicePath}${path}`
 
   return Effect.gen(function*() {
-    let request = HttpClientRequest.del(url).pipe(
+    let request = HttpClientRequest.delete(url).pipe(
       HttpClientRequest.setHeader("OData-Version", "4.0")
     )
 
@@ -580,7 +581,7 @@ export const deleteMediaV4 = (
     )
   }).pipe(
     Effect.scoped,
-    Effect.catchAll((error) => Effect.fail(new ODataError({ message: "V4 media delete failed", cause: error })))
+    Effect.catch((error) => Effect.fail(new ODataError({ message: "V4 media delete failed", cause: error })))
   )
 }
 

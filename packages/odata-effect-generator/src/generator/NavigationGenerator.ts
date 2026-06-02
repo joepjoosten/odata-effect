@@ -228,7 +228,7 @@ const generatePathBuildersFile = (dataModel: DataModel, esmExtensions: boolean):
   lines.push(` *`)
   lines.push(` * @example`)
   lines.push(` * \`\`\`typescript`)
-  lines.push(` * import { pipe } from "effect"`)
+  lines.push(` * import { pipe } from "effect/Function"`)
   lines.push(` * import { People, byKey, trips, planItems } from "./PathBuilders"`)
   lines.push(` *`)
   lines.push(` * const path = pipe(`)
@@ -247,7 +247,8 @@ const generatePathBuildersFile = (dataModel: DataModel, esmExtensions: boolean):
   // Imports
   lines.push(`import { ${versionConfig.odataNamespace} } from "@odata-effect/odata-effect"`)
   lines.push(`import { toPromise } from "@odata-effect/odata-effect-promise"`)
-  lines.push(`import type { Effect, Schema } from "effect"`)
+  lines.push(`import type * as Effect from "effect/Effect"`)
+  lines.push(`import type * as Schema from "effect/Schema"`)
   lines.push(``)
 
   // Import model types with Model suffix to avoid collision with entity set names
@@ -447,9 +448,9 @@ const generatePathBuildersFile = (dataModel: DataModel, esmExtensions: boolean):
   lines.push(` * @since 1.0.0`)
   lines.push(` * @category operations`)
   lines.push(` */`)
-  lines.push(`export const fetchCollection = <T, I>(schema: Schema.Schema<T, I>) =>`)
+  lines.push(`export const fetchCollection = <T, I, R = never>(schema: Schema.Codec<T, I, R>) =>`)
   lines.push(
-    `  (input: PathInput<T, true>, options?: ${versionConfig.clientModule}.${versionConfig.queryOptionsType}): Effect.Effect<ReadonlyArray<T>, ${versionConfig.odataNamespace}.${versionConfig.errorType}, ${versionConfig.odataNamespace}.${versionConfig.dependenciesType}> => {`
+    `  (input: PathInput<T, true>, options?: ${versionConfig.clientModule}.${versionConfig.queryOptionsType}): Effect.Effect<ReadonlyArray<T>, ${versionConfig.odataNamespace}.${versionConfig.errorType}, R | ${versionConfig.odataNamespace}.${versionConfig.dependenciesType}> => {`
   )
   lines.push(`    const resolved = resolvePathInput(input)`)
   lines.push(
@@ -468,9 +469,9 @@ const generatePathBuildersFile = (dataModel: DataModel, esmExtensions: boolean):
   lines.push(` * @since 1.0.0`)
   lines.push(` * @category operations`)
   lines.push(` */`)
-  lines.push(`export const fetchOne = <T, I>(schema: Schema.Schema<T, I>) =>`)
+  lines.push(`export const fetchOne = <T, I, R = never>(schema: Schema.Codec<T, I, R>) =>`)
   lines.push(
-    `  (input: PathInput<T, false>, options?: ${versionConfig.clientModule}.${versionConfig.queryOptionsType}): Effect.Effect<T, ${versionConfig.odataNamespace}.${versionConfig.errorType}, ${versionConfig.odataNamespace}.${versionConfig.dependenciesType}> => {`
+    `  (input: PathInput<T, false>, options?: ${versionConfig.clientModule}.${versionConfig.queryOptionsType}): Effect.Effect<T, ${versionConfig.odataNamespace}.${versionConfig.errorType}, R | ${versionConfig.odataNamespace}.${versionConfig.dependenciesType}> => {`
   )
   lines.push(`    const resolved = resolvePathInput(input)`)
   lines.push(

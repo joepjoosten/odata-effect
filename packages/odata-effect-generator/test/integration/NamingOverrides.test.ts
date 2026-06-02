@@ -11,7 +11,7 @@ import { parseODataMetadata } from "../../src/parser/XmlParser.js"
 const resourceDir = path.resolve(__dirname, "../resource")
 
 describe("NamingOverrides Integration", () => {
-  it("flows through to Models generation with fromKey mapping", () =>
+  it("flows through to Models generation with encodeKeys mapping", () =>
     Effect.gen(function*() {
       const xmlContent = fs.readFileSync(
         path.join(resourceDir, "odata-v2.xml"),
@@ -34,11 +34,13 @@ describe("NamingOverrides Integration", () => {
       const dataModel = yield* digestMetadata(edmx, overrides)
       const modelsOutput = generateModels(dataModel)
 
-      // Should use fromKey for ID -> id mapping
-      expect(modelsOutput).toContain("id: Schema.propertySignature(Schema.Number).pipe(Schema.fromKey(\"ID\"))")
+      // Should use encodeKeys for ID -> id mapping
+      expect(modelsOutput).toContain("id: Schema.Number")
+      expect(modelsOutput).toContain("Schema.encodeKeys({ id: \"ID\"")
 
-      // Should use fromKey for ReleaseDate -> releaseDate mapping
-      expect(modelsOutput).toContain("Schema.fromKey(\"ReleaseDate\")")
+      // Should use encodeKeys for ReleaseDate -> releaseDate mapping
+      expect(modelsOutput).toContain("releaseDate:")
+      expect(modelsOutput).toContain("releaseDate: \"ReleaseDate\"")
     }))
 
   it("flows through to QueryModels generation", () =>

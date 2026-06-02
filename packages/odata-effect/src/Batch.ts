@@ -7,9 +7,10 @@
  *
  * @since 1.0.0
  */
-import { HttpClient, type HttpClientError, HttpClientRequest, HttpClientResponse } from "@effect/platform"
 import * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"
+import type { HttpClientError } from "effect/unstable/http"
+import { HttpClient, HttpClientRequest, HttpClientResponse } from "effect/unstable/http"
 import type { ODataClientConfigService } from "./Config.js"
 import { ODataError, ParseError } from "./Errors.js"
 
@@ -689,7 +690,7 @@ export const BatchResponseV4JsonSchema = Schema.Struct({
     Schema.Struct({
       id: Schema.String,
       status: Schema.Number,
-      headers: Schema.optional(Schema.Record({ key: Schema.String, value: Schema.String })),
+      headers: Schema.optional(Schema.Record(Schema.String, Schema.String)),
       body: Schema.optional(Schema.Unknown),
       atomicityGroup: Schema.optional(Schema.String)
     })
@@ -856,7 +857,7 @@ export const executeBatchV2 = (
     return parseBatchResponseV2(responseText, responseBoundary)
   }).pipe(
     Effect.scoped,
-    Effect.catchAll((error) => Effect.fail(new ODataError({ message: "Batch request failed", cause: error })))
+    Effect.catch((error) => Effect.fail(new ODataError({ message: "Batch request failed", cause: error })))
   )
 }
 
@@ -890,19 +891,21 @@ export const executeBatchV4Json = (
       request = request.pipe(HttpClientRequest.setHeader("Prefer", "odata.continue-on-error"))
     }
 
-    request = request.pipe(HttpClientRequest.bodyUnsafeJson(batchRequest))
+    request = request.pipe(HttpClientRequest.bodyJsonUnsafe(batchRequest))
 
     const response = yield* client.pipe(
       HttpClient.filterStatusOk,
       (c) => c.execute(request)
     )
 
-    const data = yield* HttpClientResponse.schemaBodyJson(BatchResponseV4JsonSchema)(response)
+    const data = yield* HttpClientResponse.schemaBodyJson(BatchResponseV4JsonSchema)(response).pipe(
+      Effect.mapError((error) => new ParseError({ message: "Failed to parse V4 batch response body", cause: error }))
+    )
     // Parse the typed schema result into our interface
     return parseBatchResponseV4JsonFromSchema(data)
   }).pipe(
     Effect.scoped,
-    Effect.catchAll((error) => Effect.fail(new ODataError({ message: "V4 batch request failed", cause: error })))
+    Effect.catch((error) => Effect.fail(new ODataError({ message: "V4 batch request failed", cause: error })))
   )
 }
 
@@ -952,7 +955,7 @@ export const executeBatchV4Multipart = (
     return parseBatchResponseV2(responseText, responseBoundary)
   }).pipe(
     Effect.scoped,
-    Effect.catchAll((error) => Effect.fail(new ODataError({ message: "V4 batch request failed", cause: error })))
+    Effect.catch((error) => Effect.fail(new ODataError({ message: "V4 batch request failed", cause: error })))
   )
 }
 
@@ -1034,9 +1037,9 @@ export const getFailedResponses = (
  */
 export const extractResponseBody = <A, I, R>(
   response: BatchResponse,
-  schema: Schema.Schema<A, I, R>
+  schema: Schema.Codec<A, I, R>
 ): Effect.Effect<A, ParseError, R> =>
-  Schema.decodeUnknown(schema)(response.body).pipe(
+  Schema.decodeUnknownEffect(schema)(response.body).pipe(
     Effect.mapError(
       (error) => new ParseError({ message: "Failed to parse batch response body", cause: error })
     )
@@ -1050,10 +1053,10 @@ export const extractResponseBody = <A, I, R>(
  */
 export const extractResponseBodyV2 = <A, I, R>(
   response: BatchResponse,
-  schema: Schema.Schema<A, I, R>
+  schema: Schema.Codec<A, I, R>
 ): Effect.Effect<A, ParseError, R> => {
   const wrappedSchema = Schema.Struct({ d: schema })
-  return Schema.decodeUnknown(wrappedSchema)(response.body).pipe(
+  return Schema.decodeUnknownEffect(wrappedSchema)(response.body).pipe(
     Effect.map((data) => data.d),
     Effect.mapError(
       (error) => new ParseError({ message: "Failed to parse V2 batch response body", cause: error })

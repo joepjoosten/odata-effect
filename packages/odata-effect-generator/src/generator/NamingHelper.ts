@@ -160,6 +160,19 @@ export const getEditableTypeName = (typeName: string): string => {
 }
 
 /**
+ * Get the partial editable schema name for an entity type.
+ *
+ * @example
+ * getPartialEditableTypeName("Product") // "PartialEditableProduct"
+ *
+ * @since 1.0.0
+ * @category naming
+ */
+export const getPartialEditableTypeName = (typeName: string): string => {
+  return `Partial${getEditableTypeName(typeName)}`
+}
+
+/**
  * Get the ID type name for an entity type.
  *
  * @example

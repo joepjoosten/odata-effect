@@ -8,7 +8,13 @@
  */
 import type { DataModel, EntitySetModel, EntityTypeModel } from "../model/DataModel.js"
 import type { ODataVersion } from "../parser/EdmxSchema.js"
-import { formatRelativeImport, getEditableTypeName, getIdTypeName, getServiceClassName } from "./NamingHelper.js"
+import {
+  formatRelativeImport,
+  getEditableTypeName,
+  getIdTypeName,
+  getPartialEditableTypeName,
+  getServiceClassName
+} from "./NamingHelper.js"
 
 /**
  * Generated service file.
@@ -106,6 +112,7 @@ const generateServicesFile = (dataModel: DataModel, esmExtensions: boolean): str
       modelImports.push(`type ${getIdTypeName(entityType.name)}`)
     }
     modelImports.push(getEditableTypeName(entityType.name))
+    modelImports.push(getPartialEditableTypeName(entityType.name))
   }
 
   lines.push(`import {`)
@@ -131,6 +138,7 @@ const generateServicesFile = (dataModel: DataModel, esmExtensions: boolean): str
     const serviceClassName = getServiceClassName(entitySet.name)
     const entityName = entityType.name
     const editableName = getEditableTypeName(entityName)
+    const partialEditableName = getPartialEditableTypeName(entityName)
     const hasKeys = entityType.keys.length > 0
 
     lines.push(`/**`)
@@ -145,6 +153,7 @@ const generateServicesFile = (dataModel: DataModel, esmExtensions: boolean): str
       lines.push(`  path: "${entitySet.name}",`)
       lines.push(`  schema: ${entityName},`)
       lines.push(`  editableSchema: ${editableName},`)
+      lines.push(`  partialEditableSchema: ${partialEditableName},`)
       lines.push(`  idToKey: ${generateIdToKeyFunction(entityType, dataModel.version)}`)
       lines.push(`})`)
     } else {
@@ -153,6 +162,7 @@ const generateServicesFile = (dataModel: DataModel, esmExtensions: boolean): str
       lines.push(`  path: "${entitySet.name}",`)
       lines.push(`  schema: ${entityName},`)
       lines.push(`  editableSchema: ${editableName},`)
+      lines.push(`  partialEditableSchema: ${partialEditableName},`)
       lines.push(`  idToKey: (_id: never) => { throw new Error("Entity has no keys") }`)
       lines.push(`})`)
     }

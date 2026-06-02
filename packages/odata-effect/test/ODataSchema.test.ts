@@ -34,7 +34,7 @@ describe("ODataSchema", () => {
     })
 
     it("encodes DateTime.Utc to /Date(millis)/ format", () => {
-      const dt = DateTime.unsafeMake(1672531199000)
+      const dt = DateTime.makeUnsafe(1672531199000)
       const result = Schema.encodeSync(ODataV2DateTime)(dt)
       expect(result).toBe("/Date(1672531199000)/")
     })
@@ -54,7 +54,7 @@ describe("ODataSchema", () => {
     })
 
     it("encodes DateTime.Zoned to /Date(millis+offset)/ format", () => {
-      const utc = DateTime.unsafeMake(1672531199000)
+      const utc = DateTime.makeUnsafe(1672531199000)
       const zoned = DateTime.setZone(utc, DateTime.zoneMakeOffset(5.5 * 60 * 60 * 1000))
       const result = Schema.encodeSync(ODataV2DateTimeOffset)(zoned)
       expect(result).toBe("/Date(1672531199000+0530)/")
@@ -133,7 +133,7 @@ describe("ODataSchema", () => {
     })
 
     it("encodes BigDecimal to string", () => {
-      const bd = BigDecimal.unsafeFromString("123.456")
+      const bd = BigDecimal.fromStringUnsafe("123.456")
       const result = Schema.encodeSync(ODataV2Decimal)(bd)
       expect(result).toBe("123.456")
     })
@@ -153,7 +153,7 @@ describe("ODataSchema", () => {
     })
 
     it("encodes DateTime.Zoned to ISO 8601 format", () => {
-      const utc = DateTime.unsafeMake("2022-12-31T23:59:59Z")
+      const utc = DateTime.makeUnsafe("2022-12-31T23:59:59Z")
       const zoned = DateTime.setZone(utc, DateTime.zoneMakeOffset(0))
       const result = Schema.encodeSync(ODataV4DateTimeOffset)(zoned)
       expect(result).toContain("2022-12-31")
@@ -168,7 +168,7 @@ describe("ODataSchema", () => {
     })
 
     it("encodes DateTime.Utc to date-only format", () => {
-      const dt = DateTime.unsafeMake("2022-12-31T12:00:00Z")
+      const dt = DateTime.makeUnsafe("2022-12-31T12:00:00Z")
       const result = Schema.encodeSync(ODataV4Date)(dt)
       expect(result).toBe("2022-12-31")
     })

@@ -563,6 +563,68 @@ export type ExpandableKeys<T> = {
     : never
 }[keyof T]
 
+/**
+ * Extracts the model type behind an expanded navigation property.
+ *
+ * @since 1.0.0
+ * @category types
+ */
+export type ExpandedNavigationValue<T, K extends keyof T> = NonNullable<T[K]> extends ReadonlyArray<infer U> ? U
+  : NonNullable<T[K]>
+
+/**
+ * Extracts the generated query-path model behind an EntityPath or CollectionPath.
+ *
+ * @since 1.0.0
+ * @category types
+ */
+export type NavigationQueryPaths<Q, K extends keyof Q> = Q[K] extends EntityPath<infer N> ? N
+  : Q[K] extends CollectionPath<infer N> ? N
+  : never
+
+/**
+ * Query paths used by a nested expand builder.
+ *
+ * @since 1.0.0
+ * @category types
+ */
+export type ExpandedNavigationQueryPaths<T, Q, K extends keyof T & keyof Q> =
+  & NavigationQueryPaths<Q, K>
+  & QueryPaths<ExpandedNavigationValue<T, K>>
+
+/**
+ * Callback used to configure query options for an expanded navigation property.
+ *
+ * @since 1.0.0
+ * @category types
+ */
+export type ExpandingBuilderFn<T, Q extends QueryPaths<T>> = (
+  builder: QueryBuilder<T, Q>,
+  q: Q
+) => void | BuiltQuery | QueryBuilder<T, Q>
+
+/**
+ * Filter input accepted by QueryBuilder.filter.
+ *
+ * @since 1.0.0
+ * @category types
+ */
+export type FilterInput<Q> =
+  | FilterExpression
+  | ReadonlyArray<FilterExpression>
+  | ((q: Q) => FilterExpression | ReadonlyArray<FilterExpression>)
+
+/**
+ * Order input accepted by QueryBuilder.orderBy.
+ *
+ * @since 1.0.0
+ * @category types
+ */
+export type OrderByInput<Q> =
+  | string
+  | ReadonlyArray<string>
+  | ((q: Q) => string | ReadonlyArray<string>)
+
 // ============================================================================
 // Query Builder
 // ============================================================================
@@ -603,13 +665,28 @@ export class QueryBuilder<T, Q extends QueryPaths<T>> {
     return path instanceof BasePath ? path.path : prop
   }
 
+  private getNavigationPath(prop: string): EntityPath<unknown> | CollectionPath<unknown> {
+    const path = (this.paths as Record<string, unknown>)[prop]
+    if (path instanceof EntityPath || path instanceof CollectionPath) return path
+    throw new Error(`Cannot build expanded query options for non-navigation property "${prop}"`)
+  }
+
+  private formatExpandedPath(path: string, query: BuiltQuery): string {
+    const options: Array<string> = []
+    if (query.$select) options.push(`$select=${query.$select}`)
+    if (query.$expand) options.push(`$expand=${query.$expand}`)
+    if (query.$filter) options.push(`$filter=${query.$filter}`)
+    if (query.$orderby) options.push(`$orderby=${query.$orderby}`)
+    if (query.$top !== undefined) options.push(`$top=${query.$top}`)
+    if (query.$skip !== undefined) options.push(`$skip=${query.$skip}`)
+    return options.length > 0 ? `${path}(${options.join(";")})` : path
+  }
+
   /**
    * Add a filter expression.
    */
-  filter(
-    fn: (q: Q) => FilterExpression | ReadonlyArray<FilterExpression>
-  ): QueryBuilder<T, Q> {
-    const result = fn(this.paths)
+  filter(input: FilterInput<Q>): QueryBuilder<T, Q> {
+    const result = typeof input === "function" ? input(this.paths) : input
     if (Array.isArray(result)) {
       for (const item of result) this._filters.push(item)
     } else {
@@ -635,12 +712,38 @@ export class QueryBuilder<T, Q extends QueryPaths<T>> {
   }
 
   /**
+   * Expand a navigation property and configure query options for the expanded model.
+   */
+  expanding<K extends ExpandableKeys<T> & keyof Q & string>(
+    prop: K,
+    fn?: ExpandingBuilderFn<
+      ExpandedNavigationValue<T, K>,
+      ExpandedNavigationQueryPaths<T, Q, K>
+    >
+  ): QueryBuilder<T, Q> {
+    const path = this.getNavigationPath(prop)
+    const targetPaths = path.getEntity() as ExpandedNavigationQueryPaths<T, Q, K>
+    const builder = new QueryBuilder<
+      ExpandedNavigationValue<T, K>,
+      ExpandedNavigationQueryPaths<T, Q, K>
+    >(targetPaths)
+
+    const result = fn?.(builder, targetPaths)
+    const builtQuery = result instanceof QueryBuilder
+      ? result.build()
+      : result && typeof result === "object"
+      ? result as BuiltQuery
+      : builder.build()
+
+    this._expands.push(this.formatExpandedPath(path.path, builtQuery))
+    return this
+  }
+
+  /**
    * Add ordering.
    */
-  orderBy(
-    fn: (q: Q) => string | ReadonlyArray<string>
-  ): QueryBuilder<T, Q> {
-    const result = fn(this.paths)
+  orderBy(input: OrderByInput<Q>): QueryBuilder<T, Q> {
+    const result = typeof input === "function" ? input(this.paths) : input
     if (Array.isArray(result)) {
       for (const item of result) this._orderBy.push(item)
     } else {

@@ -214,6 +214,7 @@ describe("QueryBuilder", () => {
       age: number
       active: boolean
       nested: NestedValue
+      nestedItems: ReadonlyArray<NestedValue>
     }
 
     interface QNestedValue {
@@ -231,6 +232,7 @@ describe("QueryBuilder", () => {
       age: NumberPath
       active: BooleanPath
       nested: EntityPath<QNestedValue>
+      nestedItems: CollectionPath<QNestedValue>
     }
 
     const qTestEntity: QTestEntity = {
@@ -238,7 +240,8 @@ describe("QueryBuilder", () => {
       name: new StringPath("name"),
       age: new NumberPath("age"),
       active: new BooleanPath("active"),
-      nested: new EntityPath<QNestedValue>("nested", () => qNestedValue)
+      nested: new EntityPath<QNestedValue>("nested", () => qNestedValue),
+      nestedItems: new CollectionPath<QNestedValue>("nestedItems", () => qNestedValue)
     }
 
     it("builds filter query", () => {
@@ -284,6 +287,84 @@ describe("QueryBuilder", () => {
       expect(query.$expand).toBe("nested")
     })
 
+    it("builds expanding query without nested options", () => {
+      const query = createQueryBuilder<TestEntity, QTestEntity>(qTestEntity)
+        .expanding("nested", () => {})
+        .build()
+
+      expect(query.$expand).toBe("nested")
+    })
+
+    it("builds expanding query with nested select", () => {
+      const query = createQueryBuilder<TestEntity, QTestEntity>(qTestEntity)
+        .expanding("nested", (builder) => builder.select("value"))
+        .build()
+
+      expect(query.$expand).toBe("nested($select=value)")
+    })
+
+    it("builds expanding query with collection filter ordering and paging", () => {
+      const query = createQueryBuilder<TestEntity, QTestEntity>(qTestEntity)
+        .expanding("nestedItems", (builder, q) =>
+          builder
+            .select("value")
+            .filter(q.value.gt(10))
+            .orderBy(q.value.desc())
+            .top(2)
+            .skip(1))
+        .build()
+
+      expect(query.$expand).toBe("nestedItems($select=value;$filter=value gt 10;$orderby=value desc;$top=2;$skip=1)")
+    })
+
+    it("builds nested expanding query", () => {
+      interface Responsible {
+        name: string
+      }
+
+      interface Address {
+        street: string
+        responsible: Responsible
+      }
+
+      interface Person {
+        address: Address
+      }
+
+      interface QResponsible {
+        name: StringPath
+      }
+
+      interface QAddress {
+        street: StringPath
+        responsible: EntityPath<QResponsible>
+      }
+
+      interface QPerson {
+        address: EntityPath<QAddress>
+      }
+
+      const qResponsible: QResponsible = {
+        name: new StringPath("name")
+      }
+      const qAddress: QAddress = {
+        street: new StringPath("street"),
+        responsible: new EntityPath("responsible", () => qResponsible)
+      }
+      const qPerson: QPerson = {
+        address: new EntityPath("address", () => qAddress)
+      }
+
+      const query = createQueryBuilder<Person, QPerson>(qPerson)
+        .expanding("address", (builder) =>
+          builder
+            .select("street")
+            .expanding("responsible", (responsibleBuilder) => responsibleBuilder.select("name")))
+        .build()
+
+      expect(query.$expand).toBe("address($select=street;$expand=responsible($select=name))")
+    })
+
     it("uses OData path names for selected and expanded TypeScript properties", () => {
       interface RenamedCategory {
         id: string
@@ -318,6 +399,37 @@ describe("QueryBuilder", () => {
 
       expect(query.$select).toBe("ProductName")
       expect(query.$expand).toBe("Category")
+    })
+
+    it("uses OData path names for nested expanding TypeScript properties", () => {
+      interface RenamedCategory {
+        id: string
+      }
+
+      interface RenamedEntity {
+        category: RenamedCategory
+      }
+
+      interface QRenamedCategory {
+        id: StringPath
+      }
+
+      interface QRenamedEntity {
+        category: EntityPath<QRenamedCategory>
+      }
+
+      const qRenamedCategory: QRenamedCategory = {
+        id: new StringPath("ID")
+      }
+      const qRenamedEntity: QRenamedEntity = {
+        category: new EntityPath("Category", () => qRenamedCategory)
+      }
+
+      const query = createQueryBuilder<RenamedEntity, QRenamedEntity>(qRenamedEntity)
+        .expanding("category", (builder) => builder.select("id"))
+        .build()
+
+      expect(query.$expand).toBe("Category($select=ID)")
     })
 
     it("builds orderBy query", () => {

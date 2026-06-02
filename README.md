@@ -104,7 +104,7 @@ For OData V4 services, use `ODataV4` instead of `OData`.
 | Generate a client from metadata | [@odata-effect/odata-effect-generator](./packages/odata-effect-generator) |
 | Call generated services from an Express, Next.js, or script-style app | [@odata-effect/odata-effect-promise](./packages/odata-effect-promise) |
 | Write custom Effect programs against OData | [@odata-effect/odata-effect](./packages/odata-effect) |
-| Build type-safe filters and query options | Generated `QueryModels.ts` or `QueryBuilder` in the core package |
+| Build type-safe filters, expands, and nested expanded query options | Generated `QueryModels.ts` or `QueryBuilder` in the core package |
 | Work with V2 date, decimal, Int64, or duration wire formats | `ODataSchema` in the core package |
 
 ## Development

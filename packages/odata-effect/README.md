@@ -69,7 +69,7 @@ const product = await Effect.runPromise(
 | `ODataV4` | V4 operations and V4 response handling. |
 | `ODataSchema` | OData wire-format schemas for V2/V4 date, time, duration, decimal, and Int64 values. |
 | `Crud` / `CrudV4` | Factories for entity-set CRUD services. |
-| `QueryBuilder` | Type-safe filter, select, expand, orderby, top, and skip helpers. |
+| `QueryBuilder` | Type-safe filter, select, expand, nested expanding, orderby, top, and skip helpers. |
 | `Batch` | V2 multipart batch and V4 multipart/JSON batch support. |
 | `Media` | Media entity download, stream, upload, update, and delete helpers. |
 | `Operations` | Function imports, functions, and actions. |
@@ -88,6 +88,27 @@ const products = await Effect.runPromise(
 ```
 
 V4 additionally supports `$count`, `$search`, `$compute`, and `$apply` through `ODataV4` query options.
+
+## Type-Safe Query Builder
+
+Generated query models use `QueryBuilder` so query options can be built from TypeScript property names while still emitting OData path names:
+
+```typescript
+import { personQuery } from "./generated/index.js"
+
+const query = personQuery()
+  .select("userName")
+  .expanding("trips", (trips, qTrip) =>
+    trips
+      .select("description", "budget")
+      .filter(qTrip.budget.gt(1000))
+      .orderBy(qTrip.startsAt.desc())
+      .top(5)
+  )
+  .build()
+```
+
+`expanding` derives the nested builder from the generated navigation path, so `trips` is typed as the expanded trip model. The resulting `$expand` uses inline nested options such as `Trips($select=Description,Budget;$filter=Budget gt 1000)`.
 
 ## Writes
 

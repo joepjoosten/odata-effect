@@ -598,6 +598,11 @@ export class QueryBuilder<T, Q extends QueryPaths<T>> {
 
   constructor(readonly paths: Q) {}
 
+  private getODataPath(prop: string): string {
+    const path = (this.paths as Record<string, unknown>)[prop]
+    return path instanceof BasePath ? path.path : prop
+  }
+
   /**
    * Add a filter expression.
    */
@@ -617,7 +622,7 @@ export class QueryBuilder<T, Q extends QueryPaths<T>> {
    * Select specific properties.
    */
   select(...props: Array<SelectableKeys<T> & string>): QueryBuilder<T, Q> {
-    for (const prop of props) this._selects.push(prop)
+    for (const prop of props) this._selects.push(this.getODataPath(prop))
     return this
   }
 
@@ -625,7 +630,7 @@ export class QueryBuilder<T, Q extends QueryPaths<T>> {
    * Expand navigation properties.
    */
   expand(...props: Array<ExpandableKeys<T> & string>): QueryBuilder<T, Q> {
-    for (const prop of props) this._expands.push(prop)
+    for (const prop of props) this._expands.push(this.getODataPath(prop))
     return this
   }
 

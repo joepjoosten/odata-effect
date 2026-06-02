@@ -384,16 +384,19 @@ const generatePathBuildersFile = (dataModel: DataModel, esmExtensions: boolean):
   lines.push(` * @example`)
   lines.push(` * \`\`\`typescript`)
   lines.push(` * const allPeople = yield* pipe(People, fetchCollection(Person))`)
+  lines.push(` * const expandedPeople = yield* pipe(People, fetchCollection(Person, personQuery().expand("trips").build()))`)
   lines.push(` * \`\`\``)
   lines.push(` *`)
   lines.push(` * @since 1.0.0`)
   lines.push(` * @category operations`)
   lines.push(` */`)
-  lines.push(`export const fetchCollection = <T, I, R = never>(schema: Schema.Codec<T, I, R>) =>`)
   lines.push(
-    `  (path: Path<T, true>, options?: ${versionConfig.clientModule}.${versionConfig.queryOptionsType}): Effect.Effect<ReadonlyArray<T>, ${versionConfig.odataNamespace}.${versionConfig.errorType}, R | ${versionConfig.odataNamespace}.${versionConfig.dependenciesType}> =>`
+    `export const fetchCollection = <T, I, R = never>(schema: Schema.Codec<T, I, R>, options?: ${versionConfig.clientModule}.${versionConfig.queryOptionsType}) =>`
   )
-  lines.push(`    ${versionConfig.odataNamespace}.getCollection(path, schema, options)`)
+  lines.push(
+    `  (path: Path<T, true>, pathOptions?: ${versionConfig.clientModule}.${versionConfig.queryOptionsType}): Effect.Effect<ReadonlyArray<T>, ${versionConfig.odataNamespace}.${versionConfig.errorType}, R | ${versionConfig.odataNamespace}.${versionConfig.dependenciesType}> =>`
+  )
+  lines.push(`    ${versionConfig.odataNamespace}.getCollection(path, schema, pathOptions ?? options)`)
   lines.push(``)
   lines.push(`/**`)
   lines.push(` * Fetch a single entity at the given path (Effect-based).`)
@@ -401,16 +404,19 @@ const generatePathBuildersFile = (dataModel: DataModel, esmExtensions: boolean):
   lines.push(` * @example`)
   lines.push(` * \`\`\`typescript`)
   lines.push(` * const person = yield* pipe(People, byKey("russell"), fetchOne(Person))`)
+  lines.push(` * const personWithTrips = yield* pipe(People, byKey("russell"), fetchOne(Person, personQuery().expand("trips").build()))`)
   lines.push(` * \`\`\``)
   lines.push(` *`)
   lines.push(` * @since 1.0.0`)
   lines.push(` * @category operations`)
   lines.push(` */`)
-  lines.push(`export const fetchOne = <T, I, R = never>(schema: Schema.Codec<T, I, R>) =>`)
   lines.push(
-    `  (path: Path<T, false>, options?: ${versionConfig.clientModule}.${versionConfig.queryOptionsType}): Effect.Effect<T, ${versionConfig.odataNamespace}.${versionConfig.errorType}, R | ${versionConfig.odataNamespace}.${versionConfig.dependenciesType}> =>`
+    `export const fetchOne = <T, I, R = never>(schema: Schema.Codec<T, I, R>, options?: ${versionConfig.clientModule}.${versionConfig.queryOptionsType}) =>`
   )
-  lines.push(`    ${versionConfig.odataNamespace}.get(path, schema, options)`)
+  lines.push(
+    `  (path: Path<T, false>, pathOptions?: ${versionConfig.clientModule}.${versionConfig.queryOptionsType}): Effect.Effect<T, ${versionConfig.odataNamespace}.${versionConfig.errorType}, R | ${versionConfig.odataNamespace}.${versionConfig.dependenciesType}> =>`
+  )
+  lines.push(`    ${versionConfig.odataNamespace}.get(path, schema, pathOptions ?? options)`)
   lines.push(``)
 
   // Promise conversion (re-export from odata-effect-promise)

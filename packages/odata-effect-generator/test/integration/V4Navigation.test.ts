@@ -52,8 +52,14 @@ describe("V4 Navigation Generation", () => {
       expect(content).toContain("export const asEvent = (base: Path<PlanItemModel, true>): Path<EventModel, true>")
 
       // Check terminal operations
-      expect(content).toContain("export const fetchCollection = <T, I, R = never>(schema: Schema.Codec<T, I, R>)")
-      expect(content).toContain("export const fetchOne = <T, I, R = never>(schema: Schema.Codec<T, I, R>)")
+      expect(content).toContain(
+        "export const fetchCollection = <T, I, R = never>(schema: Schema.Codec<T, I, R>, options?: ODataV4.ODataV4QueryOptions)"
+      )
+      expect(content).toContain("getCollection(path, schema, pathOptions ?? options)")
+      expect(content).toContain(
+        "export const fetchOne = <T, I, R = never>(schema: Schema.Codec<T, I, R>, options?: ODataV4.ODataV4QueryOptions)"
+      )
+      expect(content).toContain("ODataV4.get(path, schema, pathOptions ?? options)")
 
       // Check Model suffix imports to avoid collision with entity set names
       expect(content).toContain("Person as PersonModel")

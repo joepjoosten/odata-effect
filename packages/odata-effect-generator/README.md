@@ -151,6 +151,25 @@ const query = productQuery()
 const products = await ProductService.getAll(query).pipe(toPromise(runtime))
 ```
 
+Attach query options inside path-builder pipes with `withQueryOptions`:
+
+```typescript
+import { pipe } from "effect/Function"
+import { People, Trip, byKey, fetchCollection, trips, withQueryOptions } from "./generated/index.js"
+
+const myTrips = await pipe(
+  People,
+  byKey("russellwhyte"),
+  trips,
+  withQueryOptions({
+    $filter: "budget gt 1000",
+    $orderby: "startsAt desc"
+  }),
+  fetchCollection(Trip),
+  toPromise(runtime)
+)
+```
+
 ## Operations
 
 If the metadata contains FunctionImports, Functions, or Actions, they are exported from `Operations.ts`:

@@ -284,6 +284,42 @@ describe("QueryBuilder", () => {
       expect(query.$expand).toBe("nested")
     })
 
+    it("uses OData path names for selected and expanded TypeScript properties", () => {
+      interface RenamedCategory {
+        id: string
+      }
+
+      interface RenamedEntity {
+        productName: string
+        category: RenamedCategory
+      }
+
+      interface QRenamedCategory {
+        id: StringPath
+      }
+
+      interface QRenamedEntity {
+        productName: StringPath
+        category: EntityPath<QRenamedCategory>
+      }
+
+      const qRenamedCategory: QRenamedCategory = {
+        id: new StringPath("ID")
+      }
+      const qRenamedEntity: QRenamedEntity = {
+        productName: new StringPath("ProductName"),
+        category: new EntityPath("Category", () => qRenamedCategory)
+      }
+
+      const query = createQueryBuilder<RenamedEntity, QRenamedEntity>(qRenamedEntity)
+        .select("productName")
+        .expand("category")
+        .build()
+
+      expect(query.$select).toBe("ProductName")
+      expect(query.$expand).toBe("Category")
+    })
+
     it("builds orderBy query", () => {
       const query = createQueryBuilder<TestEntity, QTestEntity>(qTestEntity)
         .orderBy((q) => q.age.desc())

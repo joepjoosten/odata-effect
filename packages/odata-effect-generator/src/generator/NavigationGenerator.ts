@@ -443,18 +443,23 @@ const generatePathBuildersFile = (dataModel: DataModel, esmExtensions: boolean):
   lines.push(` * @example`)
   lines.push(` * \`\`\`typescript`)
   lines.push(` * const allPeople = yield* pipe(People, fetchCollection(Person))`)
+  lines.push(
+    ` * const expandedPeople = yield* pipe(People, fetchCollection(Person, personQuery().expand("trips").build()))`
+  )
   lines.push(` * \`\`\``)
   lines.push(` *`)
   lines.push(` * @since 1.0.0`)
   lines.push(` * @category operations`)
   lines.push(` */`)
-  lines.push(`export const fetchCollection = <T, I, R = never>(schema: Schema.Codec<T, I, R>) =>`)
   lines.push(
-    `  (input: PathInput<T, true>, options?: ${versionConfig.clientModule}.${versionConfig.queryOptionsType}): Effect.Effect<ReadonlyArray<T>, ${versionConfig.odataNamespace}.${versionConfig.errorType}, R | ${versionConfig.odataNamespace}.${versionConfig.dependenciesType}> => {`
+    `export const fetchCollection = <T, I, R = never>(schema: Schema.Codec<T, I, R>, queryOptions?: ${versionConfig.clientModule}.${versionConfig.queryOptionsType}) =>`
+  )
+  lines.push(
+    `  (input: PathInput<T, true>, pathOptions?: ${versionConfig.clientModule}.${versionConfig.queryOptionsType}): Effect.Effect<ReadonlyArray<T>, ${versionConfig.odataNamespace}.${versionConfig.errorType}, R | ${versionConfig.odataNamespace}.${versionConfig.dependenciesType}> => {`
   )
   lines.push(`    const resolved = resolvePathInput(input)`)
   lines.push(
-    `    return ${versionConfig.odataNamespace}.getCollection(resolved.path, schema, mergeQueryOptions(resolved.options, options))`
+    `    return ${versionConfig.odataNamespace}.getCollection(resolved.path, schema, mergeQueryOptions(mergeQueryOptions(resolved.options, queryOptions), pathOptions))`
   )
   lines.push(`  }`)
   lines.push(``)
@@ -464,18 +469,23 @@ const generatePathBuildersFile = (dataModel: DataModel, esmExtensions: boolean):
   lines.push(` * @example`)
   lines.push(` * \`\`\`typescript`)
   lines.push(` * const person = yield* pipe(People, byKey("russell"), fetchOne(Person))`)
+  lines.push(
+    ` * const personWithTrips = yield* pipe(People, byKey("russell"), fetchOne(Person, personQuery().expand("trips").build()))`
+  )
   lines.push(` * \`\`\``)
   lines.push(` *`)
   lines.push(` * @since 1.0.0`)
   lines.push(` * @category operations`)
   lines.push(` */`)
-  lines.push(`export const fetchOne = <T, I, R = never>(schema: Schema.Codec<T, I, R>) =>`)
   lines.push(
-    `  (input: PathInput<T, false>, options?: ${versionConfig.clientModule}.${versionConfig.queryOptionsType}): Effect.Effect<T, ${versionConfig.odataNamespace}.${versionConfig.errorType}, R | ${versionConfig.odataNamespace}.${versionConfig.dependenciesType}> => {`
+    `export const fetchOne = <T, I, R = never>(schema: Schema.Codec<T, I, R>, queryOptions?: ${versionConfig.clientModule}.${versionConfig.queryOptionsType}) =>`
+  )
+  lines.push(
+    `  (input: PathInput<T, false>, pathOptions?: ${versionConfig.clientModule}.${versionConfig.queryOptionsType}): Effect.Effect<T, ${versionConfig.odataNamespace}.${versionConfig.errorType}, R | ${versionConfig.odataNamespace}.${versionConfig.dependenciesType}> => {`
   )
   lines.push(`    const resolved = resolvePathInput(input)`)
   lines.push(
-    `    return ${versionConfig.odataNamespace}.get(resolved.path, schema, mergeQueryOptions(resolved.options, options))`
+    `    return ${versionConfig.odataNamespace}.get(resolved.path, schema, mergeQueryOptions(mergeQueryOptions(resolved.options, queryOptions), pathOptions))`
   )
   lines.push(`  }`)
   lines.push(``)

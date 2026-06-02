@@ -13,6 +13,11 @@ import type {
 } from "../model/DataModel.js"
 import { getClassName, getEditableTypeName, getIdTypeName, getPartialEditableTypeName } from "./NamingHelper.js"
 
+interface EncodedKeyMapping {
+  readonly odataName: string
+  readonly name: string
+}
+
 /**
  * Get dependencies for a type (complex types it references via properties or baseType).
  */
@@ -102,6 +107,63 @@ const needsODataSchemaImport = (dataModel: DataModel): boolean => {
 }
 
 /**
+ * Check if generated schemas need OData V2 deferred navigation support.
+ */
+const needsODataDeferredImport = (dataModel: DataModel): boolean => {
+  if (dataModel.version !== "V2") return false
+
+  const hasNavigation = (type: ComplexTypeModel | EntityTypeModel): boolean => type.navigationProperties.length > 0
+
+  for (const type of dataModel.entityTypes.values()) {
+    if (hasNavigation(type)) return true
+  }
+  for (const type of dataModel.complexTypes.values()) {
+    if (hasNavigation(type)) return true
+  }
+  return false
+}
+
+const needsV2NavigationCollectionHelper = (dataModel: DataModel): boolean => {
+  if (dataModel.version !== "V2") return false
+
+  const hasCollectionNavigation = (type: ComplexTypeModel | EntityTypeModel): boolean =>
+    type.navigationProperties.some((navProp) => navProp.isCollection)
+
+  for (const type of dataModel.entityTypes.values()) {
+    if (hasCollectionNavigation(type)) return true
+  }
+  for (const type of dataModel.complexTypes.values()) {
+    if (hasCollectionNavigation(type)) return true
+  }
+  return false
+}
+
+/**
+ * Collect Effect namespaces used by generated TypeScript model interfaces.
+ */
+const collectTypeNamespaceImports = (dataModel: DataModel): Set<string> => {
+  const namespaces = new Set<string>()
+
+  const addPropertyTypes = (properties: ReadonlyArray<PropertyModel>) => {
+    for (const prop of properties) {
+      const tsType = prop.typeMapping.tsType
+      if (tsType.startsWith("BigDecimal.")) namespaces.add("BigDecimal")
+      if (tsType.startsWith("DateTime.")) namespaces.add("DateTime")
+      if (tsType.startsWith("Duration.")) namespaces.add("Duration")
+    }
+  }
+
+  for (const type of dataModel.entityTypes.values()) {
+    addPropertyTypes(type.properties)
+  }
+  for (const type of dataModel.complexTypes.values()) {
+    addPropertyTypes(type.properties)
+  }
+
+  return namespaces
+}
+
+/**
  * Generate the Models.ts file content.
  *
  * @since 1.0.0
@@ -123,12 +185,46 @@ export const generateModels = (dataModel: DataModel): string => {
   lines.push(` */`)
   lines.push(`import * as Schema from "effect/Schema"`)
 
-  // Add ODataSchema import if needed
-  if (needsODataSchemaImport(dataModel)) {
-    lines.push(`import { ODataSchema } from "@odata-effect/odata-effect"`)
+  const includeV2NavigationCollectionHelper = needsV2NavigationCollectionHelper(dataModel)
+  if (includeV2NavigationCollectionHelper) {
+    lines.push(`import * as SchemaGetter from "effect/SchemaGetter"`)
+  }
+
+  const typeNamespaceImports = collectTypeNamespaceImports(dataModel)
+  if (typeNamespaceImports.has("BigDecimal")) {
+    lines.push(`import type * as BigDecimal from "effect/BigDecimal"`)
+  }
+  if (typeNamespaceImports.has("DateTime")) {
+    lines.push(`import type * as DateTime from "effect/DateTime"`)
+  }
+  if (typeNamespaceImports.has("Duration")) {
+    lines.push(`import type * as Duration from "effect/Duration"`)
+  }
+
+  const odataImports: Array<string> = []
+  if (needsODataDeferredImport(dataModel)) odataImports.push("OData")
+  if (needsODataSchemaImport(dataModel)) odataImports.push("ODataSchema")
+  if (odataImports.length > 0) {
+    lines.push(`import { ${odataImports.join(", ")} } from "@odata-effect/odata-effect"`)
   }
 
   lines.push(``)
+
+  if (includeV2NavigationCollectionHelper) {
+    for (const line of generateV2NavigationCollectionHelper()) lines.push(line)
+    lines.push(``)
+  }
+
+  // Generate TypeScript model interfaces before schemas so recursive
+  // navigation properties can use Schema.suspend with concrete types.
+  for (const complexType of dataModel.complexTypes.values()) {
+    for (const line of generateModelInterface(complexType, dataModel)) lines.push(line)
+    lines.push(``)
+  }
+  for (const entityType of dataModel.entityTypes.values()) {
+    for (const line of generateModelInterface(entityType, dataModel)) lines.push(line)
+    lines.push(``)
+  }
 
   // Generate enum types (no dependencies, always first)
   for (const enumType of dataModel.enumTypes.values()) {
@@ -180,6 +276,74 @@ const generateEnumType = (enumType: EnumTypeModel): Array<string> => {
   return lines
 }
 
+const generateV2NavigationCollectionHelper = (): Array<string> => [
+  `const v2NavigationCollection = <A>(`,
+  `  schema: Schema.Codec<A, unknown, never, never>`,
+  `) => {`,
+  `  const collection = Schema.Array(schema)`,
+  `  return Schema.Union([`,
+  `    collection,`,
+  `    Schema.Struct({`,
+  `      results: collection`,
+  `    }).pipe(`,
+  `      Schema.decodeTo(collection, {`,
+  `        decode: SchemaGetter.transform((wrapped) => wrapped.results),`,
+  `        encode: SchemaGetter.transform((items) => ({ results: items as ReadonlyArray<A> }))`,
+  `      })`,
+  `    )`,
+  `  ])`,
+  `}`
+]
+
+/**
+ * Generate a TypeScript interface for a model.
+ */
+const generateModelInterface = (
+  type: ComplexTypeModel | EntityTypeModel,
+  dataModel: DataModel
+): Array<string> => {
+  const lines: Array<string> = []
+  const fields = [
+    ...type.properties.map(generatePropertyTypeField),
+    ...type.navigationProperties.map((navProp) => generateNavigationTypeField(navProp, dataModel))
+  ]
+
+  lines.push(`/**`)
+  lines.push(` * ${type.odataName} decoded model.`)
+  lines.push(` *`)
+  lines.push(` * Navigation properties are optional because OData only includes them`)
+  lines.push(` * when requested with $expand or returned as deferred V2 links.`)
+  lines.push(` *`)
+  lines.push(` * @since 1.0.0`)
+  lines.push(` * @category models`)
+  lines.push(` */`)
+  lines.push(`export interface ${type.name} {`)
+  for (const field of fields) {
+    lines.push(`  ${field}`)
+  }
+  lines.push(`}`)
+
+  return lines
+}
+
+const generatePropertyTypeField = (prop: PropertyModel): string => {
+  const optional = prop.isNullable && !prop.isKey
+  const tsType = prop.isCollection ? `ReadonlyArray<${prop.typeMapping.tsType}>` : prop.typeMapping.tsType
+  const fieldType = optional ? `${tsType} | null | undefined` : tsType
+  return `readonly ${formatObjectKey(prop.name)}${optional ? "?" : ""}: ${fieldType}`
+}
+
+const generateNavigationTypeField = (
+  navProp: NavigationPropertyModel,
+  dataModel: DataModel
+): string => {
+  const targetType = getClassName(navProp.targetType)
+  const expandedType = navProp.isCollection ? `ReadonlyArray<${targetType}>` : targetType
+  const deferredType = dataModel.version === "V2" ? " | OData.DeferredContent" : ""
+  const nullableType = navProp.isNullable ? " | null" : ""
+  return `readonly ${formatObjectKey(navProp.name)}?: ${expandedType}${deferredType}${nullableType} | undefined`
+}
+
 /**
  * Generate a complex type.
  */
@@ -197,11 +361,13 @@ const generateComplexType = (
   lines.push(` */`)
 
   const fields = generateSchemaFields(complexType.properties, complexType.navigationProperties, dataModel)
+  const schemaKeys = getSchemaKeyMappings(complexType.properties, complexType.navigationProperties)
 
   lines.push(`export const ${complexType.name} = Schema.Struct({`)
   for (const f of fields) lines.push(`  ${f}`)
-  lines.push(`})${generateEncodeKeysPipe(complexType.properties)}`)
-  lines.push(`export type ${complexType.name} = typeof ${complexType.name}.Type`)
+  lines.push(
+    `})${generateEncodeKeysPipe(schemaKeys)} satisfies Schema.Codec<${complexType.name}, unknown, never, never>`
+  )
 
   // Generate editable type
   lines.push(``)
@@ -241,11 +407,13 @@ const generateEntityType = (
   lines.push(` */`)
 
   const fields = generateSchemaFields(entityType.properties, entityType.navigationProperties, dataModel)
+  const schemaKeys = getSchemaKeyMappings(entityType.properties, entityType.navigationProperties)
 
   lines.push(`export const ${entityType.name} = Schema.Struct({`)
   for (const f of fields) lines.push(`  ${f}`)
-  lines.push(`})${generateEncodeKeysPipe(entityType.properties)}`)
-  lines.push(`export type ${entityType.name} = typeof ${entityType.name}.Type`)
+  lines.push(
+    `})${generateEncodeKeysPipe(schemaKeys)} satisfies Schema.Codec<${entityType.name}, unknown, never, never>`
+  )
 
   // ID type
   if (entityType.keys.length > 0) {
@@ -318,27 +486,32 @@ const generateEntityType = (
 
 /**
  * Generate schema field definitions for a model struct.
- * Note: Navigation properties are excluded to avoid circular reference issues.
- * They can be loaded via $expand queries.
+ * Navigation properties are optional and lazy to support expanded payloads
+ * without forcing callers to expand every navigation property.
  */
 const generateSchemaFields = (
   properties: ReadonlyArray<PropertyModel>,
-  _navigationProperties: ReadonlyArray<NavigationPropertyModel>,
-  _dataModel: DataModel
+  navigationProperties: ReadonlyArray<NavigationPropertyModel>,
+  dataModel: DataModel
 ): Array<string> => {
   const fields: Array<string> = []
+  const totalFields = properties.length + navigationProperties.length
 
   for (let i = 0; i < properties.length; i++) {
     const prop = properties[i]
     const isOptional = prop.isNullable && !prop.isKey
     const schemaType = getPropertySchemaType(prop, isOptional)
-    const isLast = i === properties.length - 1
+    const isLast = i === totalFields - 1
     const fieldDef = getPropertyFieldDefinition(prop, schemaType, isOptional)
     fields.push(`${fieldDef}${isLast ? "" : ","}`)
   }
 
-  // Navigation properties are intentionally excluded from the model schema
-  // to avoid circular reference issues. They can be loaded via $expand.
+  for (let i = 0; i < navigationProperties.length; i++) {
+    const navProp = navigationProperties[i]
+    const schemaType = getNavigationSchemaType(navProp, dataModel)
+    const isLast = properties.length + i === totalFields - 1
+    fields.push(`${formatObjectKey(navProp.name)}: ${schemaType}${isLast ? "" : ","}`)
+  }
 
   return fields
 }
@@ -400,7 +573,7 @@ const getPropertyFieldDefinition = (
   schemaType: string,
   _isOptional: boolean
 ): string => {
-  return `${prop.name}: ${schemaType}`
+  return `${formatObjectKey(prop.name)}: ${schemaType}`
 }
 
 /**
@@ -430,7 +603,31 @@ const getPropertyBaseSchemaType = (prop: PropertyModel): string => {
   return prop.isCollection ? `Schema.Array(${baseType})` : baseType
 }
 
-const generateEncodeKeysPipe = (properties: ReadonlyArray<PropertyModel>): string => {
+const getNavigationSchemaType = (
+  navProp: NavigationPropertyModel,
+  dataModel: DataModel
+): string => {
+  const targetType = getClassName(navProp.targetType)
+  const targetSchema = `Schema.suspend((): Schema.Codec<${targetType}, unknown, never, never> => ${targetType})`
+  const expandedSchema = dataModel.version === "V2" && navProp.isCollection
+    ? `v2NavigationCollection(${targetSchema})`
+    : navProp.isCollection
+    ? `Schema.Array(${targetSchema})`
+    : targetSchema
+  const baseSchema = dataModel.version === "V2"
+    ? `Schema.Union([${expandedSchema}, OData.DeferredContent])`
+    : expandedSchema
+  const nullableSchema = navProp.isNullable ? `Schema.NullOr(${baseSchema})` : baseSchema
+
+  return `Schema.optional(${nullableSchema})`
+}
+
+const getSchemaKeyMappings = (
+  properties: ReadonlyArray<PropertyModel>,
+  navigationProperties: ReadonlyArray<NavigationPropertyModel>
+): ReadonlyArray<EncodedKeyMapping> => [...properties, ...navigationProperties]
+
+const generateEncodeKeysPipe = (properties: ReadonlyArray<EncodedKeyMapping>): string => {
   const mappings = properties.filter((prop) => prop.odataName !== prop.name)
   if (mappings.length === 0) return ""
 

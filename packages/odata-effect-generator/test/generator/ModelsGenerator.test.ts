@@ -1,6 +1,7 @@
 import { describe, expect, it } from "@effect/vitest"
 import { generateModels } from "../../src/generator/ModelsGenerator.js"
-import type { DataModel, EntityTypeModel, PropertyModel } from "../../src/model/DataModel.js"
+import type { DataModel, EntityTypeModel, NavigationPropertyModel, PropertyModel } from "../../src/model/DataModel.js"
+import type { ODataVersion } from "../../src/parser/EdmxSchema.js"
 
 describe("ModelsGenerator", () => {
   describe("encoded key generation", () => {
@@ -113,6 +114,123 @@ describe("ModelsGenerator", () => {
         "productName: Schema.optional(Schema.NullOr(Schema.String))"
       )
       expect(output).toContain(".pipe(Schema.encodeKeys({ productName: \"ProductName\" }))")
+    })
+  })
+
+  describe("expanded navigation schema generation", () => {
+    const createProperty = (
+      odataName: string,
+      tsName: string,
+      isKey = false
+    ): PropertyModel => ({
+      odataName,
+      name: tsName,
+      odataType: "Edm.String",
+      typeMapping: {
+        effectSchema: "Schema.String",
+        queryPath: "StringPath",
+        tsType: "string"
+      },
+      isCollection: false,
+      isNullable: !isKey,
+      isKey
+    })
+
+    const createNavigation = (
+      odataName: string,
+      tsName: string,
+      targetType: string,
+      isCollection: boolean
+    ): NavigationPropertyModel => ({
+      odataName,
+      name: tsName,
+      targetType,
+      isCollection,
+      isNullable: true
+    })
+
+    const createNavigationDataModel = (version: ODataVersion): DataModel => {
+      const productId = createProperty("ID", "id", true)
+      const productName = createProperty("ProductName", "productName")
+      const categoryId = createProperty("ID", "id", true)
+      const categoryName = createProperty("Name", "name")
+      const categoryNav = createNavigation("Category", "category", "Category", false)
+      const productsNav = createNavigation("Products", "products", "Product", true)
+
+      return {
+        version,
+        namespace: "Test",
+        serviceName: "TestService",
+        entityTypes: new Map<string, EntityTypeModel>([
+          [
+            "Test.Product",
+            {
+              fqName: "Test.Product",
+              odataName: "Product",
+              name: "Product",
+              keys: [productId],
+              properties: [productId, productName],
+              navigationProperties: [categoryNav],
+              isAbstract: false,
+              isOpen: false
+            }
+          ],
+          [
+            "Test.Category",
+            {
+              fqName: "Test.Category",
+              odataName: "Category",
+              name: "Category",
+              keys: [categoryId],
+              properties: [categoryId, categoryName],
+              navigationProperties: [productsNav],
+              isAbstract: false,
+              isOpen: false
+            }
+          ]
+        ]),
+        complexTypes: new Map(),
+        enumTypes: new Map(),
+        entitySets: new Map(),
+        singletons: new Map(),
+        operations: new Map()
+      }
+    }
+
+    it("generates optional lazy V4 navigation fields on exposed schemas", () => {
+      const output = generateModels(createNavigationDataModel("V4"))
+
+      expect(output).toContain("export interface Product {")
+      expect(output).toContain("readonly category?: Category | null | undefined")
+      expect(output).toContain("readonly products?: ReadonlyArray<Product> | null | undefined")
+      expect(output).toContain(
+        "category: Schema.optional(Schema.NullOr(Schema.suspend((): Schema.Codec<Category, unknown, never, never> => Category)))"
+      )
+      expect(output).toContain(
+        "products: Schema.optional(Schema.NullOr(Schema.Array(Schema.suspend((): Schema.Codec<Product, unknown, never, never> => Product))))"
+      )
+      expect(output).toContain("satisfies Schema.Codec<Product, unknown, never, never>")
+      expect(output).toContain("satisfies Schema.Codec<Category, unknown, never, never>")
+      expect(output).toContain(
+        "Schema.encodeKeys({ id: \"ID\", productName: \"ProductName\", category: \"Category\" })"
+      )
+      expect(output).not.toContain("OData.DeferredContent")
+    })
+
+    it("generates V2 navigation fields that also accept deferred links", () => {
+      const output = generateModels(createNavigationDataModel("V2"))
+
+      expect(output).toContain("import * as SchemaGetter from \"effect/SchemaGetter\"")
+      expect(output).toContain("import { OData } from \"@odata-effect/odata-effect\"")
+      expect(output).toContain("const v2NavigationCollection = <A>(")
+      expect(output).toContain("readonly category?: Category | OData.DeferredContent | null | undefined")
+      expect(output).toContain("readonly products?: ReadonlyArray<Product> | OData.DeferredContent | null | undefined")
+      expect(output).toContain(
+        "category: Schema.optional(Schema.NullOr(Schema.Union([Schema.suspend((): Schema.Codec<Category, unknown, never, never> => Category), OData.DeferredContent])))"
+      )
+      expect(output).toContain(
+        "products: Schema.optional(Schema.NullOr(Schema.Union([v2NavigationCollection(Schema.suspend((): Schema.Codec<Product, unknown, never, never> => Product)), OData.DeferredContent])))"
+      )
     })
   })
 })

@@ -152,8 +152,8 @@ export const makeODataError = (
   )
 }
 
-export const catchODataError = (message: string) =>
-  <A, E, R>(effect: Effect.Effect<A, E, R>): Effect.Effect<A, ODataError, R> =>
+export const catchODataError =
+  (message: string) => <A, E, R>(effect: Effect.Effect<A, E, R>): Effect.Effect<A, ODataError, R> =>
     Effect.catch(effect, (cause) =>
       makeODataError(message, cause).pipe(
         Effect.flatMap((error) => Effect.fail(error))

@@ -27,8 +27,8 @@ import * as Schema from "effect/Schema"
 import type { HttpBody, HttpClientError } from "effect/unstable/http"
 import { HttpClient, HttpClientRequest, HttpClientResponse } from "effect/unstable/http"
 import { ODataClientConfig } from "./Config.js"
-import type { ParseError, SapError } from "./Errors.js"
-import { catchODataError, ODataError, ParseError as ParseErrorTag } from "./Errors.js"
+import type { ODataError, ParseError, SapError } from "./Errors.js"
+import { catchODataError, ParseError as ParseErrorTag } from "./Errors.js"
 
 // Re-export config for backward compatibility
 export { ODataClientConfig, type ODataClientConfigService } from "./Config.js"

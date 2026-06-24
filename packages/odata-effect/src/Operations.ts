@@ -15,7 +15,7 @@ import type { HttpClientError } from "effect/unstable/http"
 import { HttpClient, HttpClientRequest, HttpClientResponse } from "effect/unstable/http"
 import type { ODataClientConfigService } from "./Config.js"
 import type { ParseError } from "./Errors.js"
-import { ODataError } from "./Errors.js"
+import { catchODataError, ODataError } from "./Errors.js"
 import { ODataCollectionResponse, ODataSingleResponse } from "./OData.js"
 import type { Int64 } from "./ODataSchema.js"
 import { encodeUrlValue, formatV2UrlValue, formatV4UrlValue } from "./ODataUrlFormat.js"
@@ -155,7 +155,7 @@ export const executeFunctionImportVoid = (
     )
   }).pipe(
     Effect.scoped,
-    Effect.catch((error) => Effect.fail(new ODataError({ message: "Function import failed", cause: error })))
+    catchODataError("Function import failed")
   )
 }
 
@@ -199,7 +199,7 @@ export const executeFunctionImportEntity = <A, I, R>(
     return data as A
   }).pipe(
     Effect.scoped,
-    Effect.catch((error) => Effect.fail(new ODataError({ message: "Function import failed", cause: error })))
+    catchODataError("Function import failed")
   )
 }
 
@@ -244,7 +244,7 @@ export const executeFunctionImportCollection = <A, I, R>(
     return results
   }).pipe(
     Effect.scoped,
-    Effect.catch((error) => Effect.fail(new ODataError({ message: "Function import failed", cause: error })))
+    catchODataError("Function import failed")
   )
 }
 
@@ -289,7 +289,7 @@ export const executeFunctionImportPrimitive = <A, I, R>(
     return (data.d as Record<string, A>)[propertyName]
   }).pipe(
     Effect.scoped,
-    Effect.catch((error) => Effect.fail(new ODataError({ message: "Function import failed", cause: error })))
+    catchODataError("Function import failed")
   )
 }
 
@@ -395,7 +395,7 @@ export const executeV4FunctionVoid = (
     )
   }).pipe(
     Effect.scoped,
-    Effect.catch((error) => Effect.fail(new ODataError({ message: "V4 function failed", cause: error })))
+    catchODataError("V4 function failed")
   )
 }
 
@@ -428,7 +428,7 @@ export const executeV4FunctionEntity = <A, I, R>(
     return data
   }).pipe(
     Effect.scoped,
-    Effect.catch((error) => Effect.fail(new ODataError({ message: "V4 function failed", cause: error })))
+    catchODataError("V4 function failed")
   )
 }
 
@@ -461,7 +461,7 @@ export const executeV4FunctionCollection = <A, I, R>(
     return data.value
   }).pipe(
     Effect.scoped,
-    Effect.catch((error) => Effect.fail(new ODataError({ message: "V4 function failed", cause: error })))
+    catchODataError("V4 function failed")
   )
 }
 
@@ -494,7 +494,7 @@ export const executeV4FunctionPrimitive = <A, I, R>(
     return data.value
   }).pipe(
     Effect.scoped,
-    Effect.catch((error) => Effect.fail(new ODataError({ message: "V4 function failed", cause: error })))
+    catchODataError("V4 function failed")
   )
 }
 
@@ -530,7 +530,7 @@ export const executeV4ActionVoid = <B, BI>(
     )
   }).pipe(
     Effect.scoped,
-    Effect.catch((error) => Effect.fail(new ODataError({ message: "V4 action failed", cause: error })))
+    catchODataError("V4 action failed")
   )
 }
 
@@ -569,7 +569,7 @@ export const executeV4ActionEntity = <A, I, R, B, BI>(
     return data
   }).pipe(
     Effect.scoped,
-    Effect.catch((error) => Effect.fail(new ODataError({ message: "V4 action failed", cause: error })))
+    catchODataError("V4 action failed")
   )
 }
 
@@ -609,6 +609,6 @@ export const executeV4ActionCollection = <A, I, R, B, BI>(
     return data.value
   }).pipe(
     Effect.scoped,
-    Effect.catch((error) => Effect.fail(new ODataError({ message: "V4 action failed", cause: error })))
+    catchODataError("V4 action failed")
   )
 }

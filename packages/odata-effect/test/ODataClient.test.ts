@@ -465,26 +465,32 @@ describe("ODataClient", () => {
     })
 
     describe("error handling", () => {
-      it.effect("wraps HTTP errors in ODataError", () =>
-        Effect.gen(function*() {
+      it.effect("wraps HTTP errors in ODataError", () => {
+        const responseBody = JSON.stringify({ error: { code: "404", message: { value: "Not found" } } })
+
+        return Effect.gen(function*() {
           const result = yield* OData.get("entities('not-found')", TestEntity).pipe(Effect.flip)
 
           expect(result._tag).toBe("ODataError")
+          if (result._tag !== "ODataError") {
+            throw new Error(`Expected ODataError, got ${result._tag}`)
+          }
+          expect(result.status).toBe(404)
+          expect(result.responseBody).toBe(responseBody)
+          expect(result.message).toContain(responseBody)
         }).pipe(
           Effect.provide(
             createTestLayer((request) =>
               Effect.succeed(
                 HttpClientResponse.fromWeb(
                   request,
-                  new Response(
-                    JSON.stringify({ error: { code: "404", message: { value: "Not found" } } }),
-                    { status: 404 }
-                  )
+                  new Response(responseBody, { status: 404 })
                 )
               )
             )
           )
-        ))
+        )
+      })
     })
 
     describe("URL construction", () => {

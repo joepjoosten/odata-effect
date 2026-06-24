@@ -28,7 +28,7 @@ import type { HttpBody, HttpClientError } from "effect/unstable/http"
 import { HttpClient, HttpClientRequest, HttpClientResponse } from "effect/unstable/http"
 import { ODataClientConfig } from "./Config.js"
 import type { ParseError, SapError } from "./Errors.js"
-import { ODataError, ParseError as ParseErrorTag } from "./Errors.js"
+import { catchODataError, ODataError, ParseError as ParseErrorTag } from "./Errors.js"
 
 // Re-export config for backward compatibility
 export { ODataClientConfig, type ODataClientConfigService } from "./Config.js"
@@ -335,16 +335,7 @@ const buildQueryString = (options?: ODataQueryOptions): string => {
   return params.length > 0 ? `?${params.join("&")}` : ""
 }
 
-const handleError = <A, E, R>(
-  effect: Effect.Effect<A, E, R>
-): Effect.Effect<A, ODataError, R> =>
-  Effect.catch(effect, (error) =>
-    Effect.fail(
-      new ODataError({
-        message: "OData request failed",
-        cause: error
-      })
-    ))
+const handleError = catchODataError("OData request failed")
 
 // ============================================================================
 // Standalone Tree-Shakable Functions

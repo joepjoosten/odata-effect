@@ -197,6 +197,41 @@ describe("Operations", () => {
           expect(result.id).toBe("123")
           expect(result.name).toBe("Test")
         }))
+
+      it.effect("includes the response body when a function import fails", () => {
+        const responseBody = JSON.stringify({
+          error: {
+            code: "SAP/404",
+            message: { lang: "en", value: "Account not found" }
+          }
+        })
+        const mockClient = createMockClient((request) =>
+          Effect.succeed(
+            HttpClientResponse.fromWeb(
+              request,
+              new Response(responseBody, { status: 404, headers: { "Content-Type": "application/json" } })
+            )
+          )
+        )
+
+        return Effect.gen(function*() {
+          const result = yield* executeFunctionImportEntity(
+            mockClient,
+            v2Config,
+            "GetProduct",
+            TestEntity,
+            { ProductID: "missing" }
+          ).pipe(Effect.flip)
+
+          expect(result._tag).toBe("ODataError")
+          if (result._tag !== "ODataError") {
+            throw new Error(`Expected ODataError, got ${result._tag}`)
+          }
+          expect(result.status).toBe(404)
+          expect(result.responseBody).toBe(responseBody)
+          expect(result.message).toContain(responseBody)
+        })
+      })
     })
 
     describe("executeFunctionImportCollection", () => {

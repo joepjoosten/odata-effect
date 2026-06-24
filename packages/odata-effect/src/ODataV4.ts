@@ -33,7 +33,7 @@ import type { HttpBody, HttpClientError } from "effect/unstable/http"
 import { HttpClient, HttpClientRequest, HttpClientResponse } from "effect/unstable/http"
 import { ODataClientConfig } from "./Config.js"
 import type { ParseError } from "./Errors.js"
-import { ODataError, ParseError as ParseErrorTag } from "./Errors.js"
+import { catchODataError, ODataError, ParseError as ParseErrorTag } from "./Errors.js"
 
 // Re-export config - V4 uses the same unified config as V2
 export { ODataClientConfig, type ODataClientConfigService } from "./Config.js"
@@ -236,16 +236,7 @@ const applyRequestOptions = (
   return result
 }
 
-const handleError = <A, E, R>(
-  effect: Effect.Effect<A, E, R>
-): Effect.Effect<A, ODataError, R> =>
-  Effect.catch(effect, (error) =>
-    Effect.fail(
-      new ODataError({
-        message: "OData V4 request failed",
-        cause: error
-      })
-    ))
+const handleError = catchODataError("OData V4 request failed")
 
 // ============================================================================
 // Standalone Tree-Shakable Functions

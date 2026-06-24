@@ -1,5 +1,13 @@
 # @odata-effect/odata-effect
 
+## 1.2.2
+
+### Patch Changes
+
+- [#37](https://github.com/joepjoosten/odata-effect/pull/37) [`bf6a2a1`](https://github.com/joepjoosten/odata-effect/commit/bf6a2a1d18433c6f695b88e358de3f017d1dcf71) Thanks [@joepjoosten](https://github.com/joepjoosten)! - Include failed HTTP response status codes and response bodies on `ODataError` instances so request failures are easier to debug across V2, V4, and operation helpers.
+
+- [#40](https://github.com/joepjoosten/odata-effect/pull/40) [`d18d9d3`](https://github.com/joepjoosten/odata-effect/commit/d18d9d3667004b335f71b6cfb266fe61638c4ee1) Thanks [@joepjoosten](https://github.com/joepjoosten)! - Fix lint issues in the OData error diagnostics implementation so the package is ready for release.
+
 ## 1.2.1
 
 ### Patch Changes

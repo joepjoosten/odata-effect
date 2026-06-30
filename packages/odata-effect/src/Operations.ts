@@ -114,7 +114,7 @@ export const buildFunctionImportUrl = (
       }
       return formatV2Parameter(key, value!)
     })
-    .join(",")
+    .join("&")
 
   if (!params) {
     return functionName

@@ -82,9 +82,7 @@ describe("Operations", () => {
         MinPrice: 100,
         InStock: true
       })
-      expect(url).toContain("Category='Electronics'")
-      expect(url).toContain("MinPrice=100")
-      expect(url).toContain("InStock=true")
+      expect(url).toBe("GetProducts?Category='Electronics'&MinPrice=100&InStock=true")
     })
 
     it("encodes string parameters", () => {

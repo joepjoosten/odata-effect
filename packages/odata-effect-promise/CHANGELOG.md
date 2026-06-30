@@ -1,5 +1,12 @@
 # @odata-effect/odata-effect-promise
 
+## 4.0.6
+
+### Patch Changes
+
+- Updated dependencies [[`2b812c7`](https://github.com/joepjoosten/odata-effect/commit/2b812c78d7c0e7386c63f01aec5ed81d4e30f28e)]:
+  - @odata-effect/odata-effect@1.2.3
+
 ## 4.0.5
 
 ### Patch Changes

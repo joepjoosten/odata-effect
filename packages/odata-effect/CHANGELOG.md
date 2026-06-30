@@ -1,5 +1,11 @@
 # @odata-effect/odata-effect
 
+## 1.2.3
+
+### Patch Changes
+
+- [#42](https://github.com/joepjoosten/odata-effect/pull/42) [`2b812c7`](https://github.com/joepjoosten/odata-effect/commit/2b812c78d7c0e7386c63f01aec5ed81d4e30f28e) Thanks [@joepjoosten](https://github.com/joepjoosten)! - Fix OData V2 function import URL generation to separate multiple query parameters with `&` instead of a comma.
+
 ## 1.2.2
 
 ### Patch Changes

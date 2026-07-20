@@ -1,5 +1,11 @@
 # @odata-effect/odata-effect-generator
 
+## 1.2.2
+
+### Patch Changes
+
+- [#44](https://github.com/joepjoosten/odata-effect/pull/44) [`ff38bdb`](https://github.com/joepjoosten/odata-effect/commit/ff38bdb3f18a45e386d55422f6f59d35950c0db5) Thanks [@joepjoosten](https://github.com/joepjoosten)! - Update Effect, Effect Platform, and Effect Vitest dependencies to `4.0.0-beta.99`.
+
 ## 1.2.1
 
 ### Patch Changes

@@ -9,7 +9,7 @@ The core OData operations and generated services return Effect values. This pack
 For Node.js:
 
 ```bash
-pnpm add @odata-effect/odata-effect @odata-effect/odata-effect-promise effect@4.0.0-beta.74 @effect/platform-node@4.0.0-beta.74
+pnpm add @odata-effect/odata-effect @odata-effect/odata-effect-promise effect@4.0.0-beta.99 @effect/platform-node@4.0.0-beta.99
 ```
 
 The runtime is platform-independent. Node.js examples use `@effect/platform-node/NodeHttpClient`; Bun or browser apps should provide the matching Effect HTTP client layer.

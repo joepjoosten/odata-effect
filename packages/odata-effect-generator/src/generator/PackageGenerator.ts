@@ -44,7 +44,7 @@ export const generatePackageJson = (
     dependencies: {
       "@odata-effect/odata-effect": "^1.0.0",
       "@odata-effect/odata-effect-promise": "^4.0.0",
-      effect: "4.0.0-beta.74"
+      effect: "4.0.0-beta.99"
     },
     effect: {
       generateExports: {

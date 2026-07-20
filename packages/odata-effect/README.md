@@ -9,7 +9,7 @@ Use this package directly when you already write Effect programs, need low-level
 For Node.js:
 
 ```bash
-pnpm add @odata-effect/odata-effect effect@4.0.0-beta.74 @effect/platform-node@4.0.0-beta.74
+pnpm add @odata-effect/odata-effect effect@4.0.0-beta.99 @effect/platform-node@4.0.0-beta.99
 ```
 
 The core package is platform-independent. Node.js users normally provide `@effect/platform-node/NodeHttpClient`. Bun or browser users provide the matching Effect HTTP client layer for that runtime.

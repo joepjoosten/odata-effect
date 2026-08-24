@@ -1,5 +1,11 @@
 # @odata-effect/odata-effect
 
+## 1.2.5
+
+### Patch Changes
+
+- [#46](https://github.com/joepjoosten/odata-effect/pull/46) [`cd4b275`](https://github.com/joepjoosten/odata-effect/commit/cd4b275018eac51d4ab3a6ba4621bcaaec3d4908) Thanks [@joepjoosten](https://github.com/joepjoosten)! - Update to the latest Effect 4 release candidate and migrate schema-backed errors to the RC API.
+
 ## 1.2.4
 
 ### Patch Changes

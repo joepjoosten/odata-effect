@@ -54,13 +54,10 @@ export interface GeneratorConfig {
  * @since 1.0.0
  * @category errors
  */
-export class GeneratorError extends Schema.TaggedErrorClass<GeneratorError>()(
-  "GeneratorError",
-  {
-    message: Schema.String,
-    cause: Schema.optional(Schema.Unknown)
-  }
-) {}
+export class GeneratorError extends Schema.TaggedError<GeneratorError>()("GeneratorError", {
+  message: Schema.String,
+  cause: Schema.optional(Schema.Unknown)
+}) {}
 
 /**
  * Generated file result.

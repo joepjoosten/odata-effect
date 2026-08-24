@@ -29,7 +29,7 @@
     "@effect/build-utils": "^0.7.7",
     "@effect/eslint-plugin": "^0.3.2",
     "@effect/language-service": "latest",
-    "@effect/vitest": "4.0.0-beta.99",
+    "@effect/vitest": "4.0.0-rc.111",
     "@eslint/compat": "1.2.2",
     "@eslint/eslintrc": "3.1.0",
     "@eslint/js": "9.13.0",
@@ -37,7 +37,7 @@
     "@typescript-eslint/eslint-plugin": "^8.12.2",
     "@typescript-eslint/parser": "^8.12.2",
     "babel-plugin-annotate-pure-calls": "^0.5.0",
-    "effect": "4.0.0-beta.99",
+    "effect": "4.0.0-rc.111",
     "eslint": "^9.13.0",
     "eslint-import-resolver-typescript": "^3.6.3",
     "eslint-plugin-codegen": "^0.29.0",
@@ -47,7 +47,7 @@
     "glob": "^11.0.0",
     "tsx": "^4.19.2",
     "typescript": "^5.6.3",
-    "vitest": "^3.2.0"
+    "vitest": "^4.1.11"
   },
   "pnpm": {
     "patchedDependencies": {}

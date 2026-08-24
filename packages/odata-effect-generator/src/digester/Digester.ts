@@ -58,13 +58,10 @@ import {
  * @since 1.0.0
  * @category errors
  */
-export class DigestError extends Schema.TaggedErrorClass<DigestError>()(
-  "DigestError",
-  {
-    message: Schema.String,
-    cause: Schema.optional(Schema.Unknown)
-  }
-) {}
+export class DigestError extends Schema.TaggedError<DigestError>()("DigestError", {
+  message: Schema.String,
+  cause: Schema.optional(Schema.Unknown)
+}) {}
 
 /**
  * Context for digestion including type resolution.

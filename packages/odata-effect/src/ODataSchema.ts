@@ -102,7 +102,7 @@ const formatIsoDuration = (duration: Duration.Duration): string => {
 }
 
 const fail = (input: unknown, message: string) =>
-  Effect.fail(new SchemaIssue.InvalidValue(Option.some(input), { message }))
+  Effect.fail(new SchemaIssue.InvalidValue({ message }, input, { reportInput: true }))
 
 const transformOrFail = <To extends Schema.Top, From extends Schema.Top, RD = never, RE = never>(
   from: From,

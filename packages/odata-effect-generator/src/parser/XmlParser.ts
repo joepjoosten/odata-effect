@@ -14,13 +14,10 @@ import type { ODataEdmxModel } from "./EdmxSchema.js"
  * @since 1.0.0
  * @category errors
  */
-export class XmlParseError extends Schema.TaggedErrorClass<XmlParseError>()(
-  "XmlParseError",
-  {
-    message: Schema.String,
-    cause: Schema.Unknown
-  }
-) {}
+export class XmlParseError extends Schema.TaggedError<XmlParseError>()("XmlParseError", {
+  message: Schema.String,
+  cause: Schema.Unknown
+}) {}
 
 /**
  * Parse OData metadata XML content into a structured object.

@@ -29,6 +29,7 @@ import { HttpClient, HttpClientRequest, HttpClientResponse } from "effect/unstab
 import { ODataClientConfig } from "./Config.js"
 import type { ODataError, ParseError, SapError } from "./Errors.js"
 import { catchODataError, ParseError as ParseErrorTag } from "./Errors.js"
+import { formatEntityKey } from "./ODataUrlFormat.js"
 
 // Re-export config for backward compatibility
 export { ODataClientConfig, type ODataClientConfigService } from "./Config.js"
@@ -275,24 +276,7 @@ export const MERGE_HEADERS = {
 export const buildEntityPath = (
   entitySet: string,
   id: string | number | boolean | { [key: string]: string | number | boolean }
-): string => {
-  const formatValue = (value: string | number | boolean): string => {
-    if (typeof value === "number" || typeof value === "boolean") return String(value)
-    return `'${value}'`
-  }
-
-  const extractIdFromPath = (id: string | number | boolean | { [key: string]: string | number | boolean }): string => {
-    if (typeof id === "string" || typeof id === "number" || typeof id === "boolean") {
-      return formatValue(id)
-    }
-    const entries = Object.entries(id)
-    if (entries.length === 1) {
-      return formatValue(entries[0][1])
-    }
-    return entries.map(([key, value]) => `${key}=${formatValue(value)}`).join(",")
-  }
-  return `${entitySet}(${extractIdFromPath(id)})`
-}
+): string => `${entitySet}(${formatEntityKey(id)})`
 
 /**
  * Extract the relative path from an absolute URI.

@@ -125,6 +125,9 @@ export const digestMetadata = (
         digestSchema(schema, dataModel, context)
       }
 
+      resolveInheritance(dataModel.complexTypes)
+      resolveInheritance(dataModel.entityTypes)
+
       // Digest entity container
       if (entityContainer) {
         digestEntityContainer(entityContainer, dataModel, context)
@@ -138,6 +141,38 @@ export const digestMetadata = (
         cause: error
       })
   })
+
+/** Resolve base members once so every generator consumes the same complete types. */
+const resolveInheritance = <T extends ComplexTypeModel>(types: Map<string, T>): void => {
+  const resolved = new Set<string>()
+  const resolving = new Set<string>()
+  const visit = (name: string): T => {
+    const type = types.get(name)
+    if (!type) throw new Error(`Unknown base type "${name}"`)
+    if (resolved.has(name)) return type
+    if (resolving.has(name)) throw new Error(`Cyclic inheritance involving "${name}"`)
+    resolving.add(name)
+    if (type.baseType) {
+      const base = visit(type.baseType)
+      const properties = [...base.properties, ...type.properties]
+      const navigationProperties = [...base.navigationProperties, ...type.navigationProperties]
+      const memberNames = [...properties, ...navigationProperties].map((p) => p.odataName)
+      if (new Set(memberNames).size !== memberNames.length) {
+        throw new Error(`Inherited member redeclared in "${name}"`)
+      }
+      types.set(name, {
+        ...type,
+        properties,
+        navigationProperties,
+        ...("keys" in type ? { keys: properties.filter((p) => p.isKey) } : {})
+      })
+    }
+    resolving.delete(name)
+    resolved.add(name)
+    return types.get(name)!
+  }
+  for (const name of types.keys()) visit(name)
+}
 
 /**
  * Build digestion context from schemas.
@@ -410,7 +445,7 @@ const digestNavigationProperty = (
     const result: NavigationPropertyModel = {
       odataName,
       name: getPropertyNameWithOverrides(odataName, ownerTypeName, ownerTypeKind, context.overrides),
-      targetType: targetTypeName,
+      targetType: getClassNameWithOverrides(targetTypeName, "entity", context.overrides),
       isCollection,
       isNullable: navProp.$.Nullable !== "false"
     }
@@ -434,7 +469,7 @@ const digestNavigationProperty = (
   if (association) {
     const targetEnd = association.End.find((end) => end.$.Role === toRole)
     if (targetEnd) {
-      targetType = getSimpleTypeName(targetEnd.$.Type)
+      targetType = getClassNameWithOverrides(getSimpleTypeName(targetEnd.$.Type), "entity", context.overrides)
       isCollection = targetEnd.$.Multiplicity === "*"
     }
   }
@@ -613,9 +648,17 @@ const resolveTypeMapping = (
   }
 
   if (context.complexTypes.has(type) || context.entityTypes.has(type)) {
-    return getComplexTypeMapping(getClassName(simpleTypeName))
+    return getComplexTypeMapping(
+      getClassNameWithOverrides(
+        simpleTypeName,
+        context.complexTypes.has(type) ? "complex" : "entity",
+        context.overrides
+      )
+    )
   }
 
   // Default to complex type mapping for unknown types
-  return getComplexTypeMapping(getClassName(simpleTypeName))
+  return getComplexTypeMapping(
+    getClassNameWithOverrides(simpleTypeName, context.complexTypes.has(type) ? "complex" : "entity", context.overrides)
+  )
 }

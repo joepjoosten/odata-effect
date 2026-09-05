@@ -469,57 +469,45 @@ export class CollectionPath<Q> extends BasePath {
   constructor(
     path: string,
     readonly getEntity: () => Q,
-    options?: LiteralOptions
+    options?: LiteralOptions,
+    private readonly lambdaDepth = 0
   ) {
     super(path, options)
   }
 
-  /**
-   * Returns true if any item in the collection matches the filter.
-   */
+  /** Returns true if any item matches the filter. */
   any(fn: (q: Q) => FilterExpression): FilterExpression {
-    if (this.options?.version === "V2") throw new Error("Lambda queries require OData V4")
-    const entity = this.getEntity()
-    // Create a prefixed version for lambda
-    const prefixedEntity = this.createPrefixedEntity(entity, "a")
-    const filter = fn(prefixedEntity)
-    return new FilterExpression(`${this.path}/any(a:${filter.expression})`)
+    return this.lambda("any", fn)
   }
 
-  /**
-   * Returns true if all items in the collection match the filter.
-   */
+  /** Returns true if every item matches the filter. */
   all(fn: (q: Q) => FilterExpression): FilterExpression {
-    if (this.options?.version === "V2") throw new Error("Lambda queries require OData V4")
-    const entity = this.getEntity()
-    const prefixedEntity = this.createPrefixedEntity(entity, "a")
-    const filter = fn(prefixedEntity)
-    return new FilterExpression(`${this.path}/all(a:${filter.expression})`)
+    return this.lambda("all", fn)
   }
 
-  private createPrefixedEntity(entity: Q, prefix: string): Q {
-    // Create a new entity with prefixed paths
-    const prefixed = {} as Record<string, unknown>
-    for (const key of Object.keys(entity as object)) {
-      const value = (entity as Record<string, unknown>)[key]
-      if (value instanceof StringPath) {
-        prefixed[key] = new StringPath(`${prefix}/${value.path}`, value.options)
-      } else if (value instanceof NumberPath) {
-        prefixed[key] = new NumberPath(`${prefix}/${value.path}`, value.options)
-      } else if (value instanceof BooleanPath) {
-        prefixed[key] = new BooleanPath(`${prefix}/${value.path}`, value.options)
-      } else if (value instanceof DateTimePath) {
-        prefixed[key] = new DateTimePath(`${prefix}/${value.path}`, value.options)
-      } else if (value instanceof DurationPath) {
-        prefixed[key] = new DurationPath(`${prefix}/${value.path}`, value.options)
-      } else if (value instanceof Int64Path) {
-        prefixed[key] = new Int64Path(`${prefix}/${value.path}`, value.options)
-      } else if (value instanceof BigDecimalPath) {
-        prefixed[key] = new BigDecimalPath(`${prefix}/${value.path}`, value.options)
-      }
-    }
-    return prefixed as Q
+  private lambda(operator: "any" | "all", fn: (q: Q) => FilterExpression): FilterExpression {
+    if (this.options?.version === "V2") throw new Error("Lambda queries require OData V4")
+    const alias = this.lambdaDepth === 0 ? "a" : `a${this.lambdaDepth}`
+    const entity = prefixQueryPaths(this.getEntity(), alias, this.lambdaDepth + 1)
+    return new FilterExpression(`${this.path}/${operator}(${alias}:${fn(entity).expression})`)
   }
+}
+
+const prefixQueryPaths = <Q>(entity: Q, prefix: string, depth: number): Q => {
+  return Object.fromEntries(
+    Object.entries(entity as object).map(([key, value]) => {
+      if (!(value instanceof BasePath)) return [key, value]
+      const path = `${prefix}/${value.path}`
+      if (value instanceof CollectionPath) {
+        return [key, new CollectionPath(path, value.getEntity, value.options, depth)]
+      }
+      if (value instanceof EntityPath) {
+        return [key, new EntityPath(path, () => prefixQueryPaths(value.getEntity(), path, depth), value.options)]
+      }
+      // Preserve scalar subclasses and metadata without a closed list of path types.
+      return [key, Object.assign(Object.create(Object.getPrototypeOf(value)), value, { path })]
+    })
+  ) as Q
 }
 
 // ============================================================================

@@ -445,6 +445,16 @@ const generateEntityType = (
     lines.push(`export type ${idTypeName} = typeof ${idTypeName}.Type`)
   }
 
+  // Creating may require writable keys even though updates must never change keys.
+  const createName = `Create${entityType.name}`
+  const createProperties = entityType.properties.filter((p) => p.isCreatable !== false)
+  lines.push(``)
+  lines.push(`/** Create input for ${entityType.odataName}. @since 1.3.0 @category models */`)
+  lines.push(`export const ${createName} = /*#__PURE__*/ (() => Schema.Struct({`)
+  for (const field of generateEditableSchemaFields(createProperties)) lines.push(`  ${field}`)
+  lines.push(`})${generateEncodeKeysPipe(createProperties)})()`)
+  lines.push(`export type ${createName} = typeof ${createName}.Type`)
+
   // Editable type
   lines.push(``)
   lines.push(`/**`)
@@ -455,17 +465,17 @@ const generateEntityType = (
   lines.push(` */`)
 
   const editableFields = generateEditableSchemaFields(
-    entityType.properties.filter((p) => !p.isKey)
+    entityType.properties.filter((p) => !p.isKey && p.isUpdatable !== false)
   )
   const editableName = getEditableTypeName(entityType.name)
 
   lines.push(`export const ${editableName} = /*#__PURE__*/ (() => Schema.Struct({`)
   for (const f of editableFields) lines.push(`  ${f}`)
-  lines.push(`})${generateEncodeKeysPipe(entityType.properties.filter((p) => !p.isKey))})()`)
+  lines.push(`})${generateEncodeKeysPipe(entityType.properties.filter((p) => !p.isKey && p.isUpdatable !== false))})()`)
   lines.push(`export type ${editableName} = typeof ${editableName}.Type`)
 
   const partialEditableFields = generatePartialEditableSchemaFields(
-    entityType.properties.filter((p) => !p.isKey)
+    entityType.properties.filter((p) => !p.isKey && p.isUpdatable !== false)
   )
   const partialEditableName = getPartialEditableTypeName(entityType.name)
 
@@ -478,7 +488,7 @@ const generateEntityType = (
   lines.push(` */`)
   lines.push(`export const ${partialEditableName} = /*#__PURE__*/ (() => Schema.Struct({`)
   for (const f of partialEditableFields) lines.push(`  ${f}`)
-  lines.push(`})${generateEncodeKeysPipe(entityType.properties.filter((p) => !p.isKey))})()`)
+  lines.push(`})${generateEncodeKeysPipe(entityType.properties.filter((p) => !p.isKey && p.isUpdatable !== false))})()`)
   lines.push(`export type ${partialEditableName} = typeof ${partialEditableName}.Type`)
 
   return lines

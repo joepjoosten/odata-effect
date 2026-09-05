@@ -394,6 +394,12 @@ const digestProperty = (
 
   const typeMapping = resolveTypeMapping(baseType, context)
 
+  const annotationTrue = (term: string): boolean =>
+    property.Annotation?.some((a) =>
+      (a.$.Term === `Org.OData.Core.V1.${term}` || a.$.Term === `Core.${term}`) &&
+      (a.$.Bool ?? a.Bool?.[0] ?? "true") === "true"
+    ) ?? false
+  const computed = annotationTrue("Computed")
   const result: PropertyModel = {
     odataName,
     name: getPropertyNameWithOverrides(odataName, ownerTypeName, ownerTypeKind, context.overrides),
@@ -401,7 +407,9 @@ const digestProperty = (
     typeMapping,
     isCollection,
     isNullable,
-    isKey
+    isKey,
+    isCreatable: property.$["sap:creatable"] !== "false" && !computed,
+    isUpdatable: property.$["sap:updatable"] !== "false" && !computed && !annotationTrue("Immutable")
   }
 
   const withMaxLength = property.$.MaxLength

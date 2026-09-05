@@ -283,3 +283,15 @@ standalone equivalents are `getAllProductWithSchema(schema, options)` and
 `getByIdProductWithSchema(id, schema, options)`. Supply nested schemas for nested
 expanded projections. Ordinary generated reads reject `$select` before sending
 HTTP; low-level core reads already accept an explicit response schema.
+
+### Create and update inputs
+
+Each entity has a `CreateEntity` schema/type for creation and separate
+`EditableEntity` / `PartialEditableEntity` schemas for updates. Create inputs
+include writable primary keys; update inputs exclude keys. Inline
+`Core.Computed` / `Org.OData.Core.V1.Computed` annotations exclude server-generated
+fields, while SAP `sap:creatable` / `sap:updatable` flags and inline
+`Core.Immutable` govern write eligibility. Regenerate clients to use these schemas.
+
+For manual CRUD factories, `createSchema` is optional and defaults to the existing
+`editableSchema`, preserving existing clients.

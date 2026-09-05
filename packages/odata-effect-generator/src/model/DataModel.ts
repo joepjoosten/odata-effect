@@ -58,6 +58,8 @@ export interface PropertyModel {
   readonly isCollection: boolean
   readonly isNullable: boolean
   readonly isKey: boolean
+  readonly isCreatable?: boolean
+  readonly isUpdatable?: boolean
   readonly maxLength?: number
   readonly precision?: number
   readonly scale?: number

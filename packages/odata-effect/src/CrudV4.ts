@@ -82,7 +82,9 @@ export interface CrudConfig<
   TEntityInput,
   TEditable,
   TEditableInput,
-  TId
+  TId,
+  TCreate = TEditable,
+  TCreateInput = TEditableInput
 > {
   /** The entity set path (e.g., "People", "Products") */
   readonly path: string
@@ -90,6 +92,8 @@ export interface CrudConfig<
   readonly schema: Schema.Codec<TEntity, TEntityInput>
   /** Schema for creating/updating entities */
   readonly editableSchema: Schema.Codec<TEditable, TEditableInput>
+  /** Optional create schema; defaults to editableSchema for existing callers. */
+  readonly createSchema?: Schema.Codec<TCreate, TCreateInput>
   /** Optional schema for partial update bodies. Required for transformed editable schemas. */
   readonly partialEditableSchema?: Schema.Codec<
     { readonly [K in keyof TEditable]?: TEditable[K] | undefined },
@@ -125,7 +129,7 @@ export type CrudContext = ODataClientConfig | HttpClient.HttpClient
  * @since 1.0.0
  * @category models
  */
-export interface CrudService<TEntity, TEditable, TId> {
+export interface CrudService<TEntity, TEditable, TId, TCreate = TEditable> {
   /** Fetch all entities */
   readonly getAll: (
     options?: ODataV4QueryOptions
@@ -152,7 +156,7 @@ export interface CrudService<TEntity, TEditable, TId> {
 
   /** Create a new entity */
   readonly create: (
-    entity: TEditable
+    entity: TCreate
   ) => Effect.Effect<TEntity, CrudError, CrudContext>
 
   /** Update an existing entity */
@@ -182,10 +186,12 @@ export const crud = <
   TEntityInput,
   TEditable,
   TEditableInput,
-  TId
+  TId,
+  TCreate = TEditable,
+  TCreateInput = TEditableInput
 >(
-  config: CrudConfig<TEntity, TEntityInput, TEditable, TEditableInput, TId>
-): CrudService<TEntity, TEditable, TId> => ({
+  config: CrudConfig<TEntity, TEntityInput, TEditable, TEditableInput, TId, TCreate, TCreateInput>
+): CrudService<TEntity, TEditable, TId, TCreate> => ({
   getAll: (options) => readCollection(config.path, config.schema, options),
 
   getById: (id, options) =>
@@ -200,7 +206,13 @@ export const crud = <
   getByIdWithSchema: (id, schema, options) =>
     ODataV4.get(buildEntityPathV4(config.path, config.idToKey(id)), schema, options),
 
-  create: (entity) => ODataV4.post(config.path, entity, config.editableSchema, config.schema),
+  create: (entity) =>
+    ODataV4.post(
+      config.path,
+      entity,
+      (config.createSchema ?? config.editableSchema) as Schema.Codec<TCreate, TCreateInput>,
+      config.schema
+    ),
 
   update: (id, entity) =>
     ODataV4.patch(

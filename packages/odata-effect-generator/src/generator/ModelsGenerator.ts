@@ -270,7 +270,7 @@ const generateEnumType = (enumType: EnumTypeModel): Array<string> => {
   lines.push(` * @since 1.0.0`)
   lines.push(` * @category enums`)
   lines.push(` */`)
-  lines.push(`export const ${enumType.name} = Schema.Literal(${members})`)
+  lines.push(`export const ${enumType.name} = Schema.Literals([${members}])`)
   lines.push(`export type ${enumType.name} = typeof ${enumType.name}.Type`)
 
   return lines

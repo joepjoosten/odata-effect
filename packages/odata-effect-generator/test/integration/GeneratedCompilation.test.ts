@@ -21,9 +21,7 @@ for (const sample of ["odata-v2", "trippin"]) {
         "Models.ts": generateModels(model),
         "QueryModels.ts": generateQueryModels(model, options),
         "Services.ts": generateServiceFns(model, options).servicesFile.content,
-        ...(sample === "odata-v2"
-          ? { "Operations.ts": generateOperations(model, options).operationsFile!.content }
-          : {})
+        "Operations.ts": generateOperations(model, options).operationsFile!.content
       }
       const directory = fs.mkdtempSync(path.join(os.tmpdir(), "odata-compilation-"))
       try {

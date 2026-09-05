@@ -26,8 +26,8 @@ const V2_CONFIG: VersionConfig = {
 }
 
 const V4_CONFIG: VersionConfig = {
-  clientConfigTag: "ODataV4ClientConfig",
-  clientConfigImport: "ODataV4ClientConfig",
+  clientConfigTag: "ODataClientConfig",
+  clientConfigImport: "ODataClientConfig",
   clientModule: "ODataV4"
 }
 

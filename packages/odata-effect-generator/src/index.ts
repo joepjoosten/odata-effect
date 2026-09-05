@@ -91,8 +91,7 @@ export * as NavigationGenerator from "./generator/NavigationGenerator.js"
 export * as OperationsGenerator from "./generator/OperationsGenerator.js"
 
 /**
- * Generator for package configuration files.
- *
+ * Self-contained ESM package configuration for generated clients.
  * @since 1.0.0
  */
 export * as PackageGenerator from "./generator/PackageGenerator.js"

@@ -21,7 +21,7 @@ The usual workflow is:
 For a Node.js app using generated clients:
 
 ```bash
-pnpm add @odata-effect/odata-effect @odata-effect/odata-effect-promise effect@4.0.0-beta.99 @effect/platform-node@4.0.0-beta.99
+pnpm add @odata-effect/odata-effect @odata-effect/odata-effect-promise effect@4.0.0-rc.111 @effect/platform-node@4.0.0-rc.111
 pnpm add -D @odata-effect/odata-effect-generator
 ```
 

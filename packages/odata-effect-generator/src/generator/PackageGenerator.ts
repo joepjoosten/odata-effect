@@ -1,6 +1,5 @@
 /**
- * Generator for package configuration files.
- *
+ * Self-contained ESM package configuration for generated clients.
  * @since 1.0.0
  */
 import type { DataModel } from "../model/DataModel.js"
@@ -10,162 +9,100 @@ export interface PackageConfig {
   readonly serviceName: string
 }
 
-/**
- * Generate package.json content.
- *
- * @since 1.0.0
- * @category generation
- */
-export const generatePackageJson = (
-  dataModel: DataModel,
-  config: PackageConfig
-): string => {
-  const packageJson = {
-    name: config.packageName,
-    version: "0.0.0",
-    type: "module",
-    license: "MIT",
-    description: `Effect-based OData client for ${dataModel.serviceName} service`,
-    publishConfig: {
-      access: "public",
-      directory: "dist"
-    },
-    scripts: {
-      codegen: "build-utils prepare-v2",
-      build: "pnpm build-esm && pnpm build-annotate && pnpm build-cjs && build-utils pack-v2",
-      "build-esm": "tsc -b tsconfig.build.json",
-      "build-cjs":
-        "babel build/esm --plugins @babel/transform-export-namespace-from --plugins @babel/transform-modules-commonjs --out-dir build/cjs --source-maps",
-      "build-annotate": "babel build/esm --plugins annotate-pure-calls --out-dir build/esm --source-maps",
-      check: "tsc -b tsconfig.json",
-      test: "vitest",
-      coverage: "vitest --coverage"
-    },
-    dependencies: {
-      "@odata-effect/odata-effect": "^1.0.0",
-      "@odata-effect/odata-effect-promise": "^4.0.0",
-      effect: "4.0.0-beta.99"
-    },
-    effect: {
-      generateExports: {
-        include: ["**/*.ts"]
+/** Generate a standalone package manifest. @since 1.0.0 @category generation */
+export const generatePackageJson = (dataModel: DataModel, config: PackageConfig): string =>
+  JSON.stringify(
+    {
+      name: config.packageName,
+      version: "0.0.0",
+      type: "module",
+      license: "MIT",
+      description: `Effect-based OData client for ${dataModel.serviceName} service`,
+      sideEffects: false,
+      files: ["dist"],
+      main: "./dist/index.js",
+      types: "./dist/index.d.ts",
+      exports: {
+        ".": { types: "./dist/index.d.ts", import: "./dist/index.js" },
+        "./*": { types: "./dist/*.d.ts", import: "./dist/*.js" }
       },
-      generateIndex: {
-        include: ["**/*.ts"]
+      publishConfig: { access: "public" },
+      scripts: {
+        build: "tsc -p tsconfig.build.json",
+        check: "tsc -p tsconfig.json",
+        test: "node --test",
+        prepack: "npm run build"
+      },
+      dependencies: {
+        "@odata-effect/odata-effect": "^1.3.0",
+        "@odata-effect/odata-effect-promise": "^4.0.8",
+        effect: "4.0.0-rc.111"
+      },
+      devDependencies: {
+        typescript: "^5.6.3",
+        "@types/node": "^22.8.5"
       }
-    }
-  }
+    },
+    null,
+    2
+  )
 
-  return JSON.stringify(packageJson, null, 2)
-}
+/** Generate the package check configuration. @since 1.0.0 @category generation */
+export const generateTsconfig = (): string => JSON.stringify({ extends: "./tsconfig.src.json" }, null, 2)
 
-/**
- * Generate tsconfig.json content.
- *
- * @since 1.0.0
- * @category generation
- */
-export const generateTsconfig = (): string => {
-  const tsconfig = {
-    extends: "../../tsconfig.base.json",
-    include: [],
-    references: [
-      { path: "tsconfig.src.json" },
-      { path: "tsconfig.test.json" }
-    ]
-  }
+/** Generate shared local compiler settings. @since 1.0.0 @category generation */
+export const generateTsconfigSrc = (): string =>
+  JSON.stringify(
+    {
+      include: ["src"],
+      compilerOptions: {
+        strict: true,
+        exactOptionalPropertyTypes: true,
+        skipLibCheck: true,
+        target: "ES2022",
+        module: "NodeNext",
+        moduleResolution: "NodeNext",
+        types: ["node"],
+        rootDir: "src",
+        noEmit: true
+      }
+    },
+    null,
+    2
+  )
 
-  return JSON.stringify(tsconfig, null, 2)
-}
+/** Generate a local test type-check configuration. @since 1.0.0 @category generation */
+export const generateTsconfigTest = (): string =>
+  JSON.stringify(
+    {
+      extends: "./tsconfig.src.json",
+      include: ["src", "test"],
+      compilerOptions: { rootDir: "." }
+    },
+    null,
+    2
+  )
 
-/**
- * Generate tsconfig.src.json content.
- *
- * @since 1.0.0
- * @category generation
- */
-export const generateTsconfigSrc = (): string => {
-  const tsconfig = {
-    extends: "../../tsconfig.base.json",
-    include: ["src"],
-    references: [
-      { path: "../ODataEffect/tsconfig.src.json" },
-      { path: "../ODataEffectPromise/tsconfig.src.json" }
-    ],
-    compilerOptions: {
-      types: ["node"],
-      outDir: "build/src",
-      tsBuildInfoFile: ".tsbuildinfo/src.tsbuildinfo",
-      rootDir: "src"
-    }
-  }
+/** Generate the distributable ESM build configuration. @since 1.0.0 @category generation */
+export const generateTsconfigBuild = (): string =>
+  JSON.stringify(
+    {
+      extends: "./tsconfig.src.json",
+      compilerOptions: {
+        noEmit: false,
+        declaration: true,
+        declarationMap: true,
+        sourceMap: true,
+        outDir: "dist"
+      }
+    },
+    null,
+    2
+  )
 
-  return JSON.stringify(tsconfig, null, 2)
-}
+/** Generate a local Vitest configuration. @since 1.0.0 @category generation */
+export const generateVitestConfig = (): string =>
+  `import { defineConfig } from "vitest/config"
 
-/**
- * Generate tsconfig.test.json content.
- *
- * @since 1.0.0
- * @category generation
- */
-export const generateTsconfigTest = (): string => {
-  const tsconfig = {
-    extends: "../../tsconfig.base.json",
-    include: ["test"],
-    references: [
-      { path: "tsconfig.src.json" },
-      { path: "../ODataEffect/tsconfig.src.json" },
-      { path: "../ODataEffectPromise/tsconfig.src.json" }
-    ],
-    compilerOptions: {
-      types: ["node"],
-      tsBuildInfoFile: ".tsbuildinfo/test.tsbuildinfo",
-      rootDir: "test",
-      noEmit: true
-    }
-  }
-
-  return JSON.stringify(tsconfig, null, 2)
-}
-
-/**
- * Generate tsconfig.build.json content.
- *
- * @since 1.0.0
- * @category generation
- */
-export const generateTsconfigBuild = (): string => {
-  const tsconfig = {
-    extends: "./tsconfig.src.json",
-    references: [
-      { path: "../ODataEffect/tsconfig.build.json" },
-      { path: "../ODataEffectPromise/tsconfig.build.json" }
-    ],
-    compilerOptions: {
-      types: ["node"],
-      tsBuildInfoFile: ".tsbuildinfo/build.tsbuildinfo",
-      outDir: "build/esm",
-      declarationDir: "build/dts",
-      stripInternal: true
-    }
-  }
-
-  return JSON.stringify(tsconfig, null, 2)
-}
-
-/**
- * Generate vitest.config.ts content.
- *
- * @since 1.0.0
- * @category generation
- */
-export const generateVitestConfig = (): string => {
-  return `import { mergeConfig, type UserConfigExport } from "vitest/config"
-import shared from "../../vitest.shared.js"
-
-const config: UserConfigExport = {}
-
-export default mergeConfig(shared, config)
+export default defineConfig({ test: { include: ["test/**/*.test.ts"] } })
 `
-}

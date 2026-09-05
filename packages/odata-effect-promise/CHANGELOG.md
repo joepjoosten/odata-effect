@@ -1,5 +1,14 @@
 # @odata-effect/odata-effect-promise
 
+## 4.0.9
+
+### Patch Changes
+
+- [#74](https://github.com/joepjoosten/odata-effect/pull/74) [`c9e363c`](https://github.com/joepjoosten/odata-effect/commit/c9e363ca56880c1acb952b9174a89f4476e683db) Thanks [@joepjoosten](https://github.com/joepjoosten)! - Constrain toPromise to the services provided by ODataRuntime. Effects requiring application services must provide them before conversion, so missing dependencies now produce a compile-time error instead of a runtime defect.
+
+- Updated dependencies [[`c8710e4`](https://github.com/joepjoosten/odata-effect/commit/c8710e40f2930dabbb36b60d9b6b1b46ddccf561), [`e3730b7`](https://github.com/joepjoosten/odata-effect/commit/e3730b7479d506e44b62f79bfb85f1ce32bd9378), [`bf51a29`](https://github.com/joepjoosten/odata-effect/commit/bf51a292347efd184ccae97fb1ec5fc6c9df4b95), [`35b7999`](https://github.com/joepjoosten/odata-effect/commit/35b7999e06db9da28e96fb43d5d496c6af391174), [`65c49f9`](https://github.com/joepjoosten/odata-effect/commit/65c49f94ddb9d3b48475c2e051da5a048d48c53d), [`6fd021b`](https://github.com/joepjoosten/odata-effect/commit/6fd021bf8d304bf327c079fed2b1f4a8979926a4), [`4029df2`](https://github.com/joepjoosten/odata-effect/commit/4029df2174ae746104f6bef5ed4f35074cea0a75)]:
+  - @odata-effect/odata-effect@1.3.0
+
 ## 4.0.8
 
 ### Patch Changes

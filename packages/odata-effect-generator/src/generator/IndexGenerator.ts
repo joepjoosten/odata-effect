@@ -93,7 +93,11 @@ export const generateIndex = (
   lines.push(`export {`)
   const serviceExports: Array<string> = []
   for (const entitySet of dataModel.entitySets.values()) {
-    serviceExports.push(getServiceClassName(entitySet.name))
+    const suffix = getServiceClassName(entitySet.name).replace(/Service$/, "")
+    serviceExports.push(getServiceClassName(entitySet.name), `getAll${suffix}`, `create${suffix}`)
+    if (dataModel.entityTypes.get(entitySet.entityTypeFqName)?.keys.length) {
+      serviceExports.push(`getById${suffix}`, `update${suffix}`, `delete${suffix}`)
+    }
   }
   // Also export types
   serviceExports.push(`type CrudError`)

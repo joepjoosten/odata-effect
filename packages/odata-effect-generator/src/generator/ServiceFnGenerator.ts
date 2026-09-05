@@ -102,6 +102,10 @@ const generateServicesFile = (dataModel: DataModel, esmExtensions: boolean): str
   lines.push(` * @since 1.0.0`)
   lines.push(` */`)
   lines.push(`import { crud } from "${crudImportPath}"`)
+  const clientModule = isV4 ? "ODataV4" : "OData"
+  const queryOptions = isV4 ? "ODataV4QueryOptions" : "ODataQueryOptions"
+  const buildPath = isV4 ? "buildEntityPathV4" : "buildEntityPath"
+  lines.push(`import * as Client from "@odata-effect/odata-effect/${clientModule}"`)
   lines.push(``)
 
   // Import all entity types
@@ -149,7 +153,7 @@ const generateServicesFile = (dataModel: DataModel, esmExtensions: boolean): str
     lines.push(` */`)
 
     if (hasKeys) {
-      lines.push(`export const ${serviceClassName} = crud({`)
+      lines.push(`export const ${serviceClassName} = /*#__PURE__*/ crud({`)
       lines.push(`  path: "${entitySet.name}",`)
       lines.push(`  schema: ${entityName},`)
       lines.push(`  editableSchema: ${editableName},`)
@@ -158,13 +162,33 @@ const generateServicesFile = (dataModel: DataModel, esmExtensions: boolean): str
       lines.push(`})`)
     } else {
       // Entity without keys - can only getAll and create
-      lines.push(`export const ${serviceClassName} = crud({`)
+      lines.push(`export const ${serviceClassName} = /*#__PURE__*/ crud({`)
       lines.push(`  path: "${entitySet.name}",`)
       lines.push(`  schema: ${entityName},`)
       lines.push(`  editableSchema: ${editableName},`)
       lines.push(`  partialEditableSchema: ${partialEditableName},`)
       lines.push(`  idToKey: (_id: never) => { throw new Error("Entity has no keys") }`)
       lines.push(`})`)
+    }
+    const suffix = serviceClassName.replace(/Service$/, "")
+    lines.push(
+      `export const getAll${suffix} = (options?: Client.${queryOptions}) => Client.getCollection("${entitySet.name}", ${entityName}, options)`
+    )
+    lines.push(
+      `export const create${suffix} = (entity: ${editableName}) => Client.post("${entitySet.name}", entity, ${editableName}, ${entityName})`
+    )
+    if (hasKeys) {
+      const idType = getIdTypeName(entityName)
+      lines.push(`const key${suffix} = ${generateIdToKeyFunction(entityType, dataModel.version)}`)
+      lines.push(
+        `export const getById${suffix} = (id: ${idType}, options?: Client.${queryOptions}) => Client.get(Client.${buildPath}("${entitySet.name}", key${suffix}(id)), ${entityName}, options)`
+      )
+      lines.push(
+        `export const update${suffix} = (id: ${idType}, entity: Partial<${editableName}>) => Client.patch(Client.${buildPath}("${entitySet.name}", key${suffix}(id)), entity, ${partialEditableName})`
+      )
+      lines.push(
+        `export const delete${suffix} = (id: ${idType}) => Client.del(Client.${buildPath}("${entitySet.name}", key${suffix}(id)))`
+      )
     }
     lines.push(``)
   }

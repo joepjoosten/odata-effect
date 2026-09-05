@@ -5,7 +5,9 @@ import * as os from "node:os"
 import * as path from "node:path"
 import ts from "typescript"
 import { digestMetadata } from "../../src/digester/Digester.js"
+import { generateIndex } from "../../src/generator/IndexGenerator.js"
 import { generateModels } from "../../src/generator/ModelsGenerator.js"
+import { generateNavigations } from "../../src/generator/NavigationGenerator.js"
 import { generateOperations } from "../../src/generator/OperationsGenerator.js"
 import { generateQueryModels } from "../../src/generator/QueryModelsGenerator.js"
 import { generateServiceFns } from "../../src/generator/ServiceFnGenerator.js"
@@ -19,6 +21,8 @@ for (const sample of ["odata-v2", "trippin"]) {
       const options = { esmExtensions: true }
       const files = {
         "Models.ts": generateModels(model),
+        "index.ts": generateIndex(model, options),
+        "PathBuilders.ts": generateNavigations(model, options).navigationFiles[0].content,
         "QueryModels.ts": generateQueryModels(model, options),
         "Services.ts": generateServiceFns(model, options).servicesFile.content,
         "Operations.ts": generateOperations(model, options).operationsFile!.content

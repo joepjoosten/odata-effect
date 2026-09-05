@@ -19,7 +19,6 @@ import {
   generateTsconfigBuild,
   generateTsconfigSrc,
   generateTsconfigTest,
-  generateVitestConfig,
   type PackageConfig
 } from "./PackageGenerator.js"
 import { generateQueryModels } from "./QueryModelsGenerator.js"
@@ -85,7 +84,7 @@ export const generate = (
     const serviceName = config.serviceName ?? dataModel.serviceName
     const packageName = config.packageName ?? `@template/${serviceName.toLowerCase()}-effect`
     const filesOnly = config.filesOnly ?? false
-    const esmExtensions = config.esmExtensions ?? false
+    const esmExtensions = config.esmExtensions ?? !filesOnly
 
     // When filesOnly is true, output directly to outputDir; otherwise use outputDir/src
     const sourceDir = filesOnly ? outputDir : path.join(outputDir, "src")
@@ -161,10 +160,6 @@ export const generate = (
       {
         path: path.join(outputDir, "tsconfig.build.json"),
         content: generateTsconfigBuild()
-      },
-      {
-        path: path.join(outputDir, "vitest.config.ts"),
-        content: generateVitestConfig()
       }
     ]
 

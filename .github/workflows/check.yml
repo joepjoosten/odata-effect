@@ -62,3 +62,15 @@ jobs:
       - run: pnpm vitest 
         env:
           NODE_OPTIONS: --max_old_space_size=8192
+
+  generated-package:
+    name: Generated package
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        uses: ./.github/actions/setup
+      - run: pnpm build
+      - name: Install, compile and import isolated generated packages
+        run: node scripts/check-generated-package.mjs

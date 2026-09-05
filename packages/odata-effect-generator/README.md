@@ -10,7 +10,7 @@ Install it in the app or workspace where you want to generate code:
 
 ```bash
 pnpm add -D @odata-effect/odata-effect-generator
-pnpm add @odata-effect/odata-effect @odata-effect/odata-effect-promise effect@4.0.0-beta.99 @effect/platform-node@4.0.0-beta.99
+pnpm add @odata-effect/odata-effect @odata-effect/odata-effect-promise effect@4.0.0-rc.111 @effect/platform-node@4.0.0-rc.111
 ```
 
 ## Step 1: Download Metadata
@@ -295,3 +295,12 @@ fields, while SAP `sap:creatable` / `sap:updatable` flags and inline
 
 For manual CRUD factories, `createSchema` is optional and defaults to the existing
 `editableSchema`, preserving existing clients.
+
+### Standalone packages
+
+Without `--files-only`, generation creates a self-contained ESM package. Run
+`npm install`, `npm run check` and `npm run build` in the output directory. The
+package emits JavaScript and declarations under `dist`, exports subpaths, and
+keeps purity comments for bundlers. It needs no parent tsconfig or sibling
+workspace packages. Package mode defaults to `.js` extensions in relative imports.
+The generated client requires core version 1.3.0 or newer for the generated APIs.

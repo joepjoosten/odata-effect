@@ -11,40 +11,44 @@ import { generateQueryModels } from "../../src/generator/QueryModelsGenerator.js
 import { generateServiceFns } from "../../src/generator/ServiceFnGenerator.js"
 import { parseODataMetadata } from "../../src/parser/XmlParser.js"
 
-it.effect("compiles a generated V2 client against the installed runtime", () =>
-  Effect.gen(function*() {
-    const xml = fs.readFileSync(path.resolve(__dirname, "../resource/odata-v2.xml"), "utf8")
-    const model = yield* parseODataMetadata(xml).pipe(Effect.flatMap(digestMetadata))
-    const options = { esmExtensions: true }
-    const files = {
-      "Models.ts": generateModels(model),
-      "QueryModels.ts": generateQueryModels(model, options),
-      "Services.ts": generateServiceFns(model, options).servicesFile.content,
-      "Operations.ts": generateOperations(model, options).operationsFile!.content
-    }
-    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "odata-compilation-"))
-    try {
-      fs.writeFileSync(path.join(directory, "package.json"), "{\"type\":\"module\"}")
-      const root = path.resolve(__dirname, "../../../..")
-      fs.symlinkSync(path.join(root, "node_modules"), path.join(directory, "node_modules"), "dir")
-      const fileNames = Object.entries(files).map(([name, content]) => {
-        const fileName = path.join(directory, name)
-        fs.writeFileSync(fileName, content)
-        return fileName
-      })
-      const config = ts.readConfigFile(path.join(root, "tsconfig.base.json"), ts.sys.readFile)
-      const parsed = ts.parseJsonConfigFileContent(config.config, ts.sys, root)
-      const program = ts.createProgram(fileNames, {
-        ...parsed.options,
-        composite: false,
-        incremental: false,
-        noEmit: true,
-        declaration: false,
-        declarationMap: false
-      })
-      const diagnostics = ts.getPreEmitDiagnostics(program)
-      expect(diagnostics.map((d) => ts.flattenDiagnosticMessageText(d.messageText, "\n"))).toEqual([])
-    } finally {
-      fs.rmSync(directory, { recursive: true, force: true })
-    }
-  }))
+for (const sample of ["odata-v2", "trippin"]) {
+  it.effect(`compiles generated ${sample} models and services against the installed runtime`, () =>
+    Effect.gen(function*() {
+      const xml = fs.readFileSync(path.resolve(__dirname, `../resource/${sample}.xml`), "utf8")
+      const model = yield* parseODataMetadata(xml).pipe(Effect.flatMap(digestMetadata))
+      const options = { esmExtensions: true }
+      const files = {
+        "Models.ts": generateModels(model),
+        "QueryModels.ts": generateQueryModels(model, options),
+        "Services.ts": generateServiceFns(model, options).servicesFile.content,
+        ...(sample === "odata-v2"
+          ? { "Operations.ts": generateOperations(model, options).operationsFile!.content }
+          : {})
+      }
+      const directory = fs.mkdtempSync(path.join(os.tmpdir(), "odata-compilation-"))
+      try {
+        fs.writeFileSync(path.join(directory, "package.json"), "{\"type\":\"module\"}")
+        const root = path.resolve(__dirname, "../../../..")
+        fs.symlinkSync(path.join(root, "node_modules"), path.join(directory, "node_modules"), "dir")
+        const fileNames = Object.entries(files).map(([name, content]) => {
+          const fileName = path.join(directory, name)
+          fs.writeFileSync(fileName, content)
+          return fileName
+        })
+        const config = ts.readConfigFile(path.join(root, "tsconfig.base.json"), ts.sys.readFile)
+        const parsed = ts.parseJsonConfigFileContent(config.config, ts.sys, root)
+        const program = ts.createProgram(fileNames, {
+          ...parsed.options,
+          composite: false,
+          incremental: false,
+          noEmit: true,
+          declaration: false,
+          declarationMap: false
+        })
+        const diagnostics = ts.getPreEmitDiagnostics(program)
+        expect(diagnostics.map((d) => ts.flattenDiagnosticMessageText(d.messageText, "\n"))).toEqual([])
+      } finally {
+        fs.rmSync(directory, { recursive: true, force: true })
+      }
+    }))
+}

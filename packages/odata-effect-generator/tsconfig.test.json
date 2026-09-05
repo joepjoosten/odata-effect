@@ -2,7 +2,9 @@
   "extends": "../../tsconfig.base.json",
   "include": ["test"],
   "references": [
-    { "path": "tsconfig.src.json" }
+    { "path": "tsconfig.src.json" },
+    { "path": "../odata-effect/tsconfig.src.json" },
+    { "path": "../odata-effect-promise/tsconfig.src.json" }
   ],
   "compilerOptions": {
     "types": ["node"],

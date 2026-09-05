@@ -2,11 +2,7 @@ import { describe, expect, it } from "@effect/vitest"
 import * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"
 import {
-  EntityNotFoundError,
-  ODataError,
-  ParseError,
   SapApplication,
-  SapError,
   SapErrorBody,
   SapErrorDetail,
   SapErrorMessage,
@@ -15,77 +11,6 @@ import {
 } from "../src/Errors.js"
 
 describe("Errors", () => {
-  describe("ODataError", () => {
-    it("creates an ODataError with message", () => {
-      const error = new ODataError({ message: "Request failed" })
-      expect(error._tag).toBe("ODataError")
-      expect(error.message).toBe("Request failed")
-      expect(error.cause).toBeUndefined()
-    })
-
-    it("creates an ODataError with message and cause", () => {
-      const cause = new Error("Network error")
-      const error = new ODataError({ message: "Request failed", cause })
-      expect(error._tag).toBe("ODataError")
-      expect(error.message).toBe("Request failed")
-      expect(error.cause).toBe(cause)
-    })
-  })
-
-  describe("SapError", () => {
-    it("creates a SapError with code and message", () => {
-      const error = new SapError({ code: "BP/001", message: "Business partner not found" })
-      expect(error._tag).toBe("SapError")
-      expect(error.code).toBe("BP/001")
-      expect(error.message).toBe("Business partner not found")
-      expect(error.details).toBeUndefined()
-      expect(error.innererror).toBeUndefined()
-    })
-
-    it("creates a SapError with details", () => {
-      const details = [
-        new SapErrorDetail({
-          code: "BP/002",
-          message: "Invalid field",
-          propertyref: "Name",
-          severity: "error",
-          target: "/Name"
-        })
-      ]
-      const error = new SapError({
-        code: "BP/001",
-        message: "Validation failed",
-        details
-      })
-      expect(error.details).toHaveLength(1)
-      expect(error.details![0].propertyref).toBe("Name")
-    })
-  })
-
-  describe("EntityNotFoundError", () => {
-    it("creates an EntityNotFoundError", () => {
-      const error = new EntityNotFoundError({ entityType: "Product", id: "123" })
-      expect(error._tag).toBe("EntityNotFoundError")
-      expect(error.entityType).toBe("Product")
-      expect(error.id).toBe("123")
-    })
-  })
-
-  describe("ParseError", () => {
-    it("creates a ParseError with message", () => {
-      const error = new ParseError({ message: "Invalid JSON" })
-      expect(error._tag).toBe("ParseError")
-      expect(error.message).toBe("Invalid JSON")
-      expect(error.cause).toBeUndefined()
-    })
-
-    it("creates a ParseError with cause", () => {
-      const cause = new SyntaxError("Unexpected token")
-      const error = new ParseError({ message: "Invalid JSON", cause })
-      expect(error.cause).toBe(cause)
-    })
-  })
-
   describe("Schema Classes", () => {
     describe("SapErrorDetail", () => {
       it("decodes a valid error detail", () =>

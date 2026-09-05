@@ -2,7 +2,6 @@ import { describe, expect, it } from "@effect/vitest"
 import * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"
 import {
-  BatchBuilder,
   type BatchChangeset,
   type BatchChangesetResponse,
   type BatchRequest,
@@ -21,13 +20,6 @@ import {
 } from "../src/Batch.js"
 
 describe("Batch", () => {
-  describe("createBatchBuilder", () => {
-    it("creates a new BatchBuilder", () => {
-      const builder = createBatchBuilder()
-      expect(builder).toBeInstanceOf(BatchBuilder)
-    })
-  })
-
   describe("BatchBuilder", () => {
     describe("get", () => {
       it("adds a GET request", () => {

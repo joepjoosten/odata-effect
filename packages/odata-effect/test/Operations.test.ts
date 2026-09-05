@@ -430,16 +430,23 @@ describe("Operations", () => {
 
       it.effect("executes a V4 action with body", () =>
         Effect.gen(function*() {
-          const mockClient = createMockClient((request) =>
-            Effect.succeed(
+          const mockClient = createMockClient((request) => {
+            expect(request.method).toBe("POST")
+            expect(request.url).toBe("https://test-server.com/odata/v4/DoAction")
+            expect(request.headers["content-type"]).toContain("application/json")
+            expect(request.body._tag).toBe("Uint8Array")
+            if (request.body._tag === "Uint8Array") {
+              expect(JSON.parse(new TextDecoder().decode(request.body.body))).toEqual({ Param: "value" })
+            }
+            return Effect.succeed(
               HttpClientResponse.fromWeb(
                 request,
                 new Response(null, { status: 204 })
               )
             )
-          )
+          })
 
-          const bodySchema = Schema.Struct({ param: Schema.String })
+          const bodySchema = Schema.Struct({ param: Schema.String }).pipe(Schema.encodeKeys({ param: "Param" }))
 
           yield* executeV4ActionVoid(
             mockClient,

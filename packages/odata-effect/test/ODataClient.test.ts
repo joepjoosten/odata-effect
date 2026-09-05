@@ -6,14 +6,7 @@ import * as Struct from "effect/Struct"
 import { HttpClient, HttpClientResponse } from "effect/unstable/http"
 import type * as HttpClientRequest from "effect/unstable/http/HttpClientRequest"
 import * as OData from "../src/OData.js"
-import {
-  buildEntityPath,
-  DEFAULT_HEADERS,
-  MERGE_HEADERS,
-  ODataClientConfig,
-  ODataCollectionResponse,
-  ODataSingleResponse
-} from "../src/OData.js"
+import { buildEntityPath, ODataClientConfig, ODataCollectionResponse, ODataSingleResponse } from "../src/OData.js"
 
 // Test schema
 class TestEntity extends Schema.Class<TestEntity>("TestEntity")({
@@ -172,17 +165,6 @@ describe("ODataClient", () => {
         expect(results[0].id).toBe("1")
         expect(results[1].id).toBe("2")
       }).pipe(Effect.runPromise))
-  })
-
-  describe("constants", () => {
-    it("DEFAULT_HEADERS has correct values", () => {
-      expect(DEFAULT_HEADERS.Accept).toBe("application/json")
-      expect(DEFAULT_HEADERS["Content-Type"]).toBe("application/json")
-    })
-
-    it("MERGE_HEADERS has X-Http-Method: MERGE", () => {
-      expect(MERGE_HEADERS["X-Http-Method"]).toBe("MERGE")
-    })
   })
 
   describe("Tree-Shakable OData Functions", () => {

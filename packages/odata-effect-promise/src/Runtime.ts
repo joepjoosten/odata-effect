@@ -176,6 +176,8 @@ export const createODataRuntime = (
 
 /**
  * Convert an Effect to a Promise using the provided runtime.
+ * The Effect may require only ODataClientConfig and/or HttpClient. Provide any
+ * application-specific services before passing the Effect to this adapter.
  *
  * This is a curried function designed to be used with `pipe`:
  *
@@ -222,8 +224,10 @@ export const createODataRuntime = (
  * @since 1.0.0
  * @category operations
  */
-export const toPromise = (runtime: ODataRuntime) => <A, E>(effect: Effect.Effect<A, E, any>): Promise<A> =>
-  runtime.runPromise(effect as any)
+export const toPromise =
+  (runtime: ODataRuntime) =>
+  <A, E>(effect: Effect.Effect<A, E, Config.ODataClientConfig | HttpClient.HttpClient>): Promise<A> =>
+    runtime.runPromise(effect)
 
 // Re-export commonly used types from the core package
 export type { ODataClientConfig, ODataClientConfigService } from "@odata-effect/odata-effect/Config"

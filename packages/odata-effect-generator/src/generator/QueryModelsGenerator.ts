@@ -79,7 +79,7 @@ export const generateQueryModels = (
   for (const complexType of dataModel.complexTypes.values()) {
     for (const line of generateQueryInterface(complexType)) lines.push(line)
     lines.push(``)
-    for (const line of generateQueryInstance(complexType)) lines.push(line)
+    for (const line of generateQueryInstance(complexType, dataModel.version)) lines.push(line)
     lines.push(``)
   }
 
@@ -87,7 +87,7 @@ export const generateQueryModels = (
   for (const entityType of dataModel.entityTypes.values()) {
     for (const line of generateQueryInterface(entityType)) lines.push(line)
     lines.push(``)
-    for (const line of generateQueryInstance(entityType)) lines.push(line)
+    for (const line of generateQueryInstance(entityType, dataModel.version)) lines.push(line)
     lines.push(``)
   }
 
@@ -177,7 +177,8 @@ const generateQueryInterface = (
  * Generate a query instance for a type.
  */
 const generateQueryInstance = (
-  type: EntityTypeModel | ComplexTypeModel
+  type: EntityTypeModel | ComplexTypeModel,
+  version: "V2" | "V4"
 ): Array<string> => {
   const lines: Array<string> = []
   const interfaceName = getQueryInterfaceName(type.name)
@@ -207,10 +208,16 @@ const generateQueryInstance = (
       const targetMatch = prop.typeMapping.queryPath.match(/<Q(\w+)>/)
       const targetInstanceName = targetMatch ? `q${targetMatch[1]}` : "undefined"
       lines.push(
-        `  ${prop.name}: new ${pathClass}("${prop.odataName}", () => ${targetInstanceName})${isLast ? "" : ","}`
+        `  ${prop.name}: new ${pathClass}("${prop.odataName}", () => ${targetInstanceName}, { version: "${version}" })${
+          isLast ? "" : ","
+        }`
       )
     } else {
-      lines.push(`  ${prop.name}: new ${pathClass}("${prop.odataName}")${isLast ? "" : ","}`)
+      lines.push(
+        `  ${prop.name}: new ${pathClass}("${prop.odataName}", { version: "${version}", edmType: "${prop.odataType}" })${
+          isLast ? "" : ","
+        }`
+      )
     }
   }
 
@@ -220,7 +227,9 @@ const generateQueryInstance = (
     const pathClass = navProp.isCollection ? "CollectionPath" : "EntityPath"
     const isLast = i === type.navigationProperties.length - 1
     lines.push(
-      `  ${navProp.name}: new ${pathClass}("${navProp.odataName}", () => ${targetInstanceName})${isLast ? "" : ","}`
+      `  ${navProp.name}: new ${pathClass}("${navProp.odataName}", () => ${targetInstanceName}, { version: "${version}" })${
+        isLast ? "" : ","
+      }`
     )
   }
 

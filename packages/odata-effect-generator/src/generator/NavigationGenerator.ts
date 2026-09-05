@@ -98,7 +98,10 @@ const collectAllNavigationProperties = (dataModel: DataModel): ReadonlyArray<Nav
   const navProps: Array<NavPropertyInfo> = []
 
   for (const entityType of dataModel.entityTypes.values()) {
+    const base = entityType.baseType ? dataModel.entityTypes.get(entityType.baseType) : undefined
     for (const navProp of entityType.navigationProperties) {
+      // The base navigation function also accepts structurally compatible derived models.
+      if (base?.navigationProperties.some((p) => p.odataName === navProp.odataName)) continue
       const targetTypeName = getClassName(navProp.targetType)
       navProps.push({
         propertyName: navProp.name,

@@ -10,7 +10,7 @@ const resourceDir = path.resolve(__dirname, "../resource")
 
 describe("Digester", () => {
   describe("V2 metadata", () => {
-    it("digests OData V2 metadata correctly", () =>
+    it.effect("digests OData V2 metadata correctly", () =>
       Effect.gen(function*() {
         const xmlContent = fs.readFileSync(
           path.join(resourceDir, "odata-v2.xml"),
@@ -72,7 +72,7 @@ describe("Digester", () => {
   })
 
   describe("V4 metadata", () => {
-    it("digests OData V4 metadata correctly", () =>
+    it.effect("digests OData V4 metadata correctly", () =>
       Effect.gen(function*() {
         const xmlContent = fs.readFileSync(
           path.join(resourceDir, "trippin.xml"),
@@ -161,7 +161,7 @@ describe("Digester", () => {
   })
 
   describe("NamingOverrides", () => {
-    it("applies global property overrides", () =>
+    it.effect("applies global property overrides", () =>
       Effect.gen(function*() {
         const xmlContent = fs.readFileSync(
           path.join(resourceDir, "odata-v2.xml"),
@@ -183,7 +183,7 @@ describe("Digester", () => {
         expect(idProp!.name).toBe("id") // TypeScript name is overridden
       }))
 
-    it("applies entity-specific property overrides", () =>
+    it.effect("applies entity-specific property overrides", () =>
       Effect.gen(function*() {
         const xmlContent = fs.readFileSync(
           path.join(resourceDir, "odata-v2.xml"),
@@ -214,7 +214,7 @@ describe("Digester", () => {
         expect(categoryNameProp!.name).toBe("name") // Default camelCase
       }))
 
-    it("entity-specific overrides take precedence over global", () =>
+    it.effect("entity-specific overrides take precedence over global", () =>
       Effect.gen(function*() {
         const xmlContent = fs.readFileSync(
           path.join(resourceDir, "odata-v2.xml"),
@@ -246,7 +246,7 @@ describe("Digester", () => {
         expect(categoryIdProp!.name).toBe("globalId")
       }))
 
-    it("applies complex type property overrides", () =>
+    it.effect("applies complex type property overrides", () =>
       Effect.gen(function*() {
         const xmlContent = fs.readFileSync(
           path.join(resourceDir, "odata-v2.xml"),
@@ -272,7 +272,7 @@ describe("Digester", () => {
         expect(cityProp!.name).toBe("cityName")
       }))
 
-    it("applies operation name overrides", () =>
+    it.effect("applies operation name overrides", () =>
       Effect.gen(function*() {
         const xmlContent = fs.readFileSync(
           path.join(resourceDir, "odata-v2.xml"),
@@ -294,7 +294,7 @@ describe("Digester", () => {
         expect(operation.name).toBe("fetchProductsByRating")
       }))
 
-    it("applies operation parameter overrides", () =>
+    it.effect("applies operation parameter overrides", () =>
       Effect.gen(function*() {
         const xmlContent = fs.readFileSync(
           path.join(resourceDir, "odata-v2.xml"),
@@ -320,7 +320,7 @@ describe("Digester", () => {
         expect(ratingParam!.name).toBe("minRating")
       }))
 
-    it("applies V4 operation overrides", () =>
+    it.effect("applies V4 operation overrides", () =>
       Effect.gen(function*() {
         const xmlContent = fs.readFileSync(
           path.join(resourceDir, "trippin.xml"),

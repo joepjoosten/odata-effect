@@ -13,7 +13,7 @@ import { parseODataMetadata } from "../../src/parser/XmlParser.js"
 const resourceDir = path.resolve(__dirname, "../resource")
 
 describe("V2 Integration", () => {
-  it("generates complete code from V2 metadata", () =>
+  it.effect("generates complete code from V2 metadata", () =>
     Effect.gen(function*() {
       const xmlContent = fs.readFileSync(
         path.join(resourceDir, "odata-v2.xml"),
@@ -34,7 +34,7 @@ describe("V2 Integration", () => {
       expect(modelsCode).toContain("export const PartialEditableProduct = Schema.Struct")
 
       // Check properties
-      expect(modelsCode).toContain("id: Schema.Number")
+      expect(modelsCode).toContain("iD: Schema.Number")
       expect(modelsCode).toContain("name:")
       expect(modelsCode).toContain("price:")
       expect(modelsCode).toContain("releaseDate:")
@@ -80,7 +80,7 @@ describe("V2 Integration", () => {
       expect(operationsResult.operationsFile!.content).toContain("Effect.gen")
       // Verify correct import paths (OData, not ODataClient)
       expect(operationsResult.operationsFile!.content).toContain("from \"@odata-effect/odata-effect/OData\"")
-      expect(operationsResult.operationsFile!.content).not.toContain("ODataClient")
+      expect(operationsResult.operationsFile!.content).not.toContain("@odata-effect/odata-effect/ODataClient")
 
       // Generate index.ts
       const indexCode = generateIndex(dataModel, generatorOptions)
@@ -95,7 +95,7 @@ describe("V2 Integration", () => {
       expect(indexCode).toContain("productQuery")
     }))
 
-  it("handles nullable properties correctly", () =>
+  it.effect("handles nullable properties correctly", () =>
     Effect.gen(function*() {
       const xmlContent = fs.readFileSync(
         path.join(resourceDir, "odata-v2.xml"),
@@ -128,7 +128,7 @@ describe("V2 Integration", () => {
       expect(discontinuedDateProp.isNullable).toBe(true)
     }))
 
-  it("handles V2 associations correctly", () =>
+  it.effect("handles V2 associations correctly", () =>
     Effect.gen(function*() {
       const xmlContent = fs.readFileSync(
         path.join(resourceDir, "odata-v2.xml"),

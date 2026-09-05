@@ -11,7 +11,7 @@ import { parseODataMetadata } from "../../src/parser/XmlParser.js"
 const resourceDir = path.resolve(__dirname, "../resource")
 
 describe("NamingOverrides Integration", () => {
-  it("flows through to Models generation with encodeKeys mapping", () =>
+  it.effect("flows through to Models generation with encodeKeys mapping", () =>
     Effect.gen(function*() {
       const xmlContent = fs.readFileSync(
         path.join(resourceDir, "odata-v2.xml"),
@@ -43,7 +43,7 @@ describe("NamingOverrides Integration", () => {
       expect(modelsOutput).toContain("releaseDate: \"ReleaseDate\"")
     }))
 
-  it("flows through to QueryModels generation", () =>
+  it.effect("flows through to QueryModels generation", () =>
     Effect.gen(function*() {
       const xmlContent = fs.readFileSync(
         path.join(resourceDir, "odata-v2.xml"),
@@ -66,7 +66,7 @@ describe("NamingOverrides Integration", () => {
       expect(queryModelsOutput).toContain("id: new NumberPath(\"ID\")")
     }))
 
-  it("preserves OData names in query paths while using TypeScript names for keys", () =>
+  it.effect("preserves OData names in query paths while using TypeScript names for keys", () =>
     Effect.gen(function*() {
       const xmlContent = fs.readFileSync(
         path.join(resourceDir, "odata-v2.xml"),

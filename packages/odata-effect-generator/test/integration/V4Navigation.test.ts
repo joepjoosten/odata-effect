@@ -9,7 +9,7 @@ import { parseODataMetadata } from "../../src/parser/XmlParser.js"
 const resourceDir = path.resolve(__dirname, "../resource")
 
 describe("V4 Navigation Generation", () => {
-  it("generates tree-shakable PathBuilders", () =>
+  it.effect("generates tree-shakable PathBuilders", () =>
     Effect.gen(function*() {
       const xmlContent = fs.readFileSync(
         path.join(resourceDir, "trippin.xml"),
@@ -75,14 +75,9 @@ describe("V4 Navigation Generation", () => {
       expect(content).toContain("Person as PersonModel")
       expect(content).toContain("Trip as TripModel")
       expect(content).toContain("Flight as FlightModel")
-
-      // Write generated code for inspection
-      const outputPath = "/tmp/generated-PathBuilders.ts"
-      fs.writeFileSync(outputPath, content)
-      console.log(`Wrote generated file to: ${outputPath}`)
     }))
 
-  it("handles derived types and type casting correctly", () =>
+  it.effect("handles derived types and type casting correctly", () =>
     Effect.gen(function*() {
       const xmlContent = fs.readFileSync(
         path.join(resourceDir, "trippin.xml"),
@@ -109,7 +104,7 @@ describe("V4 Navigation Generation", () => {
       expect(content).toContain("Trippin.Employee")
     }))
 
-  it("detects and handles navigation property name collisions", () =>
+  it.effect("detects and handles navigation property name collisions", () =>
     Effect.gen(function*() {
       const xmlContent = fs.readFileSync(
         path.join(resourceDir, "trippin.xml"),

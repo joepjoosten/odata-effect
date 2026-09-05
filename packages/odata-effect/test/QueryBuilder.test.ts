@@ -258,7 +258,7 @@ describe("QueryBuilder", () => {
         .filter((q) => q.age.gt(18))
         .build()
 
-      expect(query.$filter).toBe("name eq 'John' and age gt 18")
+      expect(query.$filter).toBe("(name eq 'John') and (age gt 18)")
     })
 
     it("builds complex filter with AND/OR", () => {
@@ -475,7 +475,7 @@ describe("QueryBuilder", () => {
         .skip(0)
         .build()
 
-      expect(query.$filter).toBe("startswith(name,'J') and age gt 0")
+      expect(query.$filter).toBe("(startswith(name,'J')) and (age gt 0)")
       expect(query.$select).toBe("id,name,age")
       expect(query.$expand).toBe("nested")
       expect(query.$orderby).toBe("age desc")

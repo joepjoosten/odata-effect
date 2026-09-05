@@ -36,7 +36,7 @@ it.effect("inherits renamed fields, navigation and keys through multiple levels"
       extra: "extra"
     })
     expect(Schema.decodeUnknownExit(exports.Child)({ Extra: "extra" })._tag).toBe("Failure")
-    expect(generateQueryModels(model, { esmExtensions: true })).toContain("id: new StringPath(\"ID\")")
+    expect(generateQueryModels(model, { esmExtensions: true })).toContain("id: new StringPath(\"ID\",")
     expect(generateServiceFns(model, { esmExtensions: true }).servicesFile.content).toContain("id.id")
   }))
 

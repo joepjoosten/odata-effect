@@ -137,3 +137,9 @@ The core package is what generated clients call under the hood. A generated `Pro
 ## License
 
 MIT
+
+Generated query paths carry their OData version and EDM type. For manually created
+paths, supply these explicitly, for example
+`new DateTimePath("Birthday", { version: "V4", edmType: "Edm.Date" })` or
+`new StringPath("Name", { version: "V2", edmType: "Edm.String" })`.
+Existing paths constructed without options preserve their legacy formatting.

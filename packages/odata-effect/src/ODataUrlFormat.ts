@@ -208,3 +208,59 @@ export const escapeString = (value: string): string => {
 export const encodeUrlValue = (value: string): string => {
   return encodeURIComponent(value)
 }
+
+/**
+ * Declared protocol and EDM type used when serializing query literals.
+ * @since 1.3.0
+ * @category models
+ */
+export interface LiteralOptions {
+  readonly version: "V2" | "V4"
+  readonly edmType?: string
+}
+
+/**
+ * Format a literal using metadata rather than guessing solely from its JavaScript value.
+ * @since 1.3.0
+ * @category utils
+ */
+export const formatTypedUrlValue = (value: UrlValue, options?: LiteralOptions): string => {
+  if (!options) return formatV2UrlValue(value)
+  if (value === null) return "null"
+  const { edmType, version } = options
+  if (edmType === "Edm.Guid" && typeof value === "string") {
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)) {
+      throw new Error("Invalid Edm.Guid literal")
+    }
+    return version === "V2" ? formatV2Guid(value) : value
+  }
+  if (version === "V4") {
+    if (edmType === "Edm.Date") return formatV4UrlValue(value).slice(0, 10)
+    if (edmType === "Edm.TimeOfDay" && typeof value === "string") {
+      if (!/^\d{2}:\d{2}:\d{2}(?:\.\d+)?$/.test(value)) throw new Error("Invalid Edm.TimeOfDay literal")
+      return value
+    }
+    if (Duration.isDuration(value)) return `duration'${formatDurationIso(value)}'`
+    if (edmType && !edmType.startsWith("Edm.") && typeof value === "string") {
+      return `${edmType}'${escapeString(value)}'`
+    }
+    return formatV4UrlValue(value)
+  }
+  if (edmType === "Edm.DateTime" || edmType === "Edm.DateTimeOffset") {
+    const iso = formatV4UrlValue(value)
+    return edmType === "Edm.DateTime"
+      ? `datetime'${iso.replace(/(?:Z|[+-]\d{2}:\d{2})$/, "")}'`
+      : `datetimeoffset'${iso}'`
+  }
+  if (typeof value === "number") {
+    const suffix = edmType === "Edm.Decimal" ? "M" : edmType === "Edm.Int64" ?
+      "L"
+      : edmType === "Edm.Single"
+      ? "f"
+      : edmType === "Edm.Double"
+      ? "d"
+      : ""
+    return `${value}${suffix}`
+  }
+  return formatV2UrlValue(value)
+}

@@ -63,7 +63,7 @@ describe("NamingOverrides Integration", () => {
       expect(queryModelsOutput).toContain("readonly id:")
 
       // Instance should use TypeScript name as key but OData name in path
-      expect(queryModelsOutput).toContain("id: new NumberPath(\"ID\")")
+      expect(queryModelsOutput).toContain("id: new NumberPath(\"ID\",")
     }))
 
   it.effect("preserves OData names in query paths while using TypeScript names for keys", () =>
@@ -92,7 +92,7 @@ describe("NamingOverrides Integration", () => {
       expect(queryModelsOutput).toContain("readonly productDescription:")
 
       // Instance should use TypeScript names as keys but original OData names in paths
-      expect(queryModelsOutput).toContain("productName: new StringPath(\"Name\")")
-      expect(queryModelsOutput).toContain("productDescription: new StringPath(\"Description\")")
+      expect(queryModelsOutput).toContain("productName: new StringPath(\"Name\",")
+      expect(queryModelsOutput).toContain("productDescription: new StringPath(\"Description\",")
     }))
 })

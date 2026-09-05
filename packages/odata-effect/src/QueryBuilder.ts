@@ -11,7 +11,7 @@ import type * as BigDecimal from "effect/BigDecimal"
 import type * as DateTime from "effect/DateTime"
 import type * as Duration from "effect/Duration"
 import type { Int64 } from "./ODataSchema.js"
-import { formatV2UrlValue } from "./ODataUrlFormat.js"
+import { formatTypedUrlValue, type LiteralOptions, type UrlValue } from "./ODataUrlFormat.js"
 
 // ============================================================================
 // Filter Expressions
@@ -63,7 +63,11 @@ export class FilterExpression {
  * @category paths
  */
 abstract class BasePath {
-  constructor(readonly path: string) {}
+  constructor(readonly path: string, readonly options?: LiteralOptions) {}
+
+  protected format(value: UrlValue): string {
+    return formatTypedUrlValue(value, this.options)
+  }
 
   /**
    * Check if the value is null.
@@ -88,15 +92,19 @@ abstract class BasePath {
  */
 export class StringPath extends BasePath {
   eq(value: string): FilterExpression {
-    return new FilterExpression(`${this.path} eq '${this.escapeString(value)}'`)
+    return new FilterExpression(`${this.path} eq ${this.format(value)}`)
   }
 
   ne(value: string): FilterExpression {
-    return new FilterExpression(`${this.path} ne '${this.escapeString(value)}'`)
+    return new FilterExpression(`${this.path} ne ${this.format(value)}`)
   }
 
   contains(value: string): FilterExpression {
-    return new FilterExpression(`contains(${this.path},'${this.escapeString(value)}')`)
+    return new FilterExpression(
+      this.options?.version === "V2"
+        ? `substringof('${this.escapeString(value)}',${this.path})`
+        : `contains(${this.path},'${this.escapeString(value)}')`
+    )
   }
 
   startsWith(value: string): FilterExpression {
@@ -108,15 +116,21 @@ export class StringPath extends BasePath {
   }
 
   toLower(): StringPath {
-    return new StringPath(`tolower(${this.path})`)
+    return new StringPath(
+      `tolower(${this.path})`,
+      this.options ? { ...this.options, edmType: "Edm.String" } : undefined
+    )
   }
 
   toUpper(): StringPath {
-    return new StringPath(`toupper(${this.path})`)
+    return new StringPath(
+      `toupper(${this.path})`,
+      this.options ? { ...this.options, edmType: "Edm.String" } : undefined
+    )
   }
 
   trim(): StringPath {
-    return new StringPath(`trim(${this.path})`)
+    return new StringPath(`trim(${this.path})`, this.options ? { ...this.options, edmType: "Edm.String" } : undefined)
   }
 
   /**
@@ -146,27 +160,27 @@ export class StringPath extends BasePath {
  */
 export class NumberPath extends BasePath {
   eq(value: number): FilterExpression {
-    return new FilterExpression(`${this.path} eq ${value}`)
+    return new FilterExpression(`${this.path} eq ${this.format(value)}`)
   }
 
   ne(value: number): FilterExpression {
-    return new FilterExpression(`${this.path} ne ${value}`)
+    return new FilterExpression(`${this.path} ne ${this.format(value)}`)
   }
 
   gt(value: number): FilterExpression {
-    return new FilterExpression(`${this.path} gt ${value}`)
+    return new FilterExpression(`${this.path} gt ${this.format(value)}`)
   }
 
   ge(value: number): FilterExpression {
-    return new FilterExpression(`${this.path} ge ${value}`)
+    return new FilterExpression(`${this.path} ge ${this.format(value)}`)
   }
 
   lt(value: number): FilterExpression {
-    return new FilterExpression(`${this.path} lt ${value}`)
+    return new FilterExpression(`${this.path} lt ${this.format(value)}`)
   }
 
   le(value: number): FilterExpression {
-    return new FilterExpression(`${this.path} le ${value}`)
+    return new FilterExpression(`${this.path} le ${this.format(value)}`)
   }
 
   /**
@@ -192,11 +206,11 @@ export class NumberPath extends BasePath {
  */
 export class BooleanPath extends BasePath {
   eq(value: boolean): FilterExpression {
-    return new FilterExpression(`${this.path} eq ${value}`)
+    return new FilterExpression(`${this.path} eq ${this.format(value)}`)
   }
 
   ne(value: boolean): FilterExpression {
-    return new FilterExpression(`${this.path} ne ${value}`)
+    return new FilterExpression(`${this.path} ne ${this.format(value)}`)
   }
 
   isTrue(): FilterExpression {
@@ -226,48 +240,48 @@ export type DateTimeValue = Date | DateTime.DateTime
  */
 export class DateTimePath extends BasePath {
   eq(value: DateTimeValue): FilterExpression {
-    return new FilterExpression(`${this.path} eq ${formatV2UrlValue(value)}`)
+    return new FilterExpression(`${this.path} eq ${this.format(value)}`)
   }
 
   ne(value: DateTimeValue): FilterExpression {
-    return new FilterExpression(`${this.path} ne ${formatV2UrlValue(value)}`)
+    return new FilterExpression(`${this.path} ne ${this.format(value)}`)
   }
 
   gt(value: DateTimeValue): FilterExpression {
-    return new FilterExpression(`${this.path} gt ${formatV2UrlValue(value)}`)
+    return new FilterExpression(`${this.path} gt ${this.format(value)}`)
   }
 
   ge(value: DateTimeValue): FilterExpression {
-    return new FilterExpression(`${this.path} ge ${formatV2UrlValue(value)}`)
+    return new FilterExpression(`${this.path} ge ${this.format(value)}`)
   }
 
   lt(value: DateTimeValue): FilterExpression {
-    return new FilterExpression(`${this.path} lt ${formatV2UrlValue(value)}`)
+    return new FilterExpression(`${this.path} lt ${this.format(value)}`)
   }
 
   le(value: DateTimeValue): FilterExpression {
-    return new FilterExpression(`${this.path} le ${formatV2UrlValue(value)}`)
+    return new FilterExpression(`${this.path} le ${this.format(value)}`)
   }
 
   /**
    * Get the year component.
    */
   year(): NumberPath {
-    return new NumberPath(`year(${this.path})`)
+    return new NumberPath(`year(${this.path})`, this.options ? { ...this.options, edmType: "Edm.Int32" } : undefined)
   }
 
   /**
    * Get the month component.
    */
   month(): NumberPath {
-    return new NumberPath(`month(${this.path})`)
+    return new NumberPath(`month(${this.path})`, this.options ? { ...this.options, edmType: "Edm.Int32" } : undefined)
   }
 
   /**
    * Get the day component.
    */
   day(): NumberPath {
-    return new NumberPath(`day(${this.path})`)
+    return new NumberPath(`day(${this.path})`, this.options ? { ...this.options, edmType: "Edm.Int32" } : undefined)
   }
 
   /**
@@ -295,27 +309,27 @@ export class DateTimePath extends BasePath {
  */
 export class DurationPath extends BasePath {
   eq(value: Duration.Duration): FilterExpression {
-    return new FilterExpression(`${this.path} eq ${formatV2UrlValue(value)}`)
+    return new FilterExpression(`${this.path} eq ${this.format(value)}`)
   }
 
   ne(value: Duration.Duration): FilterExpression {
-    return new FilterExpression(`${this.path} ne ${formatV2UrlValue(value)}`)
+    return new FilterExpression(`${this.path} ne ${this.format(value)}`)
   }
 
   gt(value: Duration.Duration): FilterExpression {
-    return new FilterExpression(`${this.path} gt ${formatV2UrlValue(value)}`)
+    return new FilterExpression(`${this.path} gt ${this.format(value)}`)
   }
 
   ge(value: Duration.Duration): FilterExpression {
-    return new FilterExpression(`${this.path} ge ${formatV2UrlValue(value)}`)
+    return new FilterExpression(`${this.path} ge ${this.format(value)}`)
   }
 
   lt(value: Duration.Duration): FilterExpression {
-    return new FilterExpression(`${this.path} lt ${formatV2UrlValue(value)}`)
+    return new FilterExpression(`${this.path} lt ${this.format(value)}`)
   }
 
   le(value: Duration.Duration): FilterExpression {
-    return new FilterExpression(`${this.path} le ${formatV2UrlValue(value)}`)
+    return new FilterExpression(`${this.path} le ${this.format(value)}`)
   }
 
   /**
@@ -343,27 +357,27 @@ export class DurationPath extends BasePath {
  */
 export class Int64Path extends BasePath {
   eq(value: Int64): FilterExpression {
-    return new FilterExpression(`${this.path} eq ${formatV2UrlValue(value)}`)
+    return new FilterExpression(`${this.path} eq ${this.format(value)}`)
   }
 
   ne(value: Int64): FilterExpression {
-    return new FilterExpression(`${this.path} ne ${formatV2UrlValue(value)}`)
+    return new FilterExpression(`${this.path} ne ${this.format(value)}`)
   }
 
   gt(value: Int64): FilterExpression {
-    return new FilterExpression(`${this.path} gt ${formatV2UrlValue(value)}`)
+    return new FilterExpression(`${this.path} gt ${this.format(value)}`)
   }
 
   ge(value: Int64): FilterExpression {
-    return new FilterExpression(`${this.path} ge ${formatV2UrlValue(value)}`)
+    return new FilterExpression(`${this.path} ge ${this.format(value)}`)
   }
 
   lt(value: Int64): FilterExpression {
-    return new FilterExpression(`${this.path} lt ${formatV2UrlValue(value)}`)
+    return new FilterExpression(`${this.path} lt ${this.format(value)}`)
   }
 
   le(value: Int64): FilterExpression {
-    return new FilterExpression(`${this.path} le ${formatV2UrlValue(value)}`)
+    return new FilterExpression(`${this.path} le ${this.format(value)}`)
   }
 
   /**
@@ -391,27 +405,27 @@ export class Int64Path extends BasePath {
  */
 export class BigDecimalPath extends BasePath {
   eq(value: BigDecimal.BigDecimal): FilterExpression {
-    return new FilterExpression(`${this.path} eq ${formatV2UrlValue(value)}`)
+    return new FilterExpression(`${this.path} eq ${this.format(value)}`)
   }
 
   ne(value: BigDecimal.BigDecimal): FilterExpression {
-    return new FilterExpression(`${this.path} ne ${formatV2UrlValue(value)}`)
+    return new FilterExpression(`${this.path} ne ${this.format(value)}`)
   }
 
   gt(value: BigDecimal.BigDecimal): FilterExpression {
-    return new FilterExpression(`${this.path} gt ${formatV2UrlValue(value)}`)
+    return new FilterExpression(`${this.path} gt ${this.format(value)}`)
   }
 
   ge(value: BigDecimal.BigDecimal): FilterExpression {
-    return new FilterExpression(`${this.path} ge ${formatV2UrlValue(value)}`)
+    return new FilterExpression(`${this.path} ge ${this.format(value)}`)
   }
 
   lt(value: BigDecimal.BigDecimal): FilterExpression {
-    return new FilterExpression(`${this.path} lt ${formatV2UrlValue(value)}`)
+    return new FilterExpression(`${this.path} lt ${this.format(value)}`)
   }
 
   le(value: BigDecimal.BigDecimal): FilterExpression {
-    return new FilterExpression(`${this.path} le ${formatV2UrlValue(value)}`)
+    return new FilterExpression(`${this.path} le ${this.format(value)}`)
   }
 
   /**
@@ -438,9 +452,10 @@ export class BigDecimalPath extends BasePath {
 export class EntityPath<Q> extends BasePath {
   constructor(
     path: string,
-    readonly getEntity: () => Q
+    readonly getEntity: () => Q,
+    options?: LiteralOptions
   ) {
-    super(path)
+    super(path, options)
   }
 }
 
@@ -453,15 +468,17 @@ export class EntityPath<Q> extends BasePath {
 export class CollectionPath<Q> extends BasePath {
   constructor(
     path: string,
-    readonly getEntity: () => Q
+    readonly getEntity: () => Q,
+    options?: LiteralOptions
   ) {
-    super(path)
+    super(path, options)
   }
 
   /**
    * Returns true if any item in the collection matches the filter.
    */
   any(fn: (q: Q) => FilterExpression): FilterExpression {
+    if (this.options?.version === "V2") throw new Error("Lambda queries require OData V4")
     const entity = this.getEntity()
     // Create a prefixed version for lambda
     const prefixedEntity = this.createPrefixedEntity(entity, "a")
@@ -473,6 +490,7 @@ export class CollectionPath<Q> extends BasePath {
    * Returns true if all items in the collection match the filter.
    */
   all(fn: (q: Q) => FilterExpression): FilterExpression {
+    if (this.options?.version === "V2") throw new Error("Lambda queries require OData V4")
     const entity = this.getEntity()
     const prefixedEntity = this.createPrefixedEntity(entity, "a")
     const filter = fn(prefixedEntity)
@@ -485,19 +503,19 @@ export class CollectionPath<Q> extends BasePath {
     for (const key of Object.keys(entity as object)) {
       const value = (entity as Record<string, unknown>)[key]
       if (value instanceof StringPath) {
-        prefixed[key] = new StringPath(`${prefix}/${value.path}`)
+        prefixed[key] = new StringPath(`${prefix}/${value.path}`, value.options)
       } else if (value instanceof NumberPath) {
-        prefixed[key] = new NumberPath(`${prefix}/${value.path}`)
+        prefixed[key] = new NumberPath(`${prefix}/${value.path}`, value.options)
       } else if (value instanceof BooleanPath) {
-        prefixed[key] = new BooleanPath(`${prefix}/${value.path}`)
+        prefixed[key] = new BooleanPath(`${prefix}/${value.path}`, value.options)
       } else if (value instanceof DateTimePath) {
-        prefixed[key] = new DateTimePath(`${prefix}/${value.path}`)
+        prefixed[key] = new DateTimePath(`${prefix}/${value.path}`, value.options)
       } else if (value instanceof DurationPath) {
-        prefixed[key] = new DurationPath(`${prefix}/${value.path}`)
+        prefixed[key] = new DurationPath(`${prefix}/${value.path}`, value.options)
       } else if (value instanceof Int64Path) {
-        prefixed[key] = new Int64Path(`${prefix}/${value.path}`)
+        prefixed[key] = new Int64Path(`${prefix}/${value.path}`, value.options)
       } else if (value instanceof BigDecimalPath) {
-        prefixed[key] = new BigDecimalPath(`${prefix}/${value.path}`)
+        prefixed[key] = new BigDecimalPath(`${prefix}/${value.path}`, value.options)
       }
     }
     return prefixed as Q
@@ -735,6 +753,9 @@ export class QueryBuilder<T, Q extends QueryPaths<T>> {
       ? result as BuiltQuery
       : builder.build()
 
+    if (path.options?.version === "V2" && Object.keys(builtQuery).length > 0) {
+      throw new Error("Nested expand query options require OData V4")
+    }
     this._expands.push(this.formatExpandedPath(path.path, builtQuery))
     return this
   }

@@ -71,7 +71,7 @@ describe("QueryModelsGenerator", () => {
       expect(output).toContain("readonly productName: StringPath")
 
       // Instance should use TypeScript names as keys but OData names in path constructors
-      expect(output).toContain("export const qProduct: QProduct = {")
+      expect(output).toContain("export const qProduct: QProduct = /*#__PURE__*/ (() => ({")
       expect(output).toContain("id: new StringPath(\"ID\")")
       expect(output).toContain("productName: new StringPath(\"ProductName\")")
     })

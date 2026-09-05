@@ -253,3 +253,16 @@ pnpm exec odata-effect-gen generate ./metadata.xml ./src/generated --files-only 
 ## License
 
 MIT
+
+### Tree shaking generated clients
+
+Generated models, query paths and services include purity annotations, including in
+`--files-only` output. Keep comments during intermediate transpilation so bundlers
+can remove unused initializers.
+
+For operation-level tree shaking, import a standalone operation such as
+`getAllAirline` from `Services` or the generated index. The generator also exports
+`createAirline`, `getByIdAirline`, `updateAirline` and `deleteAirline` (key operations
+require an entity key). These call the core library directly and can be removed
+independently. The existing `AirlineService` object remains available when you
+prefer grouping all CRUD methods together.

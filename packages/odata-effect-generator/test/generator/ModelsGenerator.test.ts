@@ -107,8 +107,8 @@ describe("ModelsGenerator", () => {
       const output = generateModels(dataModel)
 
       // Editable type should not include key field
-      expect(output).toContain("export const EditableProduct = Schema.Struct({")
-      expect(output).toContain("export const PartialEditableProduct = Schema.Struct({")
+      expect(output).toContain("export const EditableProduct = /*#__PURE__*/ (() => Schema.Struct({")
+      expect(output).toContain("export const PartialEditableProduct = /*#__PURE__*/ (() => Schema.Struct({")
       // Optional fields use optional nullable schema and encodeKeys
       expect(output).toContain(
         "productName: Schema.optional(Schema.NullOr(Schema.String))"

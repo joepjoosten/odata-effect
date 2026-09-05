@@ -189,7 +189,7 @@ const generateQueryInstance = (
   lines.push(` * @since 1.0.0`)
   lines.push(` * @category query-paths`)
   lines.push(` */`)
-  lines.push(`export const ${instanceName}: ${interfaceName} = {`)
+  lines.push(`export const ${instanceName}: ${interfaceName} = /*#__PURE__*/ (() => ({`)
 
   const allFields = [...type.properties, ...type.navigationProperties]
   for (let i = 0; i < type.properties.length; i++) {
@@ -224,7 +224,7 @@ const generateQueryInstance = (
     )
   }
 
-  lines.push(`}`)
+  lines.push(`}))()`)
 
   return lines
 }

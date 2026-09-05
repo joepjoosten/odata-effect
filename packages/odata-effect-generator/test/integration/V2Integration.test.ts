@@ -25,13 +25,13 @@ describe("V2 Integration", () => {
       // Generate Models.ts
       const modelsCode = generateModels(dataModel)
       expect(modelsCode).toContain("import * as Schema from")
-      expect(modelsCode).toContain("export const Product = Schema.Struct")
-      expect(modelsCode).toContain("export const Category = Schema.Struct")
-      expect(modelsCode).toContain("export const Supplier = Schema.Struct")
-      expect(modelsCode).toContain("export const Address = Schema.Struct")
-      expect(modelsCode).toContain("export const ProductId = Schema.Union([")
-      expect(modelsCode).toContain("export const EditableProduct = Schema.Struct")
-      expect(modelsCode).toContain("export const PartialEditableProduct = Schema.Struct")
+      expect(modelsCode).toContain("export const Product = /*#__PURE__*/ (() => Schema.Struct")
+      expect(modelsCode).toContain("export const Category = /*#__PURE__*/ (() => Schema.Struct")
+      expect(modelsCode).toContain("export const Supplier = /*#__PURE__*/ (() => Schema.Struct")
+      expect(modelsCode).toContain("export const Address = /*#__PURE__*/ (() => Schema.Struct")
+      expect(modelsCode).toContain("export const ProductId = /*#__PURE__*/ (() => Schema.Union([")
+      expect(modelsCode).toContain("export const EditableProduct = /*#__PURE__*/ (() => Schema.Struct")
+      expect(modelsCode).toContain("export const PartialEditableProduct = /*#__PURE__*/ (() => Schema.Struct")
 
       // Check properties
       expect(modelsCode).toContain("iD: Schema.Number")
@@ -60,9 +60,9 @@ describe("V2 Integration", () => {
       // Check Services.ts content
       const servicesContent = serviceResult.servicesFile.content
       expect(servicesContent).toContain("import { crud } from \"@odata-effect/odata-effect/Crud\"")
-      expect(servicesContent).toContain("export const ProductService = crud({")
-      expect(servicesContent).toContain("export const CategoryService = crud({")
-      expect(servicesContent).toContain("export const SupplierService = crud({")
+      expect(servicesContent).toContain("export const ProductService = /*#__PURE__*/ crud({")
+      expect(servicesContent).toContain("export const CategoryService = /*#__PURE__*/ crud({")
+      expect(servicesContent).toContain("export const SupplierService = /*#__PURE__*/ crud({")
       expect(servicesContent).toContain("path: \"Products\"")
       expect(servicesContent).toContain("schema: Product,")
       expect(servicesContent).toContain("editableSchema: EditableProduct,")

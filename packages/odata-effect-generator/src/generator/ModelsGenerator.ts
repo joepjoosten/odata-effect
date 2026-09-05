@@ -270,7 +270,7 @@ const generateEnumType = (enumType: EnumTypeModel): Array<string> => {
   lines.push(` * @since 1.0.0`)
   lines.push(` * @category enums`)
   lines.push(` */`)
-  lines.push(`export const ${enumType.name} = Schema.Literals([${members}])`)
+  lines.push(`export const ${enumType.name} = /*#__PURE__*/ (() => Schema.Literals([${members}]))()`)
   lines.push(`export type ${enumType.name} = typeof ${enumType.name}.Type`)
 
   return lines
@@ -363,10 +363,10 @@ const generateComplexType = (
   const fields = generateSchemaFields(complexType.properties, complexType.navigationProperties, dataModel)
   const schemaKeys = getSchemaKeyMappings(complexType.properties, complexType.navigationProperties)
 
-  lines.push(`export const ${complexType.name} = Schema.Struct({`)
+  lines.push(`export const ${complexType.name} = /*#__PURE__*/ (() => Schema.Struct({`)
   for (const f of fields) lines.push(`  ${f}`)
   lines.push(
-    `})${generateEncodeKeysPipe(schemaKeys)} satisfies Schema.Codec<${complexType.name}, unknown, never, never>`
+    `})${generateEncodeKeysPipe(schemaKeys)})() satisfies Schema.Codec<${complexType.name}, unknown, never, never>`
   )
 
   // Generate editable type
@@ -381,9 +381,9 @@ const generateComplexType = (
   const editableFields = generateEditableSchemaFields(complexType.properties)
   const editableName = getEditableTypeName(complexType.name)
 
-  lines.push(`export const ${editableName} = Schema.Struct({`)
+  lines.push(`export const ${editableName} = /*#__PURE__*/ (() => Schema.Struct({`)
   for (const f of editableFields) lines.push(`  ${f}`)
-  lines.push(`})${generateEncodeKeysPipe(complexType.properties)}`)
+  lines.push(`})${generateEncodeKeysPipe(complexType.properties)})()`)
   lines.push(`export type ${editableName} = typeof ${editableName}.Type`)
 
   return lines
@@ -409,10 +409,10 @@ const generateEntityType = (
   const fields = generateSchemaFields(entityType.properties, entityType.navigationProperties, dataModel)
   const schemaKeys = getSchemaKeyMappings(entityType.properties, entityType.navigationProperties)
 
-  lines.push(`export const ${entityType.name} = Schema.Struct({`)
+  lines.push(`export const ${entityType.name} = /*#__PURE__*/ (() => Schema.Struct({`)
   for (const f of fields) lines.push(`  ${f}`)
   lines.push(
-    `})${generateEncodeKeysPipe(schemaKeys)} satisfies Schema.Codec<${entityType.name}, unknown, never, never>`
+    `})${generateEncodeKeysPipe(schemaKeys)})() satisfies Schema.Codec<${entityType.name}, unknown, never, never>`
   )
 
   // ID type
@@ -430,17 +430,17 @@ const generateEntityType = (
     if (entityType.keys.length === 1) {
       const key = entityType.keys[0]
       const keySchema = getPropertySchemaType(key, false)
-      lines.push(`export const ${idTypeName} = Schema.Union([`)
+      lines.push(`export const ${idTypeName} = /*#__PURE__*/ (() => Schema.Union([`)
       lines.push(`  ${keySchema},`)
       lines.push(`  Schema.Struct({ ${key.name}: ${keySchema} })`)
-      lines.push(`])`)
+      lines.push(`]))()`)
     } else {
       // Composite key - only struct form makes sense
       const keyFields = entityType.keys.map((k) => {
         const schema = getPropertySchemaType(k, false)
         return `${k.name}: ${schema}`
       })
-      lines.push(`export const ${idTypeName} = Schema.Struct({ ${keyFields.join(", ")} })`)
+      lines.push(`export const ${idTypeName} = /*#__PURE__*/ (() => Schema.Struct({ ${keyFields.join(", ")} }))()`)
     }
     lines.push(`export type ${idTypeName} = typeof ${idTypeName}.Type`)
   }
@@ -459,9 +459,9 @@ const generateEntityType = (
   )
   const editableName = getEditableTypeName(entityType.name)
 
-  lines.push(`export const ${editableName} = Schema.Struct({`)
+  lines.push(`export const ${editableName} = /*#__PURE__*/ (() => Schema.Struct({`)
   for (const f of editableFields) lines.push(`  ${f}`)
-  lines.push(`})${generateEncodeKeysPipe(entityType.properties.filter((p) => !p.isKey))}`)
+  lines.push(`})${generateEncodeKeysPipe(entityType.properties.filter((p) => !p.isKey))})()`)
   lines.push(`export type ${editableName} = typeof ${editableName}.Type`)
 
   const partialEditableFields = generatePartialEditableSchemaFields(
@@ -476,9 +476,9 @@ const generateEntityType = (
   lines.push(` * @since 1.0.0`)
   lines.push(` * @category models`)
   lines.push(` */`)
-  lines.push(`export const ${partialEditableName} = Schema.Struct({`)
+  lines.push(`export const ${partialEditableName} = /*#__PURE__*/ (() => Schema.Struct({`)
   for (const f of partialEditableFields) lines.push(`  ${f}`)
-  lines.push(`})${generateEncodeKeysPipe(entityType.properties.filter((p) => !p.isKey))}`)
+  lines.push(`})${generateEncodeKeysPipe(entityType.properties.filter((p) => !p.isKey))})()`)
   lines.push(`export type ${partialEditableName} = typeof ${partialEditableName}.Type`)
 
   return lines

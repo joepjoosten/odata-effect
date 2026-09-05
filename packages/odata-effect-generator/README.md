@@ -266,3 +266,20 @@ For operation-level tree shaking, import a standalone operation such as
 require an entity key). These call the core library directly and can be removed
 independently. The existing `AirlineService` object remains available when you
 prefer grouping all CRUD methods together.
+
+### Projected reads
+
+When using `$select` (including inside `$expand`), supply a schema for the actual
+response rather than the full generated entity:
+
+```typescript
+const summary = Schema.Struct({ id: Schema.Number }).pipe(Schema.encodeKeys({ id: "ID" }))
+const rows = yield* ProductService.getAllWithSchema(summary, productQuery().select("iD").build())
+// rows contain only { id: number }
+```
+
+`getByIdWithSchema(id, schema, options)` supports single-entity projections. The
+standalone equivalents are `getAllProductWithSchema(schema, options)` and
+`getByIdProductWithSchema(id, schema, options)`. Supply nested schemas for nested
+expanded projections. Ordinary generated reads reject `$select` before sending
+HTTP; low-level core reads already accept an explicit response schema.

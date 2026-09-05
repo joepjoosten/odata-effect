@@ -71,7 +71,7 @@ export const generateIndex = (
 
   // Entity types
   for (const entityType of dataModel.entityTypes.values()) {
-    modelExports.push(entityType.name)
+    modelExports.push(entityType.name, `Create${entityType.name}`)
     if (entityType.keys.length > 0) {
       modelExports.push(getIdTypeName(entityType.name))
     }

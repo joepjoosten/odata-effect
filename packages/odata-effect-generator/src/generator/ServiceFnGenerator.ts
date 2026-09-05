@@ -112,7 +112,7 @@ const generateServicesFile = (dataModel: DataModel, esmExtensions: boolean): str
   // Import all entity types
   const modelImports: Array<string> = []
   for (const { entityType } of entitySets) {
-    modelImports.push(entityType.name)
+    modelImports.push(entityType.name, `Create${entityType.name}`)
     if (entityType.keys.length > 0) {
       modelImports.push(`type ${getIdTypeName(entityType.name)}`)
     }
@@ -158,6 +158,7 @@ const generateServicesFile = (dataModel: DataModel, esmExtensions: boolean): str
       lines.push(`  path: "${entitySet.name}",`)
       lines.push(`  schema: ${entityName},`)
       lines.push(`  editableSchema: ${editableName},`)
+      lines.push(`  createSchema: Create${entityName},`)
       lines.push(`  partialEditableSchema: ${partialEditableName},`)
       lines.push(`  idToKey: ${generateIdToKeyFunction(entityType, dataModel.version)}`)
       lines.push(`})`)
@@ -167,6 +168,7 @@ const generateServicesFile = (dataModel: DataModel, esmExtensions: boolean): str
       lines.push(`  path: "${entitySet.name}",`)
       lines.push(`  schema: ${entityName},`)
       lines.push(`  editableSchema: ${editableName},`)
+      lines.push(`  createSchema: Create${entityName},`)
       lines.push(`  partialEditableSchema: ${partialEditableName},`)
       lines.push(`  idToKey: (_id: never) => { throw new Error("Entity has no keys") }`)
       lines.push(`})`)
@@ -176,7 +178,7 @@ const generateServicesFile = (dataModel: DataModel, esmExtensions: boolean): str
       `export const getAll${suffix} = (options?: Client.${queryOptions}) => readCollection("${entitySet.name}", ${entityName}, options)`
     )
     lines.push(
-      `export const create${suffix} = (entity: ${editableName}) => Client.post("${entitySet.name}", entity, ${editableName}, ${entityName})`
+      `export const create${suffix} = (entity: Create${entityName}) => Client.post("${entitySet.name}", entity, Create${entityName}, ${entityName})`
     )
     lines.push(
       `export const getAll${suffix}WithSchema = <A, I, R>(schema: Schema.Codec<A, I, R>, options?: Client.${queryOptions}) => Client.getCollection("${entitySet.name}", schema, options)`

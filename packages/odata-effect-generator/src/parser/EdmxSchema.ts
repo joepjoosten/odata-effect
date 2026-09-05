@@ -62,6 +62,11 @@ export interface PropertyRef {
 }
 
 export interface Property {
+  readonly Annotation?: ReadonlyArray<{
+    readonly $: { readonly Term: string; readonly Bool?: string }
+    readonly Bool?: ReadonlyArray<string>
+  }>
+
   readonly $: {
     readonly Name: string
     readonly Type: string

@@ -9,7 +9,7 @@ const resourceDir = path.resolve(__dirname, "../resource")
 
 describe("XmlParser", () => {
   describe("parseODataMetadata", () => {
-    it("parses V2 metadata successfully", () =>
+    it.effect("parses V2 metadata successfully", () =>
       Effect.gen(function*() {
         const xmlContent = fs.readFileSync(
           path.join(resourceDir, "odata-v2.xml"),
@@ -27,7 +27,7 @@ describe("XmlParser", () => {
         expect(schema.ComplexType).toHaveLength(1)
       }))
 
-    it("parses V4 metadata successfully", () =>
+    it.effect("parses V4 metadata successfully", () =>
       Effect.gen(function*() {
         const xmlContent = fs.readFileSync(
           path.join(resourceDir, "trippin.xml"),
@@ -46,7 +46,7 @@ describe("XmlParser", () => {
         expect(schema.Action).toBeDefined()
       }))
 
-    it("fails on invalid XML", () =>
+    it.effect("fails on invalid XML", () =>
       Effect.gen(function*() {
         const result = yield* parseODataMetadata("not valid xml").pipe(
           Effect.flip

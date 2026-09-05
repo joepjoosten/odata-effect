@@ -90,7 +90,10 @@ export interface CrudConfig<
   /** Schema for creating/updating entities */
   readonly editableSchema: Schema.Codec<TEditable, TEditableInput>
   /** Optional schema for partial update bodies. Required for transformed editable schemas. */
-  readonly partialEditableSchema?: Schema.Codec<Partial<TEditable>, Partial<TEditableInput>>
+  readonly partialEditableSchema?: Schema.Codec<
+    { readonly [K in keyof TEditable]?: TEditable[K] | undefined },
+    { readonly [K in keyof TEditableInput]?: TEditableInput[K] | undefined }
+  >
   /** Function to convert ID to entity key */
   readonly idToKey: (id: TId) => EntityKey
 }

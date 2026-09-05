@@ -797,7 +797,7 @@ export class QueryBuilder<T, Q extends QueryPaths<T>> {
 
     if (this._filters.length > 0) {
       ;(query as any).$filter = this._filters
-        .map((f) => f.expression)
+        .map((f) => this._filters.length > 1 ? `(${f.expression})` : f.expression)
         .join(" and ")
     }
 

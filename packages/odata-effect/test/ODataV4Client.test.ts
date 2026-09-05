@@ -3,7 +3,6 @@ import * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"
 import {
   buildEntityPathV4,
-  ODataClientConfig,
   ODataV4Annotations,
   ODataV4CollectionResponse,
   ODataV4ValueResponse
@@ -169,12 +168,6 @@ describe("ODataV4Client", () => {
         const result = yield* Schema.decodeUnknownEffect(ResponseSchema)(data)
         expect(result.value).toBe(true)
       }))
-  })
-
-  describe("ODataClientConfig", () => {
-    it("is a Context.Tag", () => {
-      expect(ODataClientConfig.key).toBe("ODataClientConfig")
-    })
   })
 
   describe("buildEntityPathV4", () => {

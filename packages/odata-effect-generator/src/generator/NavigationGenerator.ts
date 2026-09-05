@@ -358,8 +358,8 @@ const generatePathBuildersFile = (dataModel: DataModel, esmExtensions: boolean):
   lines.push(` * @since 1.0.0`)
   lines.push(` * @category navigation`)
   lines.push(` */`)
-  lines.push(`export const byKey = <T>(key: string | number) =>`)
-  lines.push(`  (base: Path<T, true>): Path<T, false> =>`)
+  lines.push(`export const byKey = (key: string | number) =>`)
+  lines.push(`  <T>(base: Path<T, true>): Path<T, false> =>`)
   lines.push(
     `    ${versionConfig.odataNamespace}.${
       dataModel.version === "V4" ? "buildEntityPathV4" : "buildEntityPath"

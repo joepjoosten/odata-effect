@@ -19,13 +19,28 @@ for (const sample of ["odata-v2", "trippin"]) {
       const xml = fs.readFileSync(path.resolve(__dirname, `../resource/${sample}.xml`), "utf8")
       const model = yield* parseODataMetadata(xml).pipe(Effect.flatMap(digestMetadata))
       const options = { esmExtensions: true }
-      const files = {
+      const files: Record<string, string> = {
         "Models.ts": generateModels(model),
         "index.ts": generateIndex(model, options),
         "PathBuilders.ts": generateNavigations(model, options).navigationFiles[0].content,
         "QueryModels.ts": generateQueryModels(model, options),
         "Services.ts": generateServiceFns(model, options).servicesFile.content,
         "Operations.ts": generateOperations(model, options).operationsFile!.content
+      }
+      if (sample === "trippin") {
+        files["Consumer.ts"] = `
+import { People, byKey, trips, fetchOne, fetchCollection } from "./PathBuilders.js"
+import { Person, Trip } from "./Models.js"
+import { pipe } from "effect/Function"
+export const valid = fetchCollection(Trip)(trips(byKey("alice")(People)))
+export const piped = pipe(People, byKey("alice"), trips, fetchCollection(Trip))
+// @ts-expect-error Navigation requires a single person, not a collection.
+trips(People)
+// @ts-expect-error A collection path cannot be fetched as a single entity.
+fetchOne(Person)(People)
+// @ts-expect-error A single-entity path cannot be fetched as a collection.
+fetchCollection(Person)(byKey("alice")(People))
+`
       }
       const directory = fs.mkdtempSync(path.join(os.tmpdir(), "odata-compilation-"))
       try {

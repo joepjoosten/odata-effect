@@ -360,7 +360,11 @@ const generatePathBuildersFile = (dataModel: DataModel, esmExtensions: boolean):
   lines.push(` */`)
   lines.push(`export const byKey = <T>(key: string | number) =>`)
   lines.push(`  (base: Path<T, true>): Path<T, false> =>`)
-  lines.push(`    \`\${base}(\${typeof key === "string" ? \`'\${key}'\` : key})\` as Path<T, false>`)
+  lines.push(
+    `    ${versionConfig.odataNamespace}.${
+      dataModel.version === "V4" ? "buildEntityPathV4" : "buildEntityPath"
+    }(base, key) as Path<T, false>`
+  )
   lines.push(``)
   lines.push(`/**`)
   lines.push(` * Attach query options to a path while keeping terminal operations pipeable.`)

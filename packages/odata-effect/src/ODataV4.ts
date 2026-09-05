@@ -34,6 +34,7 @@ import { HttpClient, HttpClientRequest, HttpClientResponse } from "effect/unstab
 import { ODataClientConfig } from "./Config.js"
 import type { ODataError, ParseError } from "./Errors.js"
 import { catchODataError, ParseError as ParseErrorTag } from "./Errors.js"
+import { formatEntityKey } from "./ODataUrlFormat.js"
 
 // Re-export config - V4 uses the same unified config as V2
 export { ODataClientConfig, type ODataClientConfigService } from "./Config.js"
@@ -170,22 +171,7 @@ export interface ODataV4RequestOptions {
 export const buildEntityPathV4 = (
   entitySet: string,
   id: string | number | boolean | { [key: string]: string | number | boolean }
-): string => {
-  const formatValue = (value: string | number | boolean): string => {
-    if (typeof value === "string") return `'${value}'`
-    return String(value) // number or boolean
-  }
-
-  if (typeof id === "string" || typeof id === "number" || typeof id === "boolean") {
-    return `${entitySet}(${formatValue(id)})`
-  }
-  const entries = Object.entries(id)
-  if (entries.length === 1) {
-    return `${entitySet}(${formatValue(entries[0][1])})`
-  }
-  const keyParts = entries.map(([key, value]) => `${key}=${formatValue(value)}`)
-  return `${entitySet}(${keyParts.join(",")})`
-}
+): string => `${entitySet}(${formatEntityKey(id)})`
 
 // ============================================================================
 // Internal Helpers

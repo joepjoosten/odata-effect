@@ -264,3 +264,26 @@ export const formatTypedUrlValue = (value: UrlValue, options?: LiteralOptions): 
   }
   return formatV2UrlValue(value)
 }
+
+/**
+ * Serialize an entity key with OData string escaping and URL component encoding.
+ * @since 1.3.0
+ * @category utils
+ */
+export const formatEntityKey = (
+  id: string | number | boolean | { [key: string]: string | number | boolean }
+): string => {
+  const format = (value: string | number | boolean): string =>
+    typeof value === "string"
+      ? `'${
+        encodeURIComponent(escapeString(value)).replace(
+          /[!()*]/g,
+          (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`
+        )
+      }'`
+      : String(value)
+  if (typeof id !== "object") return format(id)
+  const entries = Object.entries(id)
+  if (entries.length === 1) return format(entries[0][1])
+  return entries.map(([key, value]) => `${encodeURIComponent(key)}=${format(value)}`).join(",")
+}

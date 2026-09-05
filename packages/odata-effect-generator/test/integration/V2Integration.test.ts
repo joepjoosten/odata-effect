@@ -59,7 +59,9 @@ describe("V2 Integration", () => {
 
       // Check Services.ts content
       const servicesContent = serviceResult.servicesFile.content
-      expect(servicesContent).toContain("import { crud } from \"@odata-effect/odata-effect/Crud\"")
+      expect(servicesContent).toContain(
+        "import { crud, readCollection, readOne } from \"@odata-effect/odata-effect/Crud\""
+      )
       expect(servicesContent).toContain("export const ProductService = /*#__PURE__*/ crud({")
       expect(servicesContent).toContain("export const CategoryService = /*#__PURE__*/ crud({")
       expect(servicesContent).toContain("export const SupplierService = /*#__PURE__*/ crud({")

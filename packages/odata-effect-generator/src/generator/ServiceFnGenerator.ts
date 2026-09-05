@@ -101,10 +101,11 @@ const generateServicesFile = (dataModel: DataModel, esmExtensions: boolean): str
   lines.push(` *`)
   lines.push(` * @since 1.0.0`)
   lines.push(` */`)
-  lines.push(`import { crud } from "${crudImportPath}"`)
+  lines.push(`import { crud, readCollection, readOne } from "${crudImportPath}"`)
   const clientModule = isV4 ? "ODataV4" : "OData"
   const queryOptions = isV4 ? "ODataV4QueryOptions" : "ODataQueryOptions"
   const buildPath = isV4 ? "buildEntityPathV4" : "buildEntityPath"
+  lines.push(`import type * as Schema from "effect/Schema"`)
   lines.push(`import * as Client from "@odata-effect/odata-effect/${clientModule}"`)
   lines.push(``)
 
@@ -172,16 +173,22 @@ const generateServicesFile = (dataModel: DataModel, esmExtensions: boolean): str
     }
     const suffix = serviceClassName.replace(/Service$/, "")
     lines.push(
-      `export const getAll${suffix} = (options?: Client.${queryOptions}) => Client.getCollection("${entitySet.name}", ${entityName}, options)`
+      `export const getAll${suffix} = (options?: Client.${queryOptions}) => readCollection("${entitySet.name}", ${entityName}, options)`
     )
     lines.push(
       `export const create${suffix} = (entity: ${editableName}) => Client.post("${entitySet.name}", entity, ${editableName}, ${entityName})`
     )
+    lines.push(
+      `export const getAll${suffix}WithSchema = <A, I, R>(schema: Schema.Codec<A, I, R>, options?: Client.${queryOptions}) => Client.getCollection("${entitySet.name}", schema, options)`
+    )
     if (hasKeys) {
       const idType = getIdTypeName(entityName)
+      lines.push(
+        `export const getById${suffix}WithSchema = <A, I, R>(id: ${idType}, schema: Schema.Codec<A, I, R>, options?: Client.${queryOptions}) => Client.get(Client.${buildPath}("${entitySet.name}", key${suffix}(id)), schema, options)`
+      )
       lines.push(`const key${suffix} = ${generateIdToKeyFunction(entityType, dataModel.version)}`)
       lines.push(
-        `export const getById${suffix} = (id: ${idType}, options?: Client.${queryOptions}) => Client.get(Client.${buildPath}("${entitySet.name}", key${suffix}(id)), ${entityName}, options)`
+        `export const getById${suffix} = (id: ${idType}, options?: Client.${queryOptions}) => readOne(Client.${buildPath}("${entitySet.name}", key${suffix}(id)), ${entityName}, options)`
       )
       lines.push(
         `export const update${suffix} = (id: ${idType}, entity: Partial<${editableName}>) => Client.patch(Client.${buildPath}("${entitySet.name}", key${suffix}(id)), entity, ${partialEditableName})`

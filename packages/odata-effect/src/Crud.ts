@@ -29,13 +29,13 @@
  *
  * @since 1.0.0
  */
-import type * as Effect from "effect/Effect"
+import * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"
 import * as Struct from "effect/Struct"
 import type * as HttpBody from "effect/unstable/http/HttpBody"
 import type * as HttpClient from "effect/unstable/http/HttpClient"
 import type * as HttpClientError from "effect/unstable/http/HttpClientError"
-import type { ODataError, ParseError, SapError } from "./Errors.js"
+import { type ODataError, ParseError, type SapError } from "./Errors.js"
 import * as OData from "./OData.js"
 import { buildEntityPath, type ODataClientConfig, type ODataQueryOptions } from "./OData.js"
 
@@ -137,6 +137,19 @@ export interface CrudService<TEntity, TEditable, TId> {
     options?: ODataQueryOptions
   ) => Effect.Effect<TEntity, CrudError, CrudContext>
 
+  /** Fetch a projection using an explicit response schema. */
+  readonly getAllWithSchema: <A, I, R>(
+    schema: Schema.Codec<A, I, R>,
+    options?: ODataQueryOptions
+  ) => Effect.Effect<ReadonlyArray<A>, CrudError, CrudContext | R>
+
+  /** Fetch a single projected entity using an explicit response schema. */
+  readonly getByIdWithSchema: <A, I, R>(
+    id: TId,
+    schema: Schema.Codec<A, I, R>,
+    options?: ODataQueryOptions
+  ) => Effect.Effect<A, CrudError, CrudContext | R>
+
   /** Create a new entity */
   readonly create: (
     entity: TEditable
@@ -173,14 +186,19 @@ export const crud = <
 >(
   config: CrudConfig<TEntity, TEntityInput, TEditable, TEditableInput, TId>
 ): CrudService<TEntity, TEditable, TId> => ({
-  getAll: (options) => OData.getCollection(config.path, config.schema, options),
+  getAll: (options) => readCollection(config.path, config.schema, options),
 
   getById: (id, options) =>
-    OData.get(
+    readOne(
       buildEntityPath(config.path, config.idToKey(id)),
       config.schema,
       options
     ),
+
+  getAllWithSchema: (schema, options) => OData.getCollection(config.path, schema, options),
+
+  getByIdWithSchema: (id, schema, options) =>
+    OData.get(buildEntityPath(config.path, config.idToKey(id)), schema, options),
 
   create: (entity) => OData.post(config.path, entity, config.editableSchema, config.schema),
 
@@ -193,3 +211,34 @@ export const crud = <
 
   delete: (id) => OData.del(buildEntityPath(config.path, config.idToKey(id)))
 })
+
+const hasProjection = (options?: ODataQueryOptions): boolean =>
+  (!!options?.$select && options.$select !== "*") || /\$select\s*=/.test(options?.$expand ?? "")
+
+/**
+ * Read a full collection, rejecting projections without an explicit response schema.
+ * @since 1.3.0
+ * @category operations
+ */
+export const readCollection = <A, I, R>(path: string, schema: Schema.Codec<A, I, R>, options?: ODataQueryOptions) =>
+  hasProjection(options)
+    ? Effect.fail(
+      new ParseError({
+        message: "Projected reads require getAllWithSchema (or the core getCollection with a projection schema)"
+      })
+    )
+    : OData.getCollection(path, schema, options)
+
+/**
+ * Read a full entity, rejecting projections without an explicit response schema.
+ * @since 1.3.0
+ * @category operations
+ */
+export const readOne = <A, I, R>(path: string, schema: Schema.Codec<A, I, R>, options?: ODataQueryOptions) =>
+  hasProjection(options)
+    ? Effect.fail(
+      new ParseError({
+        message: "Projected reads require getByIdWithSchema (or the core get with a projection schema)"
+      })
+    )
+    : OData.get(path, schema, options)

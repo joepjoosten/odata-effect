@@ -94,9 +94,14 @@ export const generateIndex = (
   const serviceExports: Array<string> = []
   for (const entitySet of dataModel.entitySets.values()) {
     const suffix = getServiceClassName(entitySet.name).replace(/Service$/, "")
-    serviceExports.push(getServiceClassName(entitySet.name), `getAll${suffix}`, `create${suffix}`)
+    serviceExports.push(
+      getServiceClassName(entitySet.name),
+      `getAll${suffix}`,
+      `getAll${suffix}WithSchema`,
+      `create${suffix}`
+    )
     if (dataModel.entityTypes.get(entitySet.entityTypeFqName)?.keys.length) {
-      serviceExports.push(`getById${suffix}`, `update${suffix}`, `delete${suffix}`)
+      serviceExports.push(`getById${suffix}`, `getById${suffix}WithSchema`, `update${suffix}`, `delete${suffix}`)
     }
   }
   // Also export types

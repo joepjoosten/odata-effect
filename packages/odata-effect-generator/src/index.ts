@@ -114,6 +114,12 @@ export * as QueryModelsGenerator from "./generator/QueryModelsGenerator.js"
 export * as ServiceFnGenerator from "./generator/ServiceFnGenerator.js"
 
 /**
+ * Assemble granular runtime modules and backwards-compatible ESM facades.
+ * @since 1.3.0
+ */
+export * as SourceFilesGenerator from "./generator/SourceFilesGenerator.js"
+
+/**
  * Intermediate representation for OData metadata.
  * This is the central data model that digesters create and generators consume.
  *

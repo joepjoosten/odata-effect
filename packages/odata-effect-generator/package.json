@@ -27,8 +27,8 @@
     "coverage": "vitest --coverage"
   },
   "dependencies": {
-    "@effect/platform-node": "4.0.0-rc.111",
-    "effect": "4.0.0-rc.111",
+    "@effect/platform-node": "4.0.0-rc.112",
+    "effect": "4.0.0-rc.112",
     "xml2js": "^0.6.2"
   },
   "devDependencies": {

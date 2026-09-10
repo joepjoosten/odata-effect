@@ -10,7 +10,7 @@ Install it in the app or workspace where you want to generate code:
 
 ```bash
 pnpm add -D @odata-effect/odata-effect-generator
-pnpm add @odata-effect/odata-effect @odata-effect/odata-effect-promise effect@4.0.0-rc.111 @effect/platform-node@4.0.0-rc.111
+pnpm add @odata-effect/odata-effect @odata-effect/odata-effect-promise effect@4.0.0-rc.112 @effect/platform-node@4.0.0-rc.112
 ```
 
 ## Step 1: Download Metadata
@@ -351,4 +351,4 @@ Without `--files-only`, generation creates a self-contained ESM package. Run
 package emits JavaScript and declarations under `dist`, exports subpaths, and
 keeps purity comments for bundlers. It needs no parent tsconfig or sibling
 workspace packages. Package mode defaults to `.js` extensions in relative imports.
-The generated client requires core version 1.3.0 or newer for the generated APIs.
+The generated client requires core version 1.3.1 or newer for the generated APIs.

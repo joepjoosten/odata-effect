@@ -24,9 +24,9 @@
   },
   "dependencies": {
     "@odata-effect/odata-effect": "workspace:*",
-    "effect": "4.0.0-rc.111"
+    "effect": "4.0.0-rc.112"
   },
   "devDependencies": {
-    "@effect/platform-node": "4.0.0-rc.111"
+    "@effect/platform-node": "4.0.0-rc.112"
   }
 }

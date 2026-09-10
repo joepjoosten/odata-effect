@@ -49,6 +49,7 @@ it.effect("emits deterministic narrow modules, documented names and extension-co
     }
   }))
 
+// A cold TypeScript program can exceed Vitest's 5s default on shared CI runners.
 it.effect("typechecks recursive models, editable inputs and compatibility imports", () =>
   Effect.gen(function*() {
     const model = yield* fixture()
@@ -83,7 +84,7 @@ export const values = [Result, EditableResult, Operations.lookup, lookup, Target
     } finally {
       fs.rmSync(directory, { recursive: true, force: true })
     }
-  }))
+  }), { timeout: 30_000 })
 
 it.effect("decodes self references and mutual structural cycles in native ESM modules", () =>
   Effect.gen(function*() {

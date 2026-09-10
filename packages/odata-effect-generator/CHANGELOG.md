@@ -1,5 +1,18 @@
 # @odata-effect/odata-effect-generator
 
+## 1.4.0
+
+### Minor Changes
+
+- [#76](https://github.com/joepjoosten/odata-effect/pull/76) [`fae7937`](https://github.com/joepjoosten/odata-effect/commit/fae7937c620347bac0f99da37100dd799bd6dd18) Thanks [@joepjoosten](https://github.com/joepjoosten)! - Generate granular runtime model, operation, and entity-set service modules by default,
+  with compatibility facades at existing import paths. Narrow imports follow resolved
+  metadata dependencies, and lazy structural schema references safely support recursive
+  models across ESM modules. Preserve naming overrides, editable semantics, and ESM
+  extension configuration. Add native ESM decoding, generated typechecking, and Rollup
+  integration coverage using synthetic metadata.
+
+  Fix V2 wrapped navigation collections decoding renamed element fields twice.
+
 ## 1.3.0
 
 ### Minor Changes

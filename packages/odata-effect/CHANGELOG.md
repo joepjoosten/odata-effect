@@ -1,5 +1,12 @@
 # @odata-effect/odata-effect
 
+## 1.3.1
+
+### Patch Changes
+
+- [#79](https://github.com/joepjoosten/odata-effect/pull/79) [`5b17d00`](https://github.com/joepjoosten/odata-effect/commit/5b17d00149a8da464385a763e8c9276b5a7d07ce) Thanks [@joepjoosten](https://github.com/joepjoosten)! - Update Effect and the associated platform and test packages to 4.0.0-rc.112.
+  Generated packages use RC112 and require the matching core and promise releases.
+
 ## 1.3.0
 
 ### Minor Changes

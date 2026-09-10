@@ -246,15 +246,12 @@ const needsBigDecimalImport = (operations: ReadonlyArray<OperationModel>): boole
 const collectModelImports = (operations: ReadonlyArray<OperationModel>, dataModel: DataModel): Set<string> => {
   const imports = new Set<string>()
 
-  const isModelType = (typeName: string): boolean => {
-    for (const [fqName] of dataModel.entityTypes) {
-      if (fqName.endsWith(`.${typeName}`) || fqName === typeName) return true
-    }
-    for (const [fqName] of dataModel.complexTypes) {
-      if (fqName.endsWith(`.${typeName}`) || fqName === typeName) return true
-    }
-    return false
-  }
+  const modelNames = new Set([
+    ...dataModel.entityTypes.values(),
+    ...dataModel.complexTypes.values(),
+    ...dataModel.enumTypes.values()
+  ].map((type) => type.name))
+  const isModelType = (typeName: string): boolean => modelNames.has(typeName)
 
   for (const operation of operations) {
     // Check return type

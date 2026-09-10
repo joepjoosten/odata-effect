@@ -9,10 +9,6 @@ import * as Path from "effect/Path"
 import * as Schema from "effect/Schema"
 import type { DataModel } from "../model/DataModel.js"
 import type { NamingOverrides } from "../model/GeneratorConfig.js"
-import { generateIndex } from "./IndexGenerator.js"
-import { generateModels } from "./ModelsGenerator.js"
-import { generateNavigations } from "./NavigationGenerator.js"
-import { generateOperations } from "./OperationsGenerator.js"
 import {
   generatePackageJson,
   generateTsconfig,
@@ -21,8 +17,7 @@ import {
   generateTsconfigTest,
   type PackageConfig
 } from "./PackageGenerator.js"
-import { generateQueryModels } from "./QueryModelsGenerator.js"
-import { generateServiceFns } from "./ServiceFnGenerator.js"
+import { generateSourceFiles } from "./SourceFilesGenerator.js"
 
 /**
  * Generator configuration.
@@ -97,47 +92,10 @@ export const generate = (
     // Generator options for ESM extensions
     const generatorOptions = { esmExtensions }
 
-    // Generate tree-shakable service function files
-    const serviceResult = generateServiceFns(dataModel, generatorOptions)
-
-    // Generate operations file (FunctionImports, Functions, Actions)
-    const operationsResult = generateOperations(dataModel, generatorOptions)
-
-    // Generate navigation builders
-    const navigationResult = generateNavigations(dataModel, generatorOptions)
-
-    // Generate source files
-    const sourceFiles: Array<GeneratedFile> = [
-      {
-        path: path.join(sourceDir, "Models.ts"),
-        content: generateModels(dataModel)
-      },
-      {
-        path: path.join(sourceDir, "QueryModels.ts"),
-        content: generateQueryModels(dataModel, generatorOptions)
-      },
-      // Services file (all entity CRUD services in one file)
-      {
-        path: path.join(sourceDir, serviceResult.servicesFile.fileName),
-        content: serviceResult.servicesFile.content
-      },
-      // Operations file (only if there are unbound operations)
-      ...(operationsResult.operationsFile
-        ? [{
-          path: path.join(sourceDir, operationsResult.operationsFile.fileName),
-          content: operationsResult.operationsFile.content
-        }]
-        : []),
-      // Navigation builder files
-      ...navigationResult.navigationFiles.map((nav) => ({
-        path: path.join(sourceDir, nav.fileName),
-        content: nav.content
-      })),
-      {
-        path: path.join(sourceDir, "index.ts"),
-        content: generateIndex(dataModel, generatorOptions)
-      }
-    ]
+    const sourceFiles: Array<GeneratedFile> = generateSourceFiles(dataModel, generatorOptions).map((file) => ({
+      path: path.join(sourceDir, file.fileName),
+      content: file.content
+    }))
 
     // Package configuration files (only when not filesOnly)
     const packageFiles: Array<GeneratedFile> = filesOnly ? [] : [

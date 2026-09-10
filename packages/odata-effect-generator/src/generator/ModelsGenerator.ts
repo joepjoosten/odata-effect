@@ -79,8 +79,10 @@ const sortTypesByDependency = <T extends ComplexTypeModel | EntityTypeModel>(
     }
 
     visiting.delete(type.name)
-    visited.add(type.name)
-    sorted.push(type)
+    if (!visited.has(type.name)) {
+      visited.add(type.name)
+      sorted.push(type)
+    }
   }
 
   for (const type of types) {
@@ -286,7 +288,9 @@ const generateV2NavigationCollectionHelper = (): Array<string> => [
   `    Schema.Struct({`,
   `      results: collection`,
   `    }).pipe(`,
-  `      Schema.decodeTo(collection, {`,
+  // The source struct has already decoded element schemas (including encodeKeys).
+  // Validate decoded values here rather than decoding the wire representation twice.
+  `      Schema.decodeTo(Schema.toType(collection), {`,
   `        decode: SchemaGetter.transform((wrapped) => wrapped.results),`,
   `        encode: SchemaGetter.transform((items) => ({ results: items as ReadonlyArray<A> }))`,
   `      })`,
@@ -609,7 +613,13 @@ const getPartialPropertySchemaType = (prop: PropertyModel): string => {
 }
 
 const getPropertyBaseSchemaType = (prop: PropertyModel): string => {
-  const baseType = prop.typeMapping.effectSchema
+  const schema = prop.typeMapping.effectSchema
+  // Named metadata schemas may refer back to this model, including through
+  // structural properties and editable inputs. Keep the typed lazy boundary
+  // inside collection/nullable wrappers, just like navigation schemas.
+  const baseType = /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(schema)
+    ? `Schema.suspend((): Schema.Codec<${prop.typeMapping.tsType}, unknown, never, never> => ${schema})`
+    : schema
   return prop.isCollection ? `Schema.Array(${baseType})` : baseType
 }
 

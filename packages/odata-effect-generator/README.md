@@ -94,11 +94,14 @@ Generated models use TypeScript-style property names such as `name` or `productI
 
 | File | Description |
 | ---- | ----------- |
-| `Models.ts` | Effect Schema values for entities, complex types, enums, and editable variants. |
+| `Models.ts` | Compatibility facade re-exporting model schema values and types. |
+| `Models.<Type>.ts` | Runtime schema for one entity, complex type, or enum, with its existing create/editable/ID variants. |
 | `QueryModels.ts` | Type-safe query builders for filter, select, expand, V4 nested expanding, orderby, top, and skip. |
-| `Services.ts` | CRUD services for entity sets. |
+| `Services.ts` | Compatibility facade for CRUD services and standalone functions. |
+| `Services.<EntitySet>.ts` | CRUD service and functions for one entity set. |
 | `PathBuilders.ts` | Tree-shakable navigation path builders with terminal fetch helpers. |
-| `Operations.ts` | Function imports, V4 functions, and V4 actions when present in metadata. |
+| `Operations.ts` | Compatibility facade for unbound operations, when present. |
+| `Operations.<FunctionName>.ts` | One function import, V4 function, or V4 action. |
 | `index.ts` | Re-exports the generated API. |
 
 ## Service Functions
@@ -256,16 +259,61 @@ MIT
 
 ### Tree shaking generated clients
 
-Generated models, query paths and services include purity annotations, including in
-`--files-only` output. Keep comments during intermediate transpilation so bundlers
-can remove unused initializers.
+Granular runtime modules are the default for CLI and `generate` output. Existing
+imports from `Models`, `Operations`, `Services`, `PathBuilders`, and `index` remain
+valid. `index` still exports the established `Operations` namespace. No new
+configuration option or import migration is required. Low-level single-file
+functions such as `generateModels` retain their existing return format; tools
+assembling output themselves can use `generateSourceFiles` for the granular layout.
 
-For operation-level tree shaking, import a standalone operation such as
-`getAllAirline` from `Services` or the generated index. The generator also exports
-`createAirline`, `getByIdAirline`, `updateAirline` and `deleteAirline` (key operations
-require an entity key). These call the core library directly and can be removed
-independently. The existing `AirlineService` object remains available when you
-prefer grouping all CRUD methods together.
+Each model module imports only schemas referenced by its structural or navigation
+properties. Inherited fields are already resolved by the metadata digester.
+Collection elements, enums and nested types participate in the same dependency
+closure. Typed `Schema.suspend` boundaries handle self references and mutual cycles,
+including structural properties used by editable inputs. Editable/create schemas
+retain their existing nested-model semantics. Query models and path builders have
+only type imports of models and introduce no runtime schema dependency.
+
+Prefer named imports, including through the compatibility facades:
+
+```typescript
+import { getProductsByRating } from "./generated/Operations.js"
+import { ProductService, getAllProduct } from "./generated/Services.js"
+```
+
+For an explicit narrow module entry point, import directly:
+
+```typescript
+import { getProductsByRating } from "./generated/Operations.getProductsByRating.js"
+import { ProductService } from "./generated/Services.Products.js"
+import { Product } from "./generated/Models.Product.js"
+```
+
+Names follow naming overrides. Filenames are allocated deterministically, with
+numeric suffixes where needed to avoid case-insensitive or sanitized-name
+collisions; the facades always point to the allocated filenames.
+
+Regenerate the complete output with `--force`, and include all generated files
+when copying or publishing a client. Prefer a clean generated directory when
+metadata types are removed or renamed, since generation does not delete old files.
+`esmExtensions` retains its behavior: `true` emits `.js` relative specifiers,
+`false` emits extensionless specifiers. Package mode defaults to `true` and
+`--files-only` defaults to `false`; explicit configuration wins in both modes.
+
+Rollup integration tests use synthetic metadata with 24 unrelated entity roots.
+They verify that single-operation and service imports exclude unrelated schema
+markers, and that direct module imports never load those roots even with purity
+comments removed. Path imports retain no generated runtime schemas. These are
+fixture results, not measurements of consuming applications.
+
+Tree shaking still depends on consumer bundler configuration and package side-effect
+metadata. Generated packages declare `sideEffects: false`. Files-only consumers
+control their own package configuration. Whole namespace objects passed around or
+accessed dynamically may intentionally retain more exports. Facades also evaluate
+all their re-exported modules in unbundled ESM. Existing purity comments complement
+the module boundaries and help bundlers drop unused facade exports and variants;
+keep them during intermediate transpilation. Shared Effect/OData runtime code and
+the selected schema's recursive dependency closure remain necessary.
 
 ### Projected reads
 

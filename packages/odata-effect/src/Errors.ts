@@ -5,8 +5,8 @@
  */
 import * as Data from "effect/Data"
 import * as Effect from "effect/Effect"
+import * as HttpClientError from "effect/http/HttpClientError"
 import * as Schema from "effect/Schema"
-import * as HttpClientError from "effect/unstable/http/HttpClientError"
 
 /**
  * SAP error detail schema.

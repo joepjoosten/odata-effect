@@ -2,9 +2,9 @@ import { expect, it } from "@effect/vitest"
 import * as Runtime from "@odata-effect/odata-effect"
 import * as Operations from "@odata-effect/odata-effect/Operations"
 import * as Effect from "effect/Effect"
+import * as Http from "effect/http"
 import * as Schema from "effect/Schema"
 import * as SchemaGetter from "effect/SchemaGetter"
-import * as Http from "effect/unstable/http"
 import ts from "typescript"
 import { digestMetadata } from "../../src/digester/Digester.js"
 import { generateSourceFiles } from "../../src/generator/SourceFilesGenerator.js"
@@ -32,7 +32,7 @@ it.effect("preserves generated operation parameters, collection decoding and err
       if (id === "effect/Effect") {
         return Effect
       }
-      if (id === "effect/unstable/http") {
+      if (id === "effect/http") {
         return Http
       }
       if (id === "@odata-effect/odata-effect/Operations") {

@@ -7,10 +7,10 @@
  * @since 1.0.0
  */
 import * as Effect from "effect/Effect"
+import type { HttpClientError } from "effect/http"
+import { HttpClient, HttpClientRequest, HttpClientResponse } from "effect/http"
 import * as Schema from "effect/Schema"
 import type * as Stream from "effect/Stream"
-import type { HttpClientError } from "effect/unstable/http"
-import { HttpClient, HttpClientRequest, HttpClientResponse } from "effect/unstable/http"
 import type { ODataClientConfigService } from "./Config.js"
 import type { ParseError } from "./Errors.js"
 import { ODataError } from "./Errors.js"

@@ -30,11 +30,11 @@
  * @since 1.0.0
  */
 import * as Effect from "effect/Effect"
+import type * as HttpBody from "effect/http/HttpBody"
+import type * as HttpClient from "effect/http/HttpClient"
+import type * as HttpClientError from "effect/http/HttpClientError"
 import * as Schema from "effect/Schema"
 import * as Struct from "effect/Struct"
-import type * as HttpBody from "effect/unstable/http/HttpBody"
-import type * as HttpClient from "effect/unstable/http/HttpClient"
-import type * as HttpClientError from "effect/unstable/http/HttpClientError"
 import type { ODataClientConfig } from "./Config.js"
 import { type ODataError, ParseError } from "./Errors.js"
 import * as ODataV4 from "./ODataV4.js"

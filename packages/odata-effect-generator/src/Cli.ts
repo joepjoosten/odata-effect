@@ -3,10 +3,10 @@
  *
  * @since 1.0.0
  */
+import { Argument, Command, Flag } from "effect/cli"
 import * as Console from "effect/Console"
 import * as Effect from "effect/Effect"
 import * as FileSystem from "effect/FileSystem"
-import { Argument, Command, Flag } from "effect/unstable/cli"
 
 import { digestMetadata } from "./digester/Digester.js"
 import { generate } from "./generator/Generator.js"
@@ -17,35 +17,35 @@ import { parseODataMetadata } from "./parser/XmlParser.js"
 // Arguments and Options
 // ============================================================================
 
-const metadataPath = Argument.path("metadata-path").pipe(
+const metadataPath = Argument.Path("metadata-path").pipe(
   Argument.withDescription("Path to OData metadata XML file")
 )
 
-const outputDir = Argument.path("output-dir").pipe(
+const outputDir = Argument.Path("output-dir").pipe(
   Argument.withDescription("Directory for generated TypeScript files")
 )
 
-const serviceName = Flag.string("service-name").pipe(
+const serviceName = Flag.String("service-name").pipe(
   Flag.optional,
   Flag.withDescription("Override service name (defaults to EntityContainer name)")
 )
 
-const packageName = Flag.string("package-name").pipe(
+const packageName = Flag.String("package-name").pipe(
   Flag.optional,
   Flag.withDescription("NPM package name (defaults to @template/<service-name>-effect)")
 )
 
-const force = Flag.boolean("force").pipe(
+const force = Flag.Boolean("force").pipe(
   Flag.withDefault(false),
   Flag.withDescription("Overwrite existing files")
 )
 
-const filesOnly = Flag.boolean("files-only").pipe(
+const filesOnly = Flag.Boolean("files-only").pipe(
   Flag.withDefault(false),
   Flag.withDescription("Generate only source files (no package.json, tsconfig, etc.) directly in output-dir")
 )
 
-const configOption = Flag.string("config").pipe(
+const configOption = Flag.String("config").pipe(
   Flag.optional,
   Flag.withDescription(
     `Config as JSON string or path to JSON file. Options: { esmExtensions?: boolean, overrides?: NamingOverrides }. Example: --config '{"esmExtensions": true}'`

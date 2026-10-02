@@ -51,9 +51,9 @@
 import { Config } from "@odata-effect/odata-effect"
 import type * as Effect from "effect/Effect"
 import type * as Exit from "effect/Exit"
+import type * as HttpClient from "effect/http/HttpClient"
 import * as Layer from "effect/Layer"
 import * as ManagedRuntime from "effect/ManagedRuntime"
-import type * as HttpClient from "effect/unstable/http/HttpClient"
 
 /**
  * Configuration options for creating an OData runtime.

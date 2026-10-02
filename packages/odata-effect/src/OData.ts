@@ -23,9 +23,9 @@
  * @since 1.0.0
  */
 import * as Effect from "effect/Effect"
+import type { HttpBody, HttpClientError } from "effect/http"
+import { HttpClient, HttpClientRequest, HttpClientResponse } from "effect/http"
 import * as Schema from "effect/Schema"
-import type { HttpBody, HttpClientError } from "effect/unstable/http"
-import { HttpClient, HttpClientRequest, HttpClientResponse } from "effect/unstable/http"
 import { ODataClientConfig } from "./Config.js"
 import type { ODataError, ParseError, SapError } from "./Errors.js"
 import { catchODataError, ParseError as ParseErrorTag } from "./Errors.js"

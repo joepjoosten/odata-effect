@@ -98,8 +98,8 @@ export type PartialEditableResult = typeof PartialEditableResult.Type
  * @since 1.0.0
  */
 import * as Effect from "effect/Effect"
-import { HttpClient } from "effect/unstable/http"
-import type * as HttpClientError from "effect/unstable/http/HttpClientError"
+import { HttpClient } from "effect/http"
+import type * as HttpClientError from "effect/http/HttpClientError"
 
 import * as ODataOps from "@odata-effect/odata-effect/Operations"
 import {
@@ -275,8 +275,8 @@ export type PartialEditableResult = typeof PartialEditableResult.Type
  * @since 1.0.0
  */
 import * as Effect from "effect/Effect"
-import { HttpClient } from "effect/unstable/http"
-import type * as HttpClientError from "effect/unstable/http/HttpClientError"
+import { HttpClient } from "effect/http"
+import type * as HttpClientError from "effect/http/HttpClientError"
 
 import * as ODataOps from "@odata-effect/odata-effect/Operations"
 import {

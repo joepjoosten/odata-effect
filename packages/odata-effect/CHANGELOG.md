@@ -1,5 +1,13 @@
 # @odata-effect/odata-effect
 
+## 1.3.2
+
+### Patch Changes
+
+- [#81](https://github.com/joepjoosten/odata-effect/pull/81) [`c902797`](https://github.com/joepjoosten/odata-effect/commit/c902797eed525a0e48e78c9d08e9ba963bfd32af) Thanks [@joepjoosten](https://github.com/joepjoosten)! - Update Effect and the associated platform and test packages to the stable 4.0.0 release.
+  Effect 4.0.0 promotes the former `effect/unstable/*` modules, so imports now use `effect/http` and `effect/cli`.
+  Generated packages use Effect 4.0.0 and require the matching core and promise releases.
+
 ## 1.3.1
 
 ### Patch Changes

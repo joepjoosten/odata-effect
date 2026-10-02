@@ -111,7 +111,7 @@ const transformOrFail = <To extends Schema.Top, From extends Schema.Top, RD = ne
     readonly decode: (input: From["Type"]) => Effect.Effect<To["Encoded"], SchemaIssue.Issue, RD>
     readonly encode: (input: To["Encoded"]) => Effect.Effect<From["Type"], SchemaIssue.Issue, RE>
   }
-) => from.pipe(Schema.decodeTo(to, SchemaTransformation.transformOrFail(options)))
+) => from.pipe(Schema.decodeTo(to, SchemaTransformation.transformEffect(options)))
 
 /**
  * OData V2 DateTime schema.

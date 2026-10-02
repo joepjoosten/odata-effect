@@ -1,10 +1,10 @@
 import { describe, expect, it } from "@effect/vitest"
 import * as Effect from "effect/Effect"
+import { HttpClient, HttpClientResponse } from "effect/http"
+import type * as HttpClientRequest from "effect/http/HttpClientRequest"
 import * as Layer from "effect/Layer"
 import * as Schema from "effect/Schema"
 import * as Struct from "effect/Struct"
-import { HttpClient, HttpClientResponse } from "effect/unstable/http"
-import type * as HttpClientRequest from "effect/unstable/http/HttpClientRequest"
 import * as ODataV4 from "../src/ODataV4.js"
 import { ODataClientConfig } from "../src/ODataV4.js"
 

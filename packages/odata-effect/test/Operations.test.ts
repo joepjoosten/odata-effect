@@ -1,8 +1,8 @@
 import { describe, expect, it } from "@effect/vitest"
 import * as Effect from "effect/Effect"
+import { HttpClient, HttpClientResponse } from "effect/http"
+import type * as HttpClientRequest from "effect/http/HttpClientRequest"
 import * as Schema from "effect/Schema"
-import { HttpClient, HttpClientResponse } from "effect/unstable/http"
-import type * as HttpClientRequest from "effect/unstable/http/HttpClientRequest"
 import {
   buildFunctionImportUrl,
   buildV4BoundOperationUrl,

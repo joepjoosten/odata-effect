@@ -1,7 +1,7 @@
 import { expect, it } from "@effect/vitest"
 import * as Effect from "effect/Effect"
+import { HttpClient, HttpClientResponse } from "effect/http"
 import * as Schema from "effect/Schema"
-import { HttpClient, HttpClientResponse } from "effect/unstable/http"
 import { ODataClientConfig } from "../src/Config.js"
 import { crud as crudV2 } from "../src/Crud.js"
 import { crud as crudV4 } from "../src/CrudV4.js"

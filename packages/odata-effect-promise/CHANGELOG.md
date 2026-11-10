@@ -1,5 +1,15 @@
 # @odata-effect/odata-effect-promise
 
+## 4.0.12
+
+### Patch Changes
+
+- [#83](https://github.com/joepjoosten/odata-effect/pull/83) [`71f96c2`](https://github.com/joepjoosten/odata-effect/commit/71f96c239e3e8e9c62157b91c5906990236c7700) Thanks [@joepjoosten](https://github.com/joepjoosten)! - Update Effect and the associated platform and test packages to 4.1.3.
+  This pulls in `undici` 8.12.4 through `@effect/platform-node`, which resolves the open high-severity advisories in the generator's runtime dependencies.
+  Generated packages use Effect 4.1.3 and require the matching core and promise releases.
+- Updated dependencies [[`71f96c2`](https://github.com/joepjoosten/odata-effect/commit/71f96c239e3e8e9c62157b91c5906990236c7700)]:
+  - @odata-effect/odata-effect@1.3.3
+
 ## 4.0.11
 
 ### Patch Changes

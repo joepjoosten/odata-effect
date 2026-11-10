@@ -10,7 +10,7 @@ Install it in the app or workspace where you want to generate code:
 
 ```bash
 pnpm add -D @odata-effect/odata-effect-generator
-pnpm add @odata-effect/odata-effect @odata-effect/odata-effect-promise effect@4.0.0 @effect/platform-node@4.0.0
+pnpm add @odata-effect/odata-effect @odata-effect/odata-effect-promise effect@4.1.3 @effect/platform-node@4.1.3
 ```
 
 ## Step 1: Download Metadata

@@ -7,10 +7,15 @@ import * as path from "node:path"
 import { pathToFileURL } from "node:url"
 import { rollup } from "rollup"
 import ts from "typescript"
+import { vi } from "vitest"
 import { digestMetadata } from "../../src/digester/Digester.js"
 import { generateSourceFiles } from "../../src/generator/SourceFilesGenerator.js"
 import { parseODataMetadata } from "../../src/parser/XmlParser.js"
 import { granularMetadata } from "../resource/granular.js"
+
+// The suite runs concurrently and the cold TypeScript program below blocks the event loop for
+// several seconds on shared CI runners, which counts against every sibling test's timeout.
+vi.setConfig({ testTimeout: 30_000 })
 
 const fixture = () =>
   parseODataMetadata(granularMetadata()).pipe(Effect.flatMap((metadata) =>
@@ -22,7 +27,9 @@ const fixture = () =>
     })
   ))
 
-it.effect("emits deterministic narrow modules, documented names and extension-compatible facades", () =>
+// Snapshot assertions must use the test-local `expect`: the suite runs concurrently and the
+// global one attributes snapshots to whichever test happens to be current.
+it.effect("emits deterministic narrow modules, documented names and extension-compatible facades", ({ expect }) =>
   Effect.gen(function*() {
     const model = yield* fixture()
     for (const esmExtensions of [true, false]) {
@@ -49,7 +56,6 @@ it.effect("emits deterministic narrow modules, documented names and extension-co
     }
   }))
 
-// A cold TypeScript program can exceed Vitest's 5s default on shared CI runners.
 it.effect("typechecks recursive models, editable inputs and compatibility imports", () =>
   Effect.gen(function*() {
     const model = yield* fixture()
@@ -84,7 +90,7 @@ export const values = [Result, EditableResult, Operations.lookup, lookup, Target
     } finally {
       fs.rmSync(directory, { recursive: true, force: true })
     }
-  }), { timeout: 30_000 })
+  }))
 
 it.effect("decodes self references and mutual structural cycles in native ESM modules", () =>
   Effect.gen(function*() {

@@ -36,7 +36,7 @@ export const generatePackageJson = (dataModel: DataModel, config: PackageConfig)
       dependencies: {
         "@odata-effect/odata-effect": "^1.3.2",
         "@odata-effect/odata-effect-promise": "^4.0.11",
-        effect: "4.0.0"
+        effect: "4.1.3"
       },
       devDependencies: {
         typescript: "^5.6.3",

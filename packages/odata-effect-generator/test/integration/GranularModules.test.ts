@@ -22,7 +22,9 @@ const fixture = () =>
     })
   ))
 
-it.effect("emits deterministic narrow modules, documented names and extension-compatible facades", () =>
+// Snapshot assertions must use the test-local `expect`: the suite runs concurrently and the
+// global one attributes snapshots to whichever test happens to be current.
+it.effect("emits deterministic narrow modules, documented names and extension-compatible facades", ({ expect }) =>
   Effect.gen(function*() {
     const model = yield* fixture()
     for (const esmExtensions of [true, false]) {

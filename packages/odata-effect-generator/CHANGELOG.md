@@ -1,5 +1,11 @@
 # @odata-effect/odata-effect-generator
 
+## 1.4.5
+
+### Patch Changes
+
+- [#87](https://github.com/joepjoosten/odata-effect/pull/87) [`cca040a`](https://github.com/joepjoosten/odata-effect/commit/cca040ac1d7f367f2300a3bec4d4f10221e70201) Thanks [@joepjoosten](https://github.com/joepjoosten)! - Attach the underlying `JSON.parse` error as `cause` when the CLI fails to parse a config file.
+
 ## 1.4.4
 
 ### Patch Changes

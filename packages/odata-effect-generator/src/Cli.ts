@@ -68,7 +68,7 @@ const parseConfig = (
       try {
         return JSON.parse(trimmed) as { esmExtensions?: boolean; overrides?: NamingOverrides }
       } catch (e) {
-        yield* Effect.fail(new Error(`Failed to parse config JSON: ${e}`))
+        return yield* Effect.fail(new Error(`Failed to parse config JSON: ${e}`))
       }
     }
 
@@ -80,7 +80,7 @@ const parseConfig = (
     try {
       return JSON.parse(configContent) as { esmExtensions?: boolean; overrides?: NamingOverrides }
     } catch (e) {
-      throw new Error(`Failed to parse config file: ${configValue}. ${e}`)
+      throw new Error(`Failed to parse config file: ${configValue}. ${e}`, { cause: e })
     }
   })
 

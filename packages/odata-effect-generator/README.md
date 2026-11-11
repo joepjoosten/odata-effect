@@ -92,17 +92,17 @@ Generated models use TypeScript-style property names such as `name` or `productI
 
 ## Generated Files
 
-| File | Description |
-| ---- | ----------- |
-| `Models.ts` | Compatibility facade re-exporting model schema values and types. |
-| `Models.<Type>.ts` | Runtime schema for one entity, complex type, or enum, with its existing create/editable/ID variants. |
-| `QueryModels.ts` | Type-safe query builders for filter, select, expand, V4 nested expanding, orderby, top, and skip. |
-| `Services.ts` | Compatibility facade for CRUD services and standalone functions. |
-| `Services.<EntitySet>.ts` | CRUD service and functions for one entity set. |
-| `PathBuilders.ts` | Tree-shakable navigation path builders with terminal fetch helpers. |
-| `Operations.ts` | Compatibility facade for unbound operations, when present. |
-| `Operations.<FunctionName>.ts` | One function import, V4 function, or V4 action. |
-| `index.ts` | Re-exports the generated API. |
+| File                           | Description                                                                                          |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------- |
+| `Models.ts`                    | Compatibility facade re-exporting model schema values and types.                                     |
+| `Models.<Type>.ts`             | Runtime schema for one entity, complex type, or enum, with its existing create/editable/ID variants. |
+| `QueryModels.ts`               | Type-safe query builders for filter, select, expand, V4 nested expanding, orderby, top, and skip.    |
+| `Services.ts`                  | Compatibility facade for CRUD services and standalone functions.                                     |
+| `Services.<EntitySet>.ts`      | CRUD service and functions for one entity set.                                                       |
+| `PathBuilders.ts`              | Tree-shakable navigation path builders with terminal fetch helpers.                                  |
+| `Operations.ts`                | Compatibility facade for unbound operations, when present.                                           |
+| `Operations.<FunctionName>.ts` | One function import, V4 function, or V4 action.                                                      |
+| `index.ts`                     | Re-exports the generated API.                                                                        |
 
 ## Service Functions
 
@@ -122,7 +122,7 @@ Use path builders when you need typed navigation across relationships:
 
 ```typescript
 import { pipe } from "effect/Function"
-import { Flight, People, byKey, fetchCollection, planItems, trips } from "./generated/index.js"
+import { byKey, fetchCollection, Flight, People, planItems, trips } from "./generated/index.js"
 
 const flights = await pipe(
   People,
@@ -157,7 +157,7 @@ const products = await ProductService.getAll(query).pipe(toPromise(runtime))
 For OData V4 services, use `expanding` when an expanded navigation target needs its own select, filter, ordering, or paging options:
 
 ```typescript
-import { PersonService, personQuery } from "./generated/index.js"
+import { personQuery, PersonService } from "./generated/index.js"
 
 const query = personQuery()
   .select("userName")
@@ -166,8 +166,7 @@ const query = personQuery()
       .select("description", "budget")
       .filter(qTrip.budget.gt(1000))
       .orderBy(qTrip.startsAt.desc())
-      .top(5)
-  )
+      .top(5))
   .build()
 
 const people = await PersonService.getAll(query).pipe(toPromise(runtime))
@@ -179,7 +178,7 @@ Attach query options inside path-builder pipes with `withQueryOptions`:
 
 ```typescript
 import { pipe } from "effect/Function"
-import { People, Trip, byKey, fetchCollection, trips, withQueryOptions } from "./generated/index.js"
+import { byKey, fetchCollection, People, Trip, trips, withQueryOptions } from "./generated/index.js"
 
 const myTrips = await pipe(
   People,
@@ -211,12 +210,12 @@ await Operations.resetDataSource().pipe(toPromise(runtime))
 odata-effect-gen generate <metadata-path> <output-dir> [options]
 ```
 
-| Option | Description |
-| ------ | ----------- |
-| `--service-name <name>` | Override the service name. Defaults to the EntityContainer name. |
-| `--package-name <name>` | Package name for package-style workspace generation. |
-| `--force` | Overwrite existing files. |
-| `--files-only` | Generate only source files directly into `output-dir`. |
+| Option                    | Description                                                                          |
+| ------------------------- | ------------------------------------------------------------------------------------ |
+| `--service-name <name>`   | Override the service name. Defaults to the EntityContainer name.                     |
+| `--package-name <name>`   | Package name for package-style workspace generation.                                 |
+| `--force`                 | Overwrite existing files.                                                            |
+| `--files-only`            | Generate only source files directly into `output-dir`.                               |
 | `--config <json-or-path>` | JSON string or path to JSON config. Supports `esmExtensions` and naming `overrides`. |
 
 Example config file:
@@ -246,12 +245,12 @@ pnpm exec odata-effect-gen generate ./metadata.xml ./src/generated --files-only 
 
 ## Troubleshooting
 
-| Problem | What to check |
-| ------- | ------------- |
-| Generated imports fail in Node ESM | Use `--config '{"esmExtensions": true}'`. |
-| `ProductService` does not exist | Check the entity set name in metadata; service names are singularized from entity sets. |
-| Request URL is wrong | `baseUrl` should be host only; `servicePath` should be the OData service root; generated paths are relative. |
-| Metadata download fails | Download `$metadata` with the same authentication method your SAP service requires. |
+| Problem                            | What to check                                                                                                |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Generated imports fail in Node ESM | Use `--config '{"esmExtensions": true}'`.                                                                    |
+| `ProductService` does not exist    | Check the entity set name in metadata; service names are singularized from entity sets.                      |
+| Request URL is wrong               | `baseUrl` should be host only; `servicePath` should be the OData service root; generated paths are relative. |
+| Metadata download fails            | Download `$metadata` with the same authentication method your SAP service requires.                          |
 
 ## License
 
@@ -278,15 +277,15 @@ Prefer named imports, including through the compatibility facades:
 
 ```typescript
 import { getProductsByRating } from "./generated/Operations.js"
-import { ProductService, getAllProduct } from "./generated/Services.js"
+import { getAllProduct, ProductService } from "./generated/Services.js"
 ```
 
 For an explicit narrow module entry point, import directly:
 
 ```typescript
+import { Product } from "./generated/Models.Product.js"
 import { getProductsByRating } from "./generated/Operations.getProductsByRating.js"
 import { ProductService } from "./generated/Services.Products.js"
-import { Product } from "./generated/Models.Product.js"
 ```
 
 Names follow naming overrides. Filenames are allocated deterministically, with
@@ -322,7 +321,7 @@ response rather than the full generated entity:
 
 ```typescript
 const summary = Schema.Struct({ id: Schema.Number }).pipe(Schema.encodeKeys({ id: "ID" }))
-const rows = yield* ProductService.getAllWithSchema(summary, productQuery().select("iD").build())
+const rows = yield * ProductService.getAllWithSchema(summary, productQuery().select("iD").build())
 // rows contain only { id: number }
 ```
 

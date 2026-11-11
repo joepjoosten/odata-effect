@@ -10,11 +10,11 @@ The usual workflow is:
 
 ## Packages
 
-| Package | Use it when |
-| ------- | ----------- |
-| [@odata-effect/odata-effect](./packages/odata-effect) | You write Effect code directly or need low-level OData helpers. |
+| Package                                                                   | Use it when                                                                           |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| [@odata-effect/odata-effect](./packages/odata-effect)                     | You write Effect code directly or need low-level OData helpers.                       |
 | [@odata-effect/odata-effect-generator](./packages/odata-effect-generator) | You want generated schemas, services, path builders, and operations from `$metadata`. |
-| [@odata-effect/odata-effect-promise](./packages/odata-effect-promise) | You want to call generated or core Effect operations from Promise-based code. |
+| [@odata-effect/odata-effect-promise](./packages/odata-effect-promise)     | You want to call generated or core Effect operations from Promise-based code.         |
 
 ## Install
 
@@ -99,13 +99,13 @@ For OData V4 services, use `ODataV4` instead of `OData`.
 
 ## Common Tasks
 
-| Task | Start here |
-| ---- | ---------- |
-| Generate a client from metadata | [@odata-effect/odata-effect-generator](./packages/odata-effect-generator) |
-| Call generated services from an Express, Next.js, or script-style app | [@odata-effect/odata-effect-promise](./packages/odata-effect-promise) |
-| Write custom Effect programs against OData | [@odata-effect/odata-effect](./packages/odata-effect) |
-| Build type-safe filters, expands, and V4 nested expanded query options | Generated `QueryModels.ts` or `QueryBuilder` in the core package |
-| Work with V2 date, decimal, Int64, or duration wire formats | `ODataSchema` in the core package |
+| Task                                                                   | Start here                                                                |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Generate a client from metadata                                        | [@odata-effect/odata-effect-generator](./packages/odata-effect-generator) |
+| Call generated services from an Express, Next.js, or script-style app  | [@odata-effect/odata-effect-promise](./packages/odata-effect-promise)     |
+| Write custom Effect programs against OData                             | [@odata-effect/odata-effect](./packages/odata-effect)                     |
+| Build type-safe filters, expands, and V4 nested expanded query options | Generated `QueryModels.ts` or `QueryBuilder` in the core package          |
+| Work with V2 date, decimal, Int64, or duration wire formats            | `ODataSchema` in the core package                                         |
 
 ## Development
 

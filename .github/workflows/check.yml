@@ -40,6 +40,7 @@ jobs:
       - name: Install dependencies
         uses: ./.github/actions/setup
       - run: pnpm check
+      - run: pnpm check-tsc
 
   lint:
     name: Lint
@@ -71,6 +72,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install dependencies
         uses: ./.github/actions/setup
-      - run: pnpm build
+      - name: Build
+        run: pnpm build
       - name: Install, compile and import isolated generated packages
         run: node scripts/check-generated-package.mjs

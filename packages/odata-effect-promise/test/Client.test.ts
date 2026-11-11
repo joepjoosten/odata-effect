@@ -25,7 +25,9 @@ describe("ODataEffectPromise", () => {
       // This callback is intentionally never executed: tsc verifies rejection of
       // a missing service, without triggering a runtime missing-service defect.
       const unsupported = () => {
+        // The Effect language service reports the same missing service as tsc.
         // @ts-expect-error The OData runtime does not provide Database.
+        // @effect-diagnostics-next-line missingEffectContext:off
         return Database.pipe(converter)
       }
       void unsupported

@@ -5,6 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Overview
 
 **odata-effect** is an Effect-based OData client library for SAP OData V2/V4 services. It's a monorepo with three packages:
+
 - **@odata-effect/odata-effect** - Core Effect-based OData client
 - **@odata-effect/odata-effect-promise** - Promise-based wrapper for non-Effect codebases
 - **@odata-effect/odata-effect-generator** - Code generator for type-safe service clients from OData metadata
@@ -16,16 +17,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 pnpm install
 
 # Type checking
-pnpm check              # Type check root
+pnpm check              # Type check with tsrs + Effect language service diagnostics (@effect/tsgo)
+pnpm check-tsc          # Type check with plain tsc (TypeScript 7)
 pnpm check-recursive    # Type check all packages
 
 # Build
 pnpm build              # Full build (tsc + per-package builds)
 pnpm codegen            # Run code generation across packages
 
-# Lint
-pnpm lint               # Check linting
-pnpm lint-fix           # Auto-fix lint issues
+# Lint (oxlint + dprint)
+pnpm lint               # oxlint -f unix && dprint check
+pnpm lint-fix           # oxlint --fix && dprint fmt
 
 # Test
 pnpm test               # Run all tests with Vitest
@@ -33,6 +35,7 @@ pnpm coverage           # Generate test coverage
 ```
 
 Run a single test file:
+
 ```bash
 pnpm vitest run packages/odata-effect/test/ODataClientFn.test.ts
 ```
@@ -72,6 +75,7 @@ Generates type-safe TypeScript clients from OData metadata XML:
 ### Effect Context
 
 Configuration is injected via `ODataClientConfig` Context Tag:
+
 ```typescript
 import { ODataClientConfig } from "@odata-effect/odata-effect"
 
@@ -82,6 +86,7 @@ pipe(operation, Effect.provide(config))
 ### Schema-First Design
 
 All data structures use Effect Schema for runtime validation and type inference:
+
 ```typescript
 const MyEntity = Schema.Struct({ id: Schema.String, name: Schema.String })
 type MyEntity = Schema.Schema.Type<typeof MyEntity>
@@ -90,6 +95,7 @@ type MyEntity = Schema.Schema.Type<typeof MyEntity>
 ### Error Types
 
 Custom `TaggedError` classes for different failure modes:
+
 - `ODataError` - OData service errors with structured details
 - `SapError` - SAP-specific error responses
 - `ParseError` - Response parsing failures
@@ -97,7 +103,8 @@ Custom `TaggedError` classes for different failure modes:
 
 ## Code Style
 
-- **Formatting**: dprint with Effect plugin, 120 char lines, double quotes, no semicolons
+- **Formatting**: dprint (`dprint.json`), 120 char lines, double quotes, no semicolons
+- **Linting**: oxlint (`.oxlintrc.json`), mirroring the Effect repository's rule set
 - **Imports**: ESM with `.js` extensions, sorted imports
 - **Types**: Strict TypeScript, no `any`, heavy use of generics
 - **Exports**: Dual exports (namespace + individual) for tree-shaking
@@ -105,6 +112,7 @@ Custom `TaggedError` classes for different failure modes:
 ## Testing
 
 Tests use Vitest with `@effect/vitest`. Mock the HttpClient layer for unit tests:
+
 ```typescript
 import { HttpClient } from "@effect/platform"
 

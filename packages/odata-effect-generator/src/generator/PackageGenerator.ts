@@ -39,7 +39,7 @@ export const generatePackageJson = (dataModel: DataModel, config: PackageConfig)
         effect: "4.1.3"
       },
       devDependencies: {
-        typescript: "^5.6.3",
+        typescript: "^7.0.2",
         "@types/node": "^22.8.5"
       }
     },

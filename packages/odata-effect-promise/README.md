@@ -119,11 +119,11 @@ If you want Effect's `Exit` value instead of thrown Promise rejections, use `run
 
 ## API
 
-| Export | Description |
-| ------ | ----------- |
-| `createODataRuntime(config, httpClientLayer)` | Creates a managed runtime with OData config and an HTTP client layer. |
-| `toPromise(runtime)` | Converts an Effect operation into a Promise. Designed for `.pipe(toPromise(runtime))`. |
-| `ODataRuntime` | Runtime interface with `runPromise`, `runPromiseExit`, and `dispose`. |
+| Export                                        | Description                                                                            |
+| --------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `createODataRuntime(config, httpClientLayer)` | Creates a managed runtime with OData config and an HTTP client layer.                  |
+| `toPromise(runtime)`                          | Converts an Effect operation into a Promise. Designed for `.pipe(toPromise(runtime))`. |
+| `ODataRuntime`                                | Runtime interface with `runPromise`, `runPromiseExit`, and `dispose`.                  |
 
 ## License
 

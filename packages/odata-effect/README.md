@@ -18,12 +18,12 @@ The core package is platform-independent. Node.js users normally provide `@effec
 
 Every request needs three things:
 
-| Item | Example | Notes |
-| ---- | ------- | ----- |
-| `baseUrl` | `https://server.example.com` | Protocol and host only. |
-| `servicePath` | `/sap/opu/odata/sap/MY_SERVICE/` | OData service root, usually with a trailing slash. |
-| operation path | `Products` or `Products('123')` | Relative to `servicePath`; usually no leading slash. |
-| schema | `Schema.Struct(...)` | Used to decode and validate the response body. |
+| Item           | Example                          | Notes                                                |
+| -------------- | -------------------------------- | ---------------------------------------------------- |
+| `baseUrl`      | `https://server.example.com`     | Protocol and host only.                              |
+| `servicePath`  | `/sap/opu/odata/sap/MY_SERVICE/` | OData service root, usually with a trailing slash.   |
+| operation path | `Products` or `Products('123')`  | Relative to `servicePath`; usually no leading slash. |
+| schema         | `Schema.Struct(...)`             | Used to decode and validate the response body.       |
 
 ```typescript
 import * as NodeHttpClient from "@effect/platform-node/NodeHttpClient"
@@ -62,17 +62,17 @@ const product = await Effect.runPromise(
 
 ## Main Modules
 
-| Module | Purpose |
-| ------ | ------- |
-| `Config` | Provides `ODataClientConfig`, the service configuration context. |
-| `OData` | V2 operations such as `get`, `getCollection`, `post`, `patch`, and `del`. |
-| `ODataV4` | V4 operations and V4 response handling. |
-| `ODataSchema` | OData wire-format schemas for V2/V4 date, time, duration, decimal, and Int64 values. |
-| `Crud` / `CrudV4` | Factories for entity-set CRUD services. |
-| `QueryBuilder` | Type-safe filter, select, expand, V4 nested expanding, orderby, top, and skip helpers. |
-| `Batch` | V2 multipart batch and V4 multipart/JSON batch support. |
-| `Media` | Media entity download, stream, upload, update, and delete helpers. |
-| `Operations` | Function imports, functions, and actions. |
+| Module            | Purpose                                                                                |
+| ----------------- | -------------------------------------------------------------------------------------- |
+| `Config`          | Provides `ODataClientConfig`, the service configuration context.                       |
+| `OData`           | V2 operations such as `get`, `getCollection`, `post`, `patch`, and `del`.              |
+| `ODataV4`         | V4 operations and V4 response handling.                                                |
+| `ODataSchema`     | OData wire-format schemas for V2/V4 date, time, duration, decimal, and Int64 values.   |
+| `Crud` / `CrudV4` | Factories for entity-set CRUD services.                                                |
+| `QueryBuilder`    | Type-safe filter, select, expand, V4 nested expanding, orderby, top, and skip helpers. |
+| `Batch`           | V2 multipart batch and V4 multipart/JSON batch support.                                |
+| `Media`           | Media entity download, stream, upload, update, and delete helpers.                     |
+| `Operations`      | Function imports, functions, and actions.                                              |
 
 ## Query Options
 
@@ -103,8 +103,7 @@ const query = personQuery()
       .select("description", "budget")
       .filter(qTrip.budget.gt(1000))
       .orderBy(qTrip.startsAt.desc())
-      .top(5)
-  )
+      .top(5))
   .build()
 ```
 

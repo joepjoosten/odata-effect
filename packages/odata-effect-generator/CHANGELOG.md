@@ -1,5 +1,12 @@
 # @odata-effect/odata-effect-generator
 
+## 1.4.4
+
+### Patch Changes
+
+- [#85](https://github.com/joepjoosten/odata-effect/pull/85) [`b369cba`](https://github.com/joepjoosten/odata-effect/commit/b369cba82148eff21425a0ff7664bd1dc59309dd) Thanks [@joepjoosten](https://github.com/joepjoosten)! - Generated packages now use TypeScript 7 (`typescript@^7.0.2`) for their `check` and `build` scripts.
+  The generated `tsconfig` files already avoid the options TypeScript 7 removed, so no other changes are needed.
+
 ## 1.4.3
 
 ### Patch Changes
